@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="uk/ac/open/kmi/fusion/objectidentification/standard/SimMetricsObjectIdentificationGlobals.java|uk/ac/open/kmi/fusion/util/KnoFussSingleFileOntoloaderStandalone.java|uk/ac/open/kmi/fusion/MultiOntologyUtil.java" kind="src" path="src/java"/>
+	<classpathentry kind="src" path="src/test"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/secondstring-20060615.jar"/>
+	<classpathentry kind="lib" path="lib/simmetrics.jar"/>
+	<classpathentry kind="lib" path="lib/align.jar"/>
+	<classpathentry kind="lib" path="lib/commons-logging-1.0.4.jar"/>
+	<classpathentry kind="lib" path="lib/axis-ant.jar"/>
+	<classpathentry kind="lib" path="lib/axis.jar"/>
+	<classpathentry kind="lib" path="lib/commons-discovery-0.2.jar"/>
+	<classpathentry kind="lib" path="lib/jaxrpc.jar"/>
+	<classpathentry kind="lib" path="lib/saaj.jar"/>
+	<classpathentry kind="lib" path="lib/watson-client-api_old.jar"/>
+	<classpathentry kind="lib" path="lib/watson-client-api.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang-2.1.jar"/>
+	<classpathentry kind="lib" path="lib/sparql-core.jar"/>
+	<classpathentry kind="lib" path="lib/activation.jar"/>
+	<classpathentry kind="lib" path="lib/geronimo-annotation_1.0_spec-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/geronimo-javamail_1.4_spec-1.0-M1.jar"/>
+	<classpathentry kind="lib" path="lib/geronimo-stax-api_1.0_spec-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/geronimo-ws-metadata_2.0_spec-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/procalign.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-core-3.0.3.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-queries-3.0.3.jar"/>
+	<classpathentry kind="lib" path="lib/openrdf-sesame-onejar.jar"/>
+	<classpathentry kind="lib" path="lib/owlim-big-3.3.2264.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-jdk14-1.5.0.jar"/>
+	<classpathentry kind="lib" path="lib/commons-codec-1.4.jar"/>
+	<classpathentry kind="lib" path="lib/commons-httpclient-3.1.jar"/>
+	<classpathentry kind="lib" path="lib/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/commons-logging-adapters-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/commons-logging-api-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/arq-2.8.8.jar" sourcepath="/work/programs/java/ARQ-2.8.8/arq-2.8.8-sources">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/work/programs/java/ARQ-2.8.8/doc/javadoc/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/icu4j-3.4.4.jar"/>
+	<classpathentry kind="lib" path="lib/iri-0.8.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.14.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.5.8.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-log4j12-1.5.8.jar"/>
+	<classpathentry kind="lib" path="lib/stax-api-1.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/wsdl4j-1.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/wstx-asl-3.2.9.jar"/>
+	<classpathentry kind="lib" path="lib/xercesImpl-2.7.1.jar"/>
+	<classpathentry kind="lib" path="lib/jena-2.6.4.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/an-utils"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
