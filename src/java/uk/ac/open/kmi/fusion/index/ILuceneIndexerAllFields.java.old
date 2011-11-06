@@ -1,0 +1,13 @@
+package uk.ac.open.kmi.fusion.index;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.lucene.document.Document;
+
+public interface ILuceneIndexerAllFields {
+	public Map<String, Document> findClosestDocuments(
+			Map<String, List<String>> searchFieldValues, String[] searchFields, double threshold, 
+			String type) throws IOException;
+}

@@ -1,0 +1,851 @@
+package uk.ac.open.kmi.fusion.index;
+
+import java.io.*;
+import java.util.*;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Fieldable;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.IndexReader.FieldOption;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.search.Searcher;
+import org.apache.lucene.search.Explanation; 
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermsFilter;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.FuzzyQuery;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.LockObtainFailedException;
+import org.apache.lucene.store.SimpleFSDirectory;
+import org.apache.lucene.util.Version;
+import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.queryParser.MultiFieldQueryParser;
+import org.apache.lucene.queryParser.ParseException;
+import org.openrdf.model.Literal;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.RDFS;
+import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
+
+
+import uk.ac.open.kmi.common.utils.Utils;
+import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
+import uk.ac.open.kmi.fusion.api.IDataSource;
+import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
+import uk.ac.open.kmi.fusion.api.IPersistentStore;
+import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
+import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
+import uk.ac.open.kmi.fusion.learning.AttributeProfileInDataset;
+import uk.ac.open.kmi.fusion.objectidentification.SearchResult;
+import uk.ac.open.kmi.fusion.util.FusionException;
+import uk.ac.open.kmi.fusion.util.SesameUtils;
+
+public class LuceneDiskIndexerAllFields extends AbstractLuceneIndexer implements IPersistentStore {
+
+	public static final String TYPE_URI = FusionMetaVocabulary.LUCENE_DISK_BLOCKER_ALL_FIELDS; 
+	
+	String indexDirectory;
+	
+	IDataSource embeddingDataSource;
+	
+	boolean isFuzzySearchUsed = false;
+	
+	private Set<String> fieldNamesSet;
+	private String[] fieldNames;
+	
+	private boolean refresh = false;
+	
+	private static Logger log = Logger.getLogger(LuceneDiskIndexerAllFields.class);
+	
+	public LuceneDiskIndexerAllFields(String indexDirectory) {
+		super();
+		this.indexDirectory = indexDirectory;
+		fieldNamesSet = new HashSet<String>();
+	}
+	
+
+	public LuceneDiskIndexerAllFields(Resource rdfIndividual,
+			FusionEnvironment environment) {
+		super(rdfIndividual, environment);
+	}
+	
+	@Override
+	public void readFromRDFIndividual(RepositoryConnection connection)
+			throws RepositoryException {
+		super.readFromRDFIndividual(connection);
+	}
+
+	@Override
+	protected void readFromPropertyMember(Statement statement)
+			throws RepositoryException {
+		super.readFromPropertyMember(statement);
+		
+		if(statement.getPredicate().toString().equals(FusionMetaVocabulary.PATH)) {
+			this.indexDirectory = ((Literal)statement.getObject()).stringValue().trim();
+			this.refreshSearcher();
+		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.REFRESH)) {
+			this.refresh = ((Literal)statement.getObject()).booleanValue();
+		}
+	}
+
+	@Override
+	public void createIndex() throws FusionException
+	{
+		
+		 try {
+			 if(directory==null) {
+					File indexDirFile = new File(indexDirectory);
+					if(!indexDirFile.exists()) {
+						indexDirFile.mkdir();	  
+						  
+					} else if(!indexDirFile.isDirectory()){
+						  throw new IllegalArgumentException("The index directory set: "
+									+ indexDirectory + " isn't a directory.");
+					}
+					directory = new SimpleFSDirectory(indexDirFile, null);
+				}
+			 
+			 this.indexWriter = new IndexWriter(directory , new StandardAnalyzer(Version.LUCENE_30), IndexWriter.MaxFieldLength.UNLIMITED);
+		  } catch (LockObtainFailedException e) {
+				String message = "Failed to obtain the lock.";
+				log.error(message);
+				throw new FusionException(message, e);
+			} catch (IOException e) {
+				String message = "I/O error when creating the Indexer.";
+				log.error(message);
+				throw new FusionException(message, e);
+			}
+			finally {
+				try {
+					this.indexWriter.close();
+				} catch(Exception e) {
+					log.error("Corrupt index: ", e);
+				}
+			}
+	}
+	
+	@Override
+	public void openIndex() throws FusionException {
+		try {
+			if(directory==null) {
+				File indexDirFile = new File(indexDirectory);
+				if(!indexDirFile.exists()) {
+					indexDirFile.mkdir();	  
+					  
+				} else if(!indexDirFile.isDirectory()){
+					  throw new IllegalArgumentException("The index directory set: "
+								+ indexDirectory + " isn't a directory.");
+				}
+				directory = new SimpleFSDirectory(indexDirFile, null);
+			}
+		
+			
+			 this.indexWriter = new IndexWriter(directory, new StandardAnalyzer(Version.LUCENE_30), false, IndexWriter.MaxFieldLength.UNLIMITED);
+		} catch (LockObtainFailedException e) {
+			String message = "Failed to obtain the lock.";
+			log.error(message);
+			throw new FusionException(message, e);
+		} catch (IOException e) {
+			createIndex();
+		}  
+	}
+
+	
+	
+	@Override
+	public void addIndividual(URI ind, RepositoryConnection con) throws RepositoryException {
+		
+		Document doc = indexIndividual(ind, con);
+		
+		List<Statement> stmts = SesameUtils.getStatements(ind, null, null, con);
+		URI obj;
+		for(Statement stmt : stmts) {
+			if(!stmt.getPredicate().equals(RDF.TYPE)) {
+				if(stmt.getObject() instanceof Literal) {
+					doc.add(new Field(stmt.getPredicate().toString(), ((Literal)stmt.getObject()).stringValue(), Field.Store.YES, Field.Index.ANALYZED));
+					// log.info("Indexed field: "+stmt.getPredicate().toString()+" = "+((Literal)stmt.getObject()).stringValue());
+					// skos patch - very clumsy, to be fixed
+					if(stmt.getPredicate().toString().equals("http://www.w3.org/2004/02/skos/core#altLabel")||
+							stmt.getPredicate().toString().equals("http://www.w3.org/2004/02/skos/core#prefLabel")||
+							stmt.getPredicate().toString().equals("http://www.w3.org/2004/02/skos/core#hiddenLabel")) {
+						doc.add(new Field(RDFS.LABEL.toString(), ((Literal)stmt.getObject()).stringValue(), Field.Store.YES, Field.Index.ANALYZED));
+						fieldNamesSet.add(RDFS.LABEL.toString());
+					}
+				} else {
+					if(stmt.getObject() instanceof URI) {
+						obj = (URI)stmt.getObject();
+						for(Statement stmt2: SesameUtils.getStatements(obj, RDFS.LABEL, null, con)) {
+							
+							doc.add(new Field(stmt.getPredicate().toString(), ((Literal)stmt2.getObject()).stringValue(), Field.Store.YES, Field.Index.ANALYZED));
+							fieldNamesSet.add(stmt.getPredicate().toString());
+						}
+					}
+				}
+			}
+		}
+		try {
+			this.indexWriter.addDocument(doc);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
+	public Map<String, Document> findClosestDocuments(
+			Map<String, List<String>> searchFieldValues, String[] searchFields, double threshold, 
+			String type) throws IOException {
+		
+		Map<String, Document> docs = new HashMap<String, Document>();
+	    Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_30);
+    
+	    try {
+	    	List<String> allFieldValues = new LinkedList<String>();
+	    	for(String key : searchFieldValues.keySet()) {
+	    		allFieldValues.addAll(searchFieldValues.get(key));
+	    	}
+	    	
+	    	String queryString = getTransducedQuery(AbstractLuceneIndexer.getConcatenatedString(allFieldValues));
+	    	Query query = null;
+    		QueryParser queryParser = new MultiFieldQueryParser(Version.LUCENE_30, searchFields, analyzer);
+    		query = queryParser.parse(queryString);
+    				    
+    		TopDocs hits;
+    		
+    		if(type==null) {
+    			hits = indexSearcher.search(query, this.getCutOff());
+    		} else {
+    			TermsFilter filter = new TermsFilter();
+    			filter.addTerm(new Term(RDF.TYPE.toString(), type));
+    			hits = indexSearcher.search(query, filter, this.getCutOff());
+    		}
+	    			    		
+    		if(hits.totalHits>0) {
+	    		Document doc;
+		    		
+	    		for(int i=0;i<hits.scoreDocs.length;i++) {
+	    			if((hits.scoreDocs[i].score>=threshold)) {
+	    				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
+	    				docs.put(doc.get("uri"), doc);
+	    			} else {
+	    				break;
+	    			}
+	    		}
+    		}
+	    } catch(ParseException e) {
+	    	e.printStackTrace();
+	    }
+			
+		return docs;
+		
+
+	}
+
+	/* (non-Javadoc)
+	 * @see uk.ac.open.kmi.fusion.index.LuceneSearchStrategy#findClosestDocuments(java.util.Map, double, java.lang.String)
+	 */
+	@Override
+	public Map<String, Document> findClosestDocuments(Map<String, List<String>> fields, double threshold, String type) throws IOException {
+		
+		return this.findClosestDocuments(fields, this.fieldNames, threshold, type);
+		
+	}
+	
+	/* (non-Javadoc)
+	 * @see uk.ac.open.kmi.fusion.index.LuceneSearchStrategy#findClosestDocumentsFuzzy(java.util.Map, double, java.io.PrintWriter, java.lang.String)
+	 */
+	public Map<String, Document> findClosestDocumentsFuzzy(Map<String, String> fields, double threshold, PrintWriter writer, String type) throws IOException {
+		Map<String, Document> docs = new HashMap<String, Document>();
+		Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_30);
+		
+		try {
+	    	for(String key : fields.keySet()) {
+
+	    		if(fields.get(key).trim().equals("")) continue;
+	    		String queryString = getTransducedQuery(fields.get(key));
+	    		FuzzyQuery query = new FuzzyQuery(new Term(key, queryString), 0.70f, 3);
+	    		
+	    		TopDocs hits;
+	    		
+	    		if(type==null) {
+	    			hits = indexSearcher.search(query, this.getCutOff());
+	    		} else {
+	    			TermsFilter filter = new TermsFilter();
+	    			filter.addTerm(new Term(RDF.TYPE.toString(), type));
+	    			//searcher.search(query, filter, results);
+	    			hits = indexSearcher.search(query, filter, this.getCutOff());
+	    		}
+	    		if(hits.totalHits==0) {
+	    			continue;
+	    		}
+      
+	    		Document doc;
+	    		
+	    		for(int i=0;i<hits.scoreDocs.length;i++) {
+	    			if((hits.scoreDocs[i].score>=threshold)) {
+	    				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
+	    				docs.put(doc.get("uri"), doc);
+	    				
+	    			} else {
+	    				break;
+	    			}
+	    		}
+	    		
+	    		
+	    	}
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		return docs;
+	}
+	
+	@Override
+	public IDataSource getEmbeddingDataSource() {
+		return embeddingDataSource;
+	}
+
+	@Override
+	public void setEmbeddingDataSource(IDataSource embeddingDataSource) {
+		this.embeddingDataSource = embeddingDataSource;
+	}
+	
+	/*public Map<String, Document> findClosestDocumentsJaroWinkler(Map<String, String> fields, double threshold, PrintWriter writer, String type) throws IOException {
+		Map<String, Document> docs = new HashMap<String, Document>();
+		Analyzer analyzer = new StandardAnalyzer();
+		
+		try {
+	    	for(String key : fields.keySet()) {
+
+	    		if(fields.get(key).trim().equals("")) continue;
+	    		String queryString = getTransducedQuery(fields.get(key));
+	    		QueryParser queryParser = new QueryParser(key, analyzer);
+	    		Query tmpQuery = queryParser.parse(queryString);
+	    		Query query = null;
+	    		if(tmpQuery instanceof BooleanQuery) {
+	    			BooleanQuery boolTmpQuery = (BooleanQuery) tmpQuery;
+	    			BooleanClause[] clauses = boolTmpQuery.getClauses();
+	    			BooleanQuery aggregatedQuery = new BooleanQuery(true);
+	    			if(queryString.toLowerCase().startsWith("news")) {
+	    				log.debug("here");
+	    			}
+	    			for(int i=0;i<clauses.length;i++) {
+	    				BooleanClause clause = clauses[i];
+	    				if(clause.getQuery() instanceof TermQuery) {
+	    					Term term = ((TermQuery)clause.getQuery()).getTerm();
+	    					JaroWinklerQuery queryJW = new JaroWinklerQuery(term, 0.85f, 4);
+	    					queryJW.rewriteIntoExisting(searcher.getIndexReader(), aggregatedQuery);
+	    				}
+	    			}
+	    			query = aggregatedQuery;
+	    			if(queryString.toLowerCase().startsWith("news")) {
+	    				BooleanClause[] clauses2 = aggregatedQuery.getClauses();
+	    				for(int i=0;i<clauses2.length;i++) {
+		    				BooleanClause clause = clauses2[i];
+		    				if(clause.getQuery() instanceof TermQuery) {
+		    					Term term = ((TermQuery)clause.getQuery()).getTerm();
+		    					log.debug(term.text());	    					
+		    				}
+		    			}
+	    			}
+	    		} else if(tmpQuery instanceof TermQuery) {
+	    			JaroWinklerQuery queryJW = new JaroWinklerQuery(((TermQuery)tmpQuery).getTerm(), 0.85f, 4);
+	    			query = queryJW;
+	    		} else {
+	    			throw new Exception("Parsed query should be either a boolean or a term query but instead is a "+tmpQuery.getClass().getCanonicalName());
+	    		}
+	    		if(query==null)
+	    			return docs;
+		    	Hits hits;
+		    		
+		    	if(type==null) {
+		    		hits = searcher.search(query);
+		    	} else {
+		    		TermsFilter filter = new TermsFilter();
+		    		filter.addTerm(new Term(RDF.TYPE.toString(), type));
+		    		//searcher.search(query, filter, results);
+		    		hits = searcher.search(query, filter);
+		    	}
+		    	if(hits.length()==0) {
+		    		continue;
+		    	}
+	       		Document doc;
+		   		
+		   		for(int i=0;i<hits.length();i++) {
+		   			if((hits.score(i)>=threshold)&&(i<=LuceneIndexer.CUT_OFF)) {
+		   				doc = hits.doc(i);
+		   				docs.put(doc.get("uri"), doc);
+		   				if(queryString.toLowerCase().startsWith("news")) {
+		   					log.debug(hits.score(i));
+		   					//displayExplanation(searcher.explain(query, hits.id(i)));
+		   				}
+		   			} else {
+		   				break;
+		   			}
+		    	}
+	    	}
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		return docs;
+	}*/
+	
+
+	/* (non-Javadoc)
+	 * @see uk.ac.open.kmi.fusion.index.LuceneSearchStrategy#findClosestDocumentsWithScores(java.util.Map, double, java.io.PrintWriter)
+	 */
+	public Map<String, SearchResult> findClosestDocumentsWithScores(Map<String, String> fields, double threshold, PrintWriter writer) throws IOException {
+			Map<String, SearchResult> docs = new HashMap<String, SearchResult>();
+			//Searcher searcher = new IndexSearcher(indexDirectory);
+		    Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_30);
+	    
+		    if(writer!=null)
+		    	writer.print("Query: ");
+		    
+		    try {
+		    	MultiFieldQueryParser queryParser;
+		    	
+		    	String[] queryFields = new String[fields.size()];
+		    	queryFields = fields.keySet().toArray(queryFields);
+		    	
+		    	queryParser = new MultiFieldQueryParser(Version.LUCENE_30, queryFields, analyzer);
+		    	
+		    	
+		    	String queryString = "";
+		    	
+		    	for(String key : fields.keySet()) {
+		    		queryString += (fields.get(key).trim()+" "); 
+		    	}
+		    	Query query = null;
+		    	//try {
+	    		//	query = queryParser.parse(getTransduced(queryString));
+	    		//} catch(ParseException e) {
+	    		query = queryParser.parse(getTransducedQuery(queryString));
+	    		//}
+	    		TopDocs hits;
+	    		hits = indexSearcher.search(query, this.getCutOff());
+	    		
+	    		Document doc;
+	    		SearchResult res;
+	    		for(int i=0;i<hits.scoreDocs.length;i++) {
+	    			if((hits.scoreDocs[i].score>=threshold)) {
+	    				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
+	    				res = new uk.ac.open.kmi.fusion.objectidentification.SearchResult(doc.get("uri"), doc, (double)hits.scoreDocs[i].score);
+	    				docs.put(doc.get("uri"), res);
+	    			} else {
+	    				break;
+	    			}
+	    		}
+		    } catch(ParseException e) {
+		    	e.printStackTrace();
+		    }
+
+			return docs;
+		}
+	
+	
+	  
+	
+	
+	/*public List<String> findClosest(BindingSet tuple) throws IOException {
+		List<String> res = new ArrayList<String>();
+		Searcher searcher = new IndexSearcher(indexDirectory);
+	    Analyzer analyzer = new StandardAnalyzer();
+  
+	    String type = "";
+	    URI ind;
+	    
+	    Value val = tuple.getValue("uri");
+	    if(val!=null) {
+	    	if(val instanceof URI) {
+	    		type = 
+	    	}
+	    }
+	    
+	    for(int i=0;i<tuple.getArity();i++) {
+	    	if(tuple.getLabelAt(i).equals("uri")) {
+	    		ind = (INamedIndividual)tuple.getElementAt(i);
+	    		type = getTypesList(ind);
+	    	}
+	    }
+	    return res;
+	}*/
+
+	/* (non-Javadoc)
+	 * @see uk.ac.open.kmi.fusion.index.LuceneSearchStrategy#getIndexDirectory()
+	 */
+	public String getIndexDirectory() {
+		return indexDirectory;
+	}
+
+	/* (non-Javadoc)
+	 * @see uk.ac.open.kmi.fusion.index.LuceneSearchStrategy#setIndexDirectory(java.lang.String)
+	 */
+	public void setIndexDirectory(String indexDirectory) {
+		this.indexDirectory = indexDirectory;
+	}
+
+	public void clearIndex() throws FusionException {
+		File dir = new File(this.indexDirectory);
+		if(dir.isDirectory()) {
+			File[] files = dir.listFiles();
+			for(File file : files) {
+				log.info(file.getName());
+				file.delete();
+				while(file.exists()) {
+					file.delete();
+				}
+				
+			}
+		}
+		
+		//this.current_index_writer.deleteDocuments((Term)null);
+	}
+	
+	/* (non-Javadoc)
+	 * @see uk.ac.open.kmi.fusion.index.LuceneSearchStrategy#refreshSearcher()
+	 */
+	@Override
+	public void refreshSearcher() {
+		try {
+			directory.close();
+			//if(directory==null) {
+				File indexDirFile = new File(indexDirectory);
+				directory = new SimpleFSDirectory(indexDirFile);
+			//}
+			
+			this.indexReader = IndexReader.open(directory);
+			this.indexSearcher = new IndexSearcher(directory);
+			Set<String> fieldNameCollection = new HashSet<String>(this.indexSearcher.getIndexReader().getFieldNames(FieldOption.ALL));
+			fieldNameCollection.remove("uri");
+			fieldNameCollection.remove(RDF.TYPE.toString());
+			this.fieldNames = new String[fieldNameCollection.size()];
+			this.fieldNames = fieldNameCollection.toArray(this.fieldNames);
+			
+		} catch (FileNotFoundException e) {
+			try {
+				createIndex();
+				this.indexSearcher = new IndexSearcher(directory);
+				Set<String> fieldNameCollection = new HashSet<String>(this.indexSearcher.getIndexReader().getFieldNames(FieldOption.ALL));
+				fieldNameCollection.remove("uri");
+				fieldNameCollection.remove(RDF.TYPE.toString());
+				this.fieldNames = new String[fieldNameCollection.size()];
+				this.fieldNames = fieldNameCollection.toArray(this.fieldNames);
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		} catch(Error e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void displayExplanation(Explanation expl) {
+		log.info(expl.toString());
+		Explanation[] details = expl.getDetails();
+		if(details!=null) {
+			for(int i=0;i<details.length;i++) {
+				displayExplanation(details[i]);
+			}
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see uk.ac.open.kmi.fusion.index.LuceneSearchStrategy#isFuzzySearchUsed()
+	 */
+	public boolean isFuzzySearchUsed() {
+		return isFuzzySearchUsed;
+	}
+
+	/* (non-Javadoc)
+	 * @see uk.ac.open.kmi.fusion.index.LuceneSearchStrategy#setFuzzySearchUsed(boolean)
+	 */
+	public void setFuzzySearchUsed(boolean isFuzzySearchUsed) {
+		this.isFuzzySearchUsed = isFuzzySearchUsed;
+	}
+	
+	/*private void collectPropertyNames(String type) {
+		
+		try {
+			if(this.indexSearcher == null) {
+				this.refreshSearcher();
+			}
+			
+			this.fieldNamesSet.clear();
+			
+			Term t = new Term(RDF.TYPE.toString(), type);
+			
+			TermQuery query = new TermQuery(t);
+			
+			TopDocs topDocs = indexSearcher.search(query, indexSearcher.maxDoc());
+			Document doc;
+			for(int i=0;i<topDocs.scoreDocs.length;i++) {
+				if((topDocs.scoreDocs[i].score+0.01)>1.0) {
+					doc = indexSearcher.doc(topDocs.scoreDocs[i].doc);
+					
+					List<Fieldable> fields = doc.getFields();
+					for(Fieldable f : fields) {
+						if(!(f.name().equals("uri")||f.name().equals(RDF.TYPE.toString()))) {
+							fieldNamesSet.add(f.name());
+						}
+					}
+				}
+			}
+			
+			this.fieldNames = new String[fieldNamesSet.size()];
+			this.fieldNames = fieldNamesSet.toArray(this.fieldNames);
+			
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+
+	}*/
+
+	@Override
+	public void prepare() throws FusionException {
+		try {
+			if(this.refresh&&(this.embeddingDataSource!=null)) {
+				openIndex();
+				this.indexWriter.deleteAll();
+				int i = 0;
+				log.info("Indexing started");
+				Set<Resource> res = SesameUtils.findAllIndividuals(embeddingDataSource.getConnection());
+				
+				for(Resource ind : res) {
+					i++;
+					//log.info((i++)+" out of "+res.size());
+					if(ind instanceof URI) {
+						addIndividual((URI)ind, embeddingDataSource.getConnection());
+					}
+					
+				}
+				closeIndex();
+				
+				log.info("Indexing finished: "+i+" individuals added");
+				this.refresh = false;
+			}
+			refreshSearcher();
+		} catch(Exception e) {
+			throw new FusionException("Could not prepare the intermediate data source", e);
+		}
+	}
+	
+	@Override
+	public void addDocument(Document doc, String type) throws CorruptIndexException, IOException {
+		
+		Document internalDoc = new Document();
+		
+		List<Fieldable> fields = doc.getFields();
+		
+		Field f;
+		String val;
+		Set<String> tokens;
+		for(Fieldable field : fields) {
+			if((field.name().equals("uri"))||(field.name().equals(RDF.TYPE.toString()))) {
+				internalDoc.add(new Field(field.name(), field.stringValue(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+			} else {
+				internalDoc.add(new Field(field.name(), field.stringValue(), Field.Store.YES, Field.Index.ANALYZED));
+			}
+			internalDoc.add(field);
+			
+		}
+		internalDoc.add(new Field(RDF.TYPE.toString(), type, Field.Store.YES, Field.Index.NOT_ANALYZED));
+		this.indexWriter.addDocument(internalDoc);
+		
+	}
+	
+	/* (non-Javadoc)
+	 * @see uk.ac.open.kmi.fusion.index.LuceneSearchStrategy#copyRelevantSubsetToBlocker(uk.ac.open.kmi.fusion.api.ILuceneBlocker, uk.ac.open.kmi.fusion.api.impl.ApplicationContext, java.util.Map)
+	 */
+	@Override
+	public int copyRelevantSubsetToBlocker(ILuceneBlocker blocker, ApplicationContext context, Map<String, AttributeProfileInDataset> targetAttributes) throws FusionException {
+		
+		try {
+			//if(this!=blocker) {
+				Set<String> tmpSet = new HashSet<String>();
+				
+				String type = context.getRestrictedTypesTarget().get(0);
+				if(this!=blocker) {
+					blocker.openIndex();
+					log.info("Started blocking");
+				}
+				AttributeProfileInDataset currentProfile;
+				long time = System.currentTimeMillis();
+				
+				Term term = new Term(RDF.TYPE.toString(), type);
+				TermQuery query = new TermQuery(term);
+				
+				TopDocs topDocs = indexSearcher.search(query, indexSearcher.maxDoc());
+				
+				
+				Document doc;
+				int total = 0;
+				String val;
+				List<String> tokens;
+				for(int i=0;i<topDocs.scoreDocs.length;i++) {
+					//if((topDocs.scoreDocs[i].score+0.01)>1.0) {
+						tmpSet.clear();
+						doc = indexSearcher.doc(topDocs.scoreDocs[i].doc);
+					
+						
+						List<Fieldable> fields = doc.getFields();
+						for(Fieldable f : fields) {
+							if(!(f.name().equals("uri")||f.name().equals(RDF.TYPE.toString()))) {
+								if(targetAttributes.containsKey(f.name())) {
+									currentProfile = targetAttributes.get(f.name());
+								} else {
+									currentProfile = new AttributeProfileInDataset(f.name());
+									targetAttributes.put(f.name(), currentProfile);
+								}
+								if(!tmpSet.contains(f.name())) {
+									currentProfile.increaseMentionedIn();
+									
+									tmpSet.add(f.name());
+								}
+								currentProfile.increasePropertyCount();
+								val = f.stringValue();
+								tokens = Utils.splitByStringTokenizer(val, " \t\n\r\f:(),-.");
+								currentProfile.setAverageNumberOfTokens(currentProfile.getAverageNumberOfTokens()+tokens.size());
+								if(currentProfile.isInteger()) {
+									try {
+										Integer.parseInt(val);
+									} catch(NumberFormatException e) {
+										currentProfile.setInteger(false);
+									}
+								}
+								if(currentProfile.isDouble()) {
+									try {
+										Double.parseDouble(val);
+									} catch(NumberFormatException e) {
+										currentProfile.setDouble(false);
+									}
+								}
+							} else if(f.name().equals("uri")) {
+								
+								if(f.stringValue().toLowerCase().endsWith("isaac_asimov")||
+										f.stringValue().toLowerCase().endsWith("oscar_wilde")) {
+									log.debug("here");
+									log.info(topDocs.scoreDocs[i].score);
+								}
+								
+								
+							}
+						}
+						
+						/*for(String tmp : tmpSet) {
+							Utils.increaseCounter(tmp, targetPropertiesMap);
+						}*/
+						if(this!=blocker) {
+							blocker.addDocument(doc, type);
+						}
+						if((i%10000)==0) {
+							log.info("Added "+i+" documents");
+						}
+						total++;
+						/*} else {
+						break;
+					}*/
+				}
+				for(String key : targetAttributes.keySet()) {
+					currentProfile = targetAttributes.get(key);
+					currentProfile.summarize();
+				}
+				log.info("Pre-selecting individuals to blocker complete: "+(System.currentTimeMillis()-time)+" ms");
+				log.info(total+" instances copied");
+				if(this!=blocker) {
+					log.info("Committing blocker");
+					time = System.currentTimeMillis();
+					blocker.commit();
+					blocker.refreshSearcher();
+					log.info("Blocker committed: "+(System.currentTimeMillis()-time)+" ms");
+					blocker.closeIndex();
+				}
+				return total;
+			/*} else {
+				// Just count relevant instances and return the number
+				Set<String> tmpSet = new HashSet<String>();
+				
+				String type = context.getRestrictedTypesTarget().get(0);
+				// blocker.openIndex();
+				// log.info("Started blocking");
+				
+				long time = System.currentTimeMillis();
+				
+				Term term = new Term(RDF.TYPE.toString(), type);
+				TermQuery query = new TermQuery(term);
+				
+				TopDocs topDocs = indexSearcher.search(query, indexSearcher.maxDoc());
+				
+				Document doc;
+				int total = 0;
+				for(int i=0;i<topDocs.scoreDocs.length;i++) {
+					//if((topDocs.scoreDocs[i].score+0.01)>1.0) {
+						tmpSet.clear();
+						doc = indexSearcher.doc(topDocs.scoreDocs[i].doc);
+					
+						
+						List<Fieldable> fields = doc.getFields();
+						for(Fieldable f : fields) {
+							if(!(f.name().equals("uri")||f.name().equals(RDF.TYPE.toString()))) {
+								tmpSet.add(f.name());
+							} else if(f.name().equals("uri")) {
+								
+								if(f.stringValue().toLowerCase().endsWith("isaac_asimov")||
+										f.stringValue().toLowerCase().endsWith("oscar_wilde")) {
+									log.debug("here");
+									log.info(topDocs.scoreDocs[i].score);
+								}
+								
+							}
+						}
+						
+						for(String tmp : tmpSet) {
+							Utils.increaseCounter(tmp, targetPropertiesMap);
+						}
+						
+						if((i%10000)==0) {
+							log.info("Counted "+i+" documents");
+						}
+						total++;
+						
+				} 
+				
+				log.info("Pre-selecting individuals complete: "+(System.currentTimeMillis()-time)+" ms");
+				log.info(total+" instances");
+				
+				time = System.currentTimeMillis();
+				
+				return total;
+				
+			} */
+		} catch(IOException e) {
+			throw new FusionException("Error when copying relevant instances to the indexer", e);
+		}
+		
+		
+	}
+
+
+
+	@Override
+	public void close() throws FusionException {
+		closeIndex();
+		
+	}
+	
+	
+	
+}

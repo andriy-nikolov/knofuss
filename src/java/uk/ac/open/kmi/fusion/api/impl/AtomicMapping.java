@@ -1,0 +1,261 @@
+package uk.ac.open.kmi.fusion.api.impl;
+
+
+import java.io.*;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.log4j.Logger;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.Literal;
+import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
+
+import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
+import uk.ac.open.kmi.fusion.util.SesameUtils;
+
+public class AtomicMapping extends FusionSet {
+	
+	double confidence;
+	double similarity;
+	
+	String contextType;
+	
+	URI sourceIndividual;
+	URI targetIndividual;
+	
+	String sourceLabel = null;
+	String targetLabel = null;
+	
+	boolean correct = true;
+	boolean accepted = false;
+	
+	public String getContextType() {
+		return contextType;
+	}
+
+	public void setContextType(String contextType) {
+		this.contextType = contextType;
+	}
+
+	private static Logger log = Logger.getLogger(AtomicMapping.class); 
+
+	public AtomicMapping() {
+		super();
+	}
+	
+		
+	public AtomicMapping(FusionMethodWrapper producedBy) {
+		super(producedBy);
+	}
+	
+
+	public double getConfidence() {
+		return confidence;
+	}
+
+	public void setConfidence(double confidence) {
+		this.confidence = confidence;
+	}
+
+	public URI getTargetIndividual() {
+		return this.targetIndividual;
+	}
+	
+	public URI getSourceIndividual() {
+		return this.sourceIndividual;
+	}
+	
+	public void setSourceIndividual(URI individual) {
+		this.sourceIndividual = individual;
+	}
+	
+	public void setTargetIndividual(URI individual) {
+		this.targetIndividual = individual;
+	}
+	
+	@Override
+	public Set<URI> getCandidateIndividuals() {
+		Set<URI> answer = new HashSet<URI>();
+		answer.add(sourceIndividual);
+		return answer;
+	}
+
+	@Override
+	public Set<URI> getMainKBIndividuals() {
+		Set<URI> answer = new HashSet<URI>();
+		answer.add(targetIndividual);
+		return answer;
+	}
+
+	public void writeToXML(PrintWriter writer) {
+		
+		writer.println("<comparison>");
+		
+		writer.println("\t<instance1>");
+		writer.print("\t<uri>");
+		writer.print(StringEscapeUtils.escapeXml(this.sourceIndividual.toString()));
+		writer.println("</uri>");
+		
+		try {
+			if(this.sourceLabel==null) {
+				sourceLabel = SesameUtils.getLabel(this.sourceIndividual, 
+						FusionEnvironment.getInstance().getFusionRepositoryConnection());
+			}
+			if(sourceLabel!=null) {
+				writer.print("\t<label>");
+				writer.print(StringEscapeUtils.escapeXml(sourceLabel));
+					writer.println("</label>");
+				}
+		} catch(RepositoryException e) {
+			e.printStackTrace();
+		}
+		
+		writer.println("\t</instance1>");
+			
+		writer.println("\t<instance2>");
+		writer.print("\t<uri>");
+		writer.print(StringEscapeUtils.escapeXml(this.targetIndividual.toString()));
+		writer.println("</uri>");
+		try {
+			if(this.targetLabel==null) {
+				targetLabel =	SesameUtils.getLabel(this.targetIndividual, 
+										FusionEnvironment.getInstance().getMainKbRepositoryConnection());
+			}
+					
+			if(targetLabel!=null) {
+					writer.print("\t<label>");
+					writer.print(StringEscapeUtils.escapeXml(targetLabel));
+					writer.println("</label>");
+			}
+		} catch(RepositoryException e) {
+			e.printStackTrace();
+		}
+		writer.println("\t</instance2>");
+		
+		writer.print("\t<confidence>");
+		writer.print(confidence);
+		writer.println("</confidence>");
+		writer.print("\t<similarity>");
+		writer.print(similarity);
+		writer.println("</similarity>");
+		writer.println("</comparison>");
+		
+	}
+
+	public double getSimilarity() {
+		return similarity;
+	}
+
+	public void setSimilarity(double similarity) {
+		this.similarity = similarity;
+	}
+
+	
+
+	public void addIndividual(URI individual, boolean isCandidate) {
+		if(isCandidate) {
+			setSourceIndividual(individual);
+		} else {
+			setTargetIndividual(individual);
+		}
+		
+	}
+
+	protected URI mergeIndividuals(URI ind1, URI ind2) throws RepositoryException {
+		try {
+			int i=0;
+			
+			RepositoryConnection con;
+			if(ind2.equals(this.targetIndividual)) {
+				con = FusionEnvironment.getInstance().getMainKbRepositoryConnection();
+			} else {
+				con = FusionEnvironment.getInstance().getFusionRepositoryConnection();
+			}
+			List<Statement> stmts = SesameUtils.getStatements(ind2, null, null, con);
+							
+			Statement addedStatement;
+			Calendar calendarBefore, calendarAfter;
+				
+			for(Statement stmt : stmts) {
+				calendarBefore = new GregorianCalendar();
+					
+				calendarAfter = new GregorianCalendar();
+				log.info("Statement insertion time cost: "+(calendarAfter.getTimeInMillis()-calendarBefore.getTimeInMillis()));
+				i++;
+			}
+					
+			stmts = SesameUtils.getStatements(null, null, ind2, con);
+								
+			for(Statement stmt : stmts) {
+				if(stmt.getPredicate().toString().equals(RDF.TYPE.toString())) {
+					continue;
+				}
+				if(stmt.getSubject() instanceof Resource) {
+					calendarBefore = new GregorianCalendar();
+					
+					calendarAfter = new GregorianCalendar();
+					log.info("Statement insertion time cost: "+(calendarAfter.getTimeInMillis()-calendarBefore.getTimeInMillis()));
+				}
+						
+				i++;
+			}
+			log.info("Copied "+i+" statements");
+		} catch(NullPointerException e) {
+			e.printStackTrace();
+		}
+		return ind1;
+	}
+
+	public String getSourceLabel() {
+		return sourceLabel;
+	}
+
+	public void setSourceLabel(String sourceLabel) {
+		this.sourceLabel = sourceLabel;
+	}
+
+	public String getTargetLabel() {
+		return targetLabel;
+	}
+
+	public void setTargetLabel(String targetLabel) {
+		this.targetLabel = targetLabel;
+	}
+
+	public boolean isCorrect() {
+		return correct;
+	}
+
+	public void setCorrect(boolean correct) {
+		this.correct = correct;
+	}
+	
+	
+
+	public boolean isAccepted() {
+		return accepted;
+	}
+
+	public void setAccepted(boolean accepted) {
+		this.accepted = accepted;
+	}
+
+	@Override
+	public String toString() {
+		
+		return this.sourceIndividual.toString()+" : "+this.targetIndividual.toString();
+	}
+	
+	
+	
+}
