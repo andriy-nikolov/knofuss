@@ -23,26 +23,26 @@
     xmlns:wgs84="http://www.w3.org/2003/01/geo/wgs84_pos#"
   xml:base="http://kmi.open.ac.uk/fusion/fusion">
 
-  <OWLIMDataSource rdf:ID="SourceOWLIMRepository">
+  <SesameDataSource rdf:ID="SourceOWLIMRepository">
     <configurationFile>source-owlim.ttl</configurationFile>
     <path>c:/dataset/OWLIM</path>
     <name>source-default</name>
     <refresh>true</refresh>
     <loadFrom rdf:resource="#EventsSource"/>
-  </OWLIMDataSource>
+  </SesameDataSource>
   
   <FileDump rdf:ID="EventsSource">
 	<dataFile>d:/work/dataset/events/eventful/events-subset.nt</dataFile>
   </FileDump>
     
-  <OWLIMDataSource rdf:ID="TargetOWLIMRepository">
+  <SesameDataSource rdf:ID="TargetOWLIMRepository">
     <configurationFile>target-owlim.ttl</configurationFile>
     <path>c:/dataset/OWLIM</path>
     <name>target-default</name>
     <refresh>true</refresh>
     <loadFrom rdf:resource="#EventsTarget"/>
     <intermediateStore rdf:resource="#LuceneIndexAllFields"/>
-  </OWLIMDataSource>
+  </SesameDataSource>
 
   <FileDump rdf:ID="EventsTarget">
 	<dataFile>d:/work/dataset/events/eventful/events-subset.nt</dataFile>
