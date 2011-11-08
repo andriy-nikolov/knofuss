@@ -93,7 +93,7 @@ public class CandidateSolutionPool {
 	private boolean useUnsupervisedFitness = true;
 	private boolean useThresholdCut = false;
 	
-	private boolean aligned = true;
+	private boolean aligned = false;
 	
 	private boolean completed = false;
 	

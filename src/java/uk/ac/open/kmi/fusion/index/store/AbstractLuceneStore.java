@@ -143,17 +143,22 @@ public abstract class AbstractLuceneStore implements
 		URI obj;
 		Field f;
 		
-		String value;
+		String value, additionalValue;
 		
 		for(Statement stmt : stmts) {
 			if(!stmt.getPredicate().equals(RDF.TYPE)) {
 				if(stmt.getObject() instanceof Literal) {
 					value = ((Literal)stmt.getObject()).stringValue();
-					if(value.contains("Lindsay Crouse")) {
-						log.debug("Lindsay Crouse");
-					}
+					
 					f = new Field(stmt.getPredicate().toString(), value, Field.Store.YES, Field.Index.ANALYZED);
+					
 					doc.add(f);
+					
+					if(value.contains("'")) {
+						additionalValue = value.replace("'", "");
+						f = new Field(stmt.getPredicate().toString(), additionalValue, Field.Store.YES, Field.Index.ANALYZED);
+					}
+					
 					/*if(((Literal)stmt.getObject()).stringValue().toLowerCase().contains("r2-d2")) {
 						f = new Field(stmt.getPredicate().toString(), "r2 d2", Field.Store.YES, Field.Index.ANALYZED);
 						doc.add(f);

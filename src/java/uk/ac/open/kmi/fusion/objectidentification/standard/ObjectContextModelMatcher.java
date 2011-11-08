@@ -166,7 +166,11 @@ public class ObjectContextModelMatcher {
 					List<Object> tmpList;
 					List<String> tmpStringList;
 					for(IAttribute attribute : values.keySet()) {
-						//if(instanceModel.getVariablePathMapTarget().containsKey(key)) {
+
+						if(((AtomicAttribute)attribute).getPropertyPath().startsWith(Utils.WGS84_NS)) {
+							continue;
+						}
+						
 						tmpList = (List<Object>)values.get(attribute);
 						tmpStringList = new ArrayList<String>();
 						valuesByPropertyPath.put(((AtomicAttribute)attribute).getPropertyPath(), tmpStringList);
@@ -175,12 +179,15 @@ public class ObjectContextModelMatcher {
 								tmpStringList.add((String)tmp);
 							}
 						}
-						//}
+
 					}
 					
 					try {
 						
-						currentTime = System.currentTimeMillis(); 
+						currentTime = System.currentTimeMillis();
+						
+						
+						
 						candidateDocs = indexer.findClosestDocuments(valuesByPropertyPath, indexer.getThreshold(), type);
 						totalTimeSearch+=(System.currentTimeMillis()-currentTime);
 						

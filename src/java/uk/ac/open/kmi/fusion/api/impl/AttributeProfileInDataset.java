@@ -3,6 +3,7 @@ package uk.ac.open.kmi.fusion.api.impl;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
+import uk.ac.open.kmi.common.utils.Utils;
 import uk.ac.open.kmi.fusion.api.impl.valuematching.DateValueMatchingFunction;
 
 public class AttributeProfileInDataset {
@@ -34,8 +35,16 @@ public class AttributeProfileInDataset {
 			attribute.setType(AttributeType.INTEGER);
 		} else if(isDouble) {
 			attribute.setType(AttributeType.CONTINUOUS);
-			attribute.setMax(max);
-			attribute.setMin(min);
+			if(this.propertyPath.contains(Utils.WGS84_NS+"long")) {
+				attribute.setMax(180);
+				attribute.setMin(-180);
+			} else if(this.propertyPath.contains(Utils.WGS84_NS+"lat")) {
+				attribute.setMax(90);
+				attribute.setMin(-90);
+			} else {
+				attribute.setMax(max);
+				attribute.setMin(min);
+			}
 		} else if(isDate) {
 			attribute.setType(AttributeType.DATE);
 		} else if(averageNumberOfTokens>5) {
