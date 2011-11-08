@@ -3,6 +3,7 @@ package uk.ac.open.kmi.fusion.api.impl.valuematching;
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.AttributeType;
+import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
 import uk.ac.open.kmi.fusion.objectidentification.standard.SimMetricsObjectIdentificationUtils;
 import uk.ac.shef.wit.simmetrics.similaritymetrics.Jaro;
 import uk.ac.shef.wit.simmetrics.similaritymetrics.Levenshtein;
@@ -23,12 +24,10 @@ public class DoubleValueMatchingFunction implements IValueMatchingFunction<Strin
 
 	@Override
 	public double getSimilarity(IAttribute attr1, IAttribute attr2, String value1, String value2) {
-		double interval = 360;
-		
+		double interval = Math.max(((AtomicAttribute)attr1).getMax(), ((AtomicAttribute)attr1).getMax())
+							-Math.min(((AtomicAttribute)attr1).getMin(), ((AtomicAttribute)attr1).getMin());
 		double val1 = Double.parseDouble(value1);
 		double val2 = Double.parseDouble(value2);
-		
-		
 		return 1-Math.abs(val1-val2)/interval;
 	}
 
