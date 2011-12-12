@@ -38,7 +38,7 @@ import uk.ac.open.kmi.fusion.objectidentification.*;
 import uk.ac.open.kmi.fusion.objectidentification.standard.*;
 import uk.ac.open.kmi.fusion.util.*;
 
-public class ObjectContextModelMatcherForGeneticExperimental {
+public class ObjectContextModelMatcherForGeneticExperimental2 {
 	ObjectContextModel instanceModel;
 	Set<LuceneBackedObjectContextWrapper> sourceResources;
 	Map<String, LuceneBackedObjectContextWrapper> sourceResourcesTable;
@@ -58,9 +58,9 @@ public class ObjectContextModelMatcherForGeneticExperimental {
 	
 	// boolean useSampling = false;
 	
-	private static Logger log = Logger.getLogger(ObjectContextModelMatcherForGeneticExperimental.class);
+	private static Logger log = Logger.getLogger(ObjectContextModelMatcherForGeneticExperimental2.class);
 	
-
+	
 
 	private void init() {
 		sourceResources = new HashSet<LuceneBackedObjectContextWrapper>();
@@ -71,11 +71,11 @@ public class ObjectContextModelMatcherForGeneticExperimental {
 		
 	}
 		
-	public ObjectContextModelMatcherForGeneticExperimental() {
+	public ObjectContextModelMatcherForGeneticExperimental2() {
 		init();
 	}
 	
-	private int calculateSimilarities(boolean useSample) {
+	private int calculateSimilarities(boolean useSample, boolean isFinal) {
 		int i;//, j;
 		IObjectContextWrapper resTarget;
 		
@@ -101,8 +101,6 @@ public class ObjectContextModelMatcherForGeneticExperimental {
 			// long totalTimeSearch = 0;
 			long totalTimeComparison = 0;
 			long totalTimeRetrieval = 0;
-			
-			double epsilon = 0.0000001;
 			// long initTime = System.currentTimeMillis();
 			// String type = instanceModel.getRestrictedTypesTarget().get(0).toString();
 			//log.info("Concept type : "+type);
@@ -118,6 +116,8 @@ public class ObjectContextModelMatcherForGeneticExperimental {
 			double totalSimilarity = 0;
 			double averageSimilarity = 0;
 			double maxSimilarity = 0;
+			
+			double epsilon = 0.0000001;
 			
 			CachedPair cachedPair;
 			
@@ -135,10 +135,10 @@ public class ObjectContextModelMatcherForGeneticExperimental {
 				similarity = instanceModel.getSimilarity(pair);
 				pair.setSimilarity(similarity);
 				// System.out.println("done");
-				/*if(resSource.getIndividual().toString().endsWith("Person990")&&
-						resTarget.getIndividual().toString().endsWith("Person991")) {
+				if(resSource.getIndividual().toString().equals("http://data.nytimes.com/N78390312302609901431")&&
+						resTarget.getIndividual().toString().equals("http://sws.geonames.org/1275004/")) {
 					log.info("Person990 vs Person991 similarity: " + similarity);
-				}*/
+				}
 				
 				totalSimilarity+=similarity;
 				if(similarity>maxSimilarity) {
@@ -147,12 +147,14 @@ public class ObjectContextModelMatcherForGeneticExperimental {
 				
 				totalTimeComparison+=(System.currentTimeMillis()-currentTime);
 					
-				// if(similarity>=threshold) {
-				preliminaryResults.put(cachedPair.getId(), similarity);
-				Utils.addToSetMap(cachedPair.getCandidateInstance().getId(), cachedPair.getId(), compsBySourceInstance);
+				//if(similarity>=epsilon) {
+				
+					preliminaryResults.put(cachedPair.getId(), similarity);
+					Utils.addToSetMap(cachedPair.getCandidateInstance().getId(), cachedPair.getId(), compsBySourceInstance);
 					// Utils.addToSetMap(cachedPair.getTargetInstance().getId(), cachedPair.getId(), compsByTargetInstance);
 					// results.put(cachedPair.getId(), similarity);	
 				// }
+				//}
 				i++;
 			}
 			
@@ -162,46 +164,49 @@ public class ObjectContextModelMatcherForGeneticExperimental {
 			}
 			log.info("similarity: average: "+averageSimilarity+" max: "+maxSimilarity);
 			
-			SimilarityComparator comparator = new SimilarityComparator(preliminaryResults);
-			List<Integer> sortedPairIds;
-			Set<Integer> pairIds;
-			Integer selectedPairId;
-			double sim, bestSim;
-			
-			CachedPair testPair;
-			
-			for(Integer sourceId : compsBySourceInstance.keySet()) {
+			if(isFinal) {
+				SimilarityComparator comparator = new SimilarityComparator(preliminaryResults);
+				List<Integer> sortedPairIds;
+				Set<Integer> pairIds;
+				Integer selectedPairId;
+				double sim, bestSim;
 				
-				pairIds = compsBySourceInstance.get(sourceId);
-				sortedPairIds = new ArrayList<Integer>(pairIds);
-				Collections.sort(sortedPairIds, comparator);
-				selectedPairId = sortedPairIds.get(0);
-				testPair = cache.getCachedPairById(selectedPairId);
-				if(testPair.getCandidateInstance().getUri().toString().equals("http://data.nytimes.com/N45527707190659418771")) {
-					log.info("here");
-				}
+				CachedPair testPair;
 				
-				bestSim = preliminaryResults.get(selectedPairId);
-				// epsilon = 1-sim;
-				results.put(selectedPairId, bestSim);
-				for(i = 1;i<sortedPairIds.size();i++) {
-					selectedPairId = sortedPairIds.get(i);
-					sim = preliminaryResults.get(selectedPairId);
-					if((bestSim-sim)<=epsilon) {
-						results.put(selectedPairId, sim);
-					} else {
-						testPair = cache.getCachedPairById(selectedPairId);
-						if(testPair.getCandidateInstance().getUri().toString().equals("http://data.nytimes.com/N45527707190659418771")) {
-							if(testPair.getTargetInstance().getUri().toString().equals("http://dbpedia.org/resource/Potomac_River")) {
-								log.info("correct sim: "+preliminaryResults.get(selectedPairId));
-								log.info("incorrect pair: "+preliminaryResults.get(selectedPairId));
-								log.info(cache.getCachedPairById(sortedPairIds.get(0)).getCandidateInstance().getUri().toString());
-								log.info(cache.getCachedPairById(sortedPairIds.get(0)).getTargetInstance().getUri().toString());
+				for(Integer sourceId : compsBySourceInstance.keySet()) {
+					
+					pairIds = compsBySourceInstance.get(sourceId);
+					sortedPairIds = new ArrayList<Integer>(pairIds);
+					Collections.sort(sortedPairIds, comparator);
+					selectedPairId = sortedPairIds.get(0);
+					testPair = cache.getCachedPairById(selectedPairId);
+					if(testPair.getCandidateInstance().getUri().toString().equals("http://data.nytimes.com/N45527707190659418771")) {
+						log.info("here");
+					}
+					
+					bestSim = preliminaryResults.get(selectedPairId);
+					if(bestSim > epsilon) {
+						if(isValid(instanceModel, testPair)) {
+							results.put(selectedPairId, bestSim);
+						}
+						for(i = 1;i<sortedPairIds.size();i++) {
+							selectedPairId = sortedPairIds.get(i);
+							sim = preliminaryResults.get(selectedPairId);
+							testPair = cache.getCachedPairById(selectedPairId);
+							
+							if(Math.abs(sim-bestSim)<=epsilon) {
+								if(isValid(instanceModel, testPair)) {
+									results.put(selectedPairId, sim);
+								} 
+							} else {
+								
+								break;
 							}
-						} 
-						// break;
+						}
 					}
 				}
+			} else {
+				results.putAll(preliminaryResults);
 			}
 			
 		} catch(Exception e) {
@@ -211,6 +216,22 @@ public class ObjectContextModelMatcherForGeneticExperimental {
 		return comparisons;
 	}
 	
+	private boolean isValid(ObjectContextModel model, CachedPair pair) {
+		
+		List<VariableComparisonSpecification> specs = model.getVariableComparisonSpecifications();
+		IObjectContextWrapper resSource = pair.getCandidateInstance().getObjectContextWrapper(instanceModel, true);
+		IObjectContextWrapper resTarget = pair.getTargetInstance().getObjectContextWrapper(instanceModel, false);
+		for(VariableComparisonSpecification spec : specs) {
+			List<? extends Object> sourceValues = resSource.getValuesByAttribute(spec.getSourceAttribute());
+			List<? extends Object> targetValues = resTarget.getValuesByAttribute(spec.getTargetAttribute());
+			
+			if((sourceValues==null)||(targetValues==null)) {
+				return false;
+			}
+		}
+		
+		return true;
+	}
 	
 	private int calculateNeighborhoodGrowth(Integer sourceId, Set<Integer> comparisonSet, Map<Integer, Double> preliminaryResults) {
 		double bestSimilarity = 0;
@@ -242,7 +263,7 @@ public class ObjectContextModelMatcherForGeneticExperimental {
 	}
 	
 		
-	public Map<Integer, Double> execute(double threshold, MemoryInstanceCache cache, boolean useSample) {
+	public Map<Integer, Double> execute(double threshold, MemoryInstanceCache cache, boolean useSample, boolean isFinal) {
 		this.cache = cache;
 		this.threshold = threshold;
 //		properties.clear();
@@ -273,7 +294,7 @@ public class ObjectContextModelMatcherForGeneticExperimental {
 		
 		//log.info("Calculating similarities... "+this.instanceModel.getRestrictedTypesTarget().get(0));
 		Calendar calendarBefore = new GregorianCalendar();
-		int comparisons = calculateSimilarities(useSample);
+		int comparisons = calculateSimilarities(useSample, isFinal);
 		Calendar calendarAfter = new GregorianCalendar();
 		log.info("Comparisons: "+comparisons);
 		log.info("Time cost: "+(calendarAfter.getTimeInMillis()-calendarBefore.getTimeInMillis()));

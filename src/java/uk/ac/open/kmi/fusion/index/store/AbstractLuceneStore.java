@@ -24,7 +24,9 @@ import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 
+import uk.ac.open.kmi.common.utils.Utils;
 import uk.ac.open.kmi.fusion.util.FusionException;
+import uk.ac.open.kmi.fusion.util.KnoFussUtils;
 import uk.ac.open.kmi.fusion.util.OAEIUtils;
 import uk.ac.open.kmi.fusion.util.SesameUtils;
 
@@ -148,8 +150,10 @@ public abstract class AbstractLuceneStore implements
 		for(Statement stmt : stmts) {
 			if(!stmt.getPredicate().equals(RDF.TYPE)) {
 				if(stmt.getObject() instanceof Literal) {
-					value = ((Literal)stmt.getObject()).stringValue();
-					
+					value = KnoFussUtils.removeDiacriticalMarks(((Literal)stmt.getObject()).stringValue());
+					if(value.toLowerCase().contains("las vegas")) {
+						/*System.out.println();*/
+					}
 					f = new Field(stmt.getPredicate().toString(), value, Field.Store.YES, Field.Index.ANALYZED);
 					
 					doc.add(f);
@@ -165,10 +169,14 @@ public abstract class AbstractLuceneStore implements
 					}*/
 					// log.debug("Indexed field: "+stmt.getPredicate().toString()+" = "+((Literal)stmt.getObject()).stringValue());
 					// skos patch - very clumsy, to be fixed
+					
 					if(stmt.getPredicate().toString().equals("http://www.w3.org/2004/02/skos/core#altLabel")||
 							stmt.getPredicate().toString().equals("http://www.w3.org/2004/02/skos/core#prefLabel")||
-							stmt.getPredicate().toString().equals("http://www.w3.org/2004/02/skos/core#hiddenLabel")) {
-						f = new Field(RDFS.LABEL.toString(), ((Literal)stmt.getObject()).stringValue(), Field.Store.YES, Field.Index.ANALYZED);
+							stmt.getPredicate().toString().equals("http://www.w3.org/2004/02/skos/core#hiddenLabel")||
+							stmt.getPredicate().toString().equals(Utils.FOAF_NS+"name")||
+							stmt.getPredicate().toString().equals("http://www.geonames.org/ontology#name")||
+							stmt.getPredicate().toString().equals("http://www.geonames.org/ontology#alternateName")) {
+						f = new Field(RDFS.LABEL.toString(), value, Field.Store.YES, Field.Index.ANALYZED);
 						doc.add(f);
 					}
 				} else {

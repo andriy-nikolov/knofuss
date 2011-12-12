@@ -58,11 +58,13 @@ public class StandardObjectIdentificationMethod implements IObjectIdentification
 		List<AtomicMapping> mappingList = new ArrayList<AtomicMapping>();
 		List<AtomicMapping> tmpList;
 		try {
-			ObjectContextModelMatcher contextModelMatcher;
+			// ObjectContextModelMatcher contextModelMatcher;
+			ObjectContextModelMatcherThresholdBased contextModelMatcher;
 			
 			
 			// contextModelMatcher = new ObjectContextModelMatcher(ontoModel);
-			contextModelMatcher = new ObjectContextModelMatcher();
+			// contextModelMatcher = new ObjectContextModelMatcher();
+			contextModelMatcher = new ObjectContextModelMatcherThresholdBased();
 			
 			contextModelMatcher.setMultiOntologyCase(FusionEnvironment.isMultiOntologyCase);
 			for(FusionConfigurationObject object : context.getObjectModels()) {
@@ -123,6 +125,7 @@ public class StandardObjectIdentificationMethod implements IObjectIdentification
 
 			if(goldStandardMissed.contains(key)) {
 				tp++;
+				mapping.setCorrect(true);
 				goldStandardMissed.remove(key);
 			} else {
 				fp++;

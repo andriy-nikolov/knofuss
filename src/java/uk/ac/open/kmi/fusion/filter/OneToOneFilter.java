@@ -8,10 +8,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Literal;
+import org.openrdf.model.URI;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
@@ -30,6 +32,7 @@ import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
 import uk.ac.open.kmi.fusion.api.impl.FusionMethodWrapper;
 import uk.ac.open.kmi.fusion.api.impl.valuematching.SetDifferenceValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.valuematching.ValueMatchingFunctionFactory;
+import uk.ac.open.kmi.fusion.util.KnoFussUtils;
 
 public class OneToOneFilter implements IDatasetMatchingMethod {
 
@@ -52,7 +55,8 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 	}
 	
 	private static final AtomicMappingSimilarityComparator mappingComparator = new AtomicMappingSimilarityComparator();
-	private static final double epsilon = 0.000000000001;
+	// private static final double epsilon = 0.000000000001;
+	private static final double epsilon = 0.000000000000001;
 	
 	private Set<String> almostSameSourceInstances;
 	private Set<String> almostSameTargetInstances;
@@ -110,11 +114,11 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 		for(AtomicMapping mapping : mappingsToFilter) {
 			Utils.addToSetMap(mapping.getSourceIndividual().toString(), mapping, mappingsByUri);
 		}
-		
+		int removedGoodOnes = 0;
 		List<Set<AtomicMapping>> doubtfulSetList = new ArrayList<Set<AtomicMapping>>();
 		
 		Set<AtomicMapping> doubtfulMappings;
-		Set<AtomicMapping> mappingsToRemove = new HashSet<AtomicMapping>();
+		
 		for(String sourceUri : mappingsByUri.keySet()) {
 			doubtfulMappings = mappingsByUri.get(sourceUri);
 			if(doubtfulMappings.size()>1) {
@@ -128,6 +132,8 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 			}
 		}
 		
+		/*mappingsByUri.clear();
+		
 		for(AtomicMapping mapping : mappingsToFilter) {
 			Utils.addToSetMap(mapping.getTargetIndividual().toString(), mapping, mappingsByUri);
 		}
@@ -137,43 +143,130 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 			if(doubtfulMappings.size()>1) {
 				//
 				doubtfulSetList.add(doubtfulMappings);
-				/*almostSameMappingSets.add(doubtfulMappings);
+				almostSameMappingSets.add(doubtfulMappings);
 				for(AtomicMapping doubtfulMapping : doubtfulMappings) {
 					almostSameSourceInstances.add(doubtfulMapping.getSourceIndividual().toString());
 					almostSameTargetInstances.add(doubtfulMapping.getTargetIndividual().toString());
-				}*/
+				}
 				// mappingsToRemove.addAll(filterDoubtfulMappings(doubtfulMappings));
 			}
-		}
+		}*/
 		
-		DoubtfulSetSimilarityComparator comparator = new DoubtfulSetSimilarityComparator();
-		Collections.sort(doubtfulSetList, comparator);
+		mappingsByUri = null;
+		
+		int countTmp = 0;
 		
 		for(Set<AtomicMapping> doubtfulSet : doubtfulSetList) {
-			doubtfulSet.removeAll(mappingsToRemove);
-			if(doubtfulSet.size()>1) {
-				mappingsToRemove.addAll(filterDoubtfulMappings(doubtfulSet));
+			
+			for(AtomicMapping mapping : doubtfulSet) {
+				if( mapping.getTargetIndividual().toString().equals("http://sws.geonames.org/5282825/")&&
+						mapping.getSourceIndividual().toString().equals("http://data.nytimes.com/N71660314463312318041")
+						) {
+					log.info("here: "+doubtfulSet.size());
+					countTmp ++;
+				}
 			}
 		}
+			
+		log.info("Participated in "+countTmp+" doubtful sets");
+		
+		Set<AtomicMapping> mappingsToRemove = new HashSet<AtomicMapping>();
+		DoubtfulSetSimilarityComparator comparator = new DoubtfulSetSimilarityComparator();
+		Collections.sort(doubtfulSetList, comparator);
+		removedGoodOnes = 0;
+		List<AtomicMapping> filteredDoubtfulMappings;
+		
+		countTmp = 0;
+		int countValid = 0;
+		for(Set<AtomicMapping> doubtfulSet : doubtfulSetList) {
+			
+			for(AtomicMapping mapping : doubtfulSet) {
+				if( mapping.getTargetIndividual().toString().equals("http://sws.geonames.org/5282825/")&&
+						mapping.getSourceIndividual().toString().equals("http://data.nytimes.com/N71660314463312318041")
+						) {
+					log.info("here: "+doubtfulSet.size());
+					countTmp ++;
+				}
+			}
+			
+			for(AtomicMapping mapping : doubtfulSet) {
+				if(mapping.isCorrect()) {
+					countValid ++;
+					break;
+				}
+			}
+			
+			doubtfulSet.removeAll(mappingsToRemove);
+			if(doubtfulSet.size()>1) {
+				filteredDoubtfulMappings = filterDoubtfulMappings(doubtfulSet); 
+				mappingsToRemove.addAll(filteredDoubtfulMappings);
+				for(AtomicMapping mapping : filteredDoubtfulMappings) {
+					
+					if(mapping.isCorrect()) {
+						removedGoodOnes++;
+					}
+				}
+			}
+			
+		}
+		log.info("Valid "+countValid+" almost same sets out of "+doubtfulSetList.size());
+		log.info("Participated in "+countTmp+" doubtful sets out of "+doubtfulSetList.size());
+		
+		log.info("Removed good ones when processing discriminative cases: "+removedGoodOnes);
 		
 		log.info("Processed discriminative cases: "+countDiscriminativeCases);
 		log.info("Out of them all wrong: "+allWrongCases);
 		log.info("Made errors: "+this.countChooseBestErrors);
+		
+		countTmp = 0;
+		countValid = 0;
+		for(Set<AtomicMapping> almostSameSet : almostSameMappingSets) {
+			for(AtomicMapping mapping : almostSameSet) {
+				if(mapping.getSourceIndividual().toString().equals("http://data.nytimes.com/N71660314463312318041")) {
+					countTmp ++;
+					break;
+				}
+			}
+			
+			for(AtomicMapping mapping : almostSameSet) {
+				if(mapping.isCorrect()) {
+					countValid ++;
+					break;
+				}
+			}
+		}
+		
+		log.info("Participated in "+countTmp+" almost same sets out of "+almostSameMappingSets.size());
+		
+		log.info("Valid "+countValid+" almost same sets out of "+almostSameMappingSets.size());
 		
 		if(!almostSameMappingSets.isEmpty()) {
 			collectProfiles(true);
 			collectProfiles(false);
 			
 			AtomicMapping best;
+			removedGoodOnes = 0;
 			for(Set<AtomicMapping> almostSameSet : almostSameMappingSets) {
 				best = findTheBestMapping(almostSameSet);
 				if(best!=null) {
 					almostSameSet.remove(best);
 				}
+				
+				for(AtomicMapping mapping : almostSameSet) {
+					
+					if(mapping.isCorrect()) {
+						removedGoodOnes++;
+					}
+				}
+				
 				mappingsToRemove.addAll(almostSameSet);
 			}
+			
+			log.info("Removed good ones when processing non-discriminative cases: "+removedGoodOnes);
+			
 		}
-		int removedGoodOnes = 0;
+		
+		removedGoodOnes = 0;
 		for(AtomicMapping mapping : mappingsToRemove) {
 		
 			if(mapping.isCorrect()) {
@@ -196,10 +289,22 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 		AtomicMapping best = mappingsToRemove.get(mappingsToRemove.size()-1); 
 		AtomicMapping secondBest = mappingsToRemove.get(mappingsToRemove.size()-2);
 		AtomicMapping actuallyCorrect = null;
+		
+		int j = 0;
 		for(AtomicMapping mapping : mappingsToRemove) {
 			if(mapping.isCorrect()) {
 				actuallyCorrect = mapping;
+				j++;
 			}
+			
+			if(mapping.getTargetIndividual().toString().equals("http://sws.geonames.org/5282825/")&&
+					mapping.getSourceIndividual().toString().equals("http://data.nytimes.com/N71660314463312318041")
+					) {
+				log.info("here");
+			}
+		}
+		if(j>1) {
+			log.info(j);
 		}
 		
 		if(best.getSimilarity()-secondBest.getSimilarity()>=epsilon) {
@@ -219,18 +324,44 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 					this.allWrongCases ++;
 				}
 			}
+			
+			/*for(AtomicMapping mapping : mappingsToRemove) {
+				if(mapping.isCorrect()) {
+					log.info("Error: removing an actually correct mapping");
+				}
+			}*/
+			
 		} else {
 			
 			Set<AtomicMapping> almostTheSame = new HashSet<AtomicMapping>();
+			
+			if(!mappingsToRemove.get(mappingsToRemove.size()-1).equals(best)) {
+				log.error("here");
+			}
+			
 			almostTheSame.add(best);
 			mappingsToRemove.remove(best);
-			for(int i=1;i<mappingsToRemove.size();i++) {
-				secondBest = mappingsToRemove.get(mappingsToRemove.size()-i-1);
+			
+			int limit = mappingsToRemove.size();
+			for(int i=0;i<limit;i++) {
+				secondBest = mappingsToRemove.get(mappingsToRemove.size()-1);
 				if(best.getSimilarity()-secondBest.getSimilarity()<epsilon) {
 					almostTheSame.add(secondBest);
 					mappingsToRemove.remove(secondBest);
 				} else {
+					if(mappingsToRemove.contains(actuallyCorrect)) {
+						log.info(mappingsToRemove.indexOf(actuallyCorrect));
+						log.info("Best similarity: "+best.getSimilarity());
+						log.info("Actually correct: "+actuallyCorrect.getSimilarity());
+					}
 					break;
+					
+				}
+			}
+			
+			for(AtomicMapping mapping : mappingsToRemove) {
+				if(mapping.isCorrect()) {
+					log.info("Error: removing an actually correct mapping");
 				}
 			}
 			
@@ -242,63 +373,176 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 				this.almostSameMappingSets.add(almostTheSame);
 			}
 			
+			
 		}
+		
+		
 		return mappingsToRemove;
 	}
 	
 	private AtomicMapping findTheBestMapping(Set<AtomicMapping> mappings) {
 		
-		IValueMatchingFunction<String> function = ValueMatchingFunctionFactory.getInstance("l2 levenshtein");
+		// IValueMatchingFunction<String> function = ValueMatchingFunctionFactory.getInstance("l2 levenshtein");
+		IValueMatchingFunction<String> function = ValueMatchingFunctionFactory.getInstance("overlap");
 		countAlmostSame++;
 		//IValueMatchingFunction<String> function = SetDifferenceValueMatchingFunction.getInstance();
 		
 		AtomicMapping bestMapping = null;
-		double bestSim = -1;
-		double sim;
+		double bestSim = -1.0;
+		double sim = 0;
 		AtomicMapping actuallyCorrect = null;
 		double actuallyCorrectSim = 0;
+		
+		Set<URI> sourceIndividuals = new HashSet<URI>();
+		Set<URI> targetIndividuals = new HashSet<URI>();
+		Boolean sourceIndividualIsACommonOne = null;
+		
+		boolean useGeoProfiles = true;
 		for(AtomicMapping mapping : mappings) {
+			if(mapping.getTargetIndividual().toString().equals("http://sws.geonames.org/5282825/")&&
+					mapping.getSourceIndividual().toString().equals("http://data.nytimes.com/N71660314463312318041")
+					) {
+				log.info("here");
+			}
+			
+			sourceIndividuals.add(mapping.getSourceIndividual());
+			targetIndividuals.add(mapping.getTargetIndividual());
+			
+			if(!(this.geoProfiles.containsKey(mapping.getSourceIndividual().toString())
+					&&this.geoProfiles.containsKey(mapping.getTargetIndividual().toString()))) {
+				useGeoProfiles = false;
+			}
+			
+		}
+		
+		if(sourceIndividuals.size()==1) {
+			sourceIndividualIsACommonOne = new Boolean(true);
+		} else if(targetIndividuals.size()==1) {
+			sourceIndividualIsACommonOne = new Boolean(false);
+		} 
+		
+		Set<String> set1 = new HashSet<String>();
+		Set<String> set2 = new HashSet<String>();
+		Set<String> overlapTokens = new HashSet<String>();
+		
+		double denominator;
+		
+		Map<AtomicMapping, Double> sims = new HashMap<AtomicMapping, Double>();
+		Map<AtomicMapping, Integer> profileSizes = new HashMap<AtomicMapping, Integer>();
+		
+		for(AtomicMapping mapping : mappings) {
+			set1.clear();
+			set2.clear();
 			
 			if(profiles.containsKey(mapping.getSourceIndividual().toString())
 					&&profiles.containsKey(mapping.getTargetIndividual().toString())) {
 				
-				sim = function.getSimilarity(composedAttribute, composedAttribute, profiles.get(
-						mapping.getSourceIndividual().toString()), 
-						profiles.get(mapping.getTargetIndividual().toString()));
+				set1.clear();
+				set2.clear();
+				overlapTokens.clear();
+				
+				set1.addAll(tokenize(profiles.get(mapping.getSourceIndividual().toString())));
+				set2.addAll(tokenize(profiles.get(mapping.getTargetIndividual().toString())));
+				overlapTokens.addAll(set1);
+				overlapTokens.retainAll(set2);
+				
+				if(sourceIndividualIsACommonOne!=null) {
+					if(sourceIndividualIsACommonOne) {
+						denominator = set1.size();
+					} else {
+						denominator = set2.size();
+					}
+				} else {
+					denominator = Math.min(set1.size(), set2.size());
+				}
+				
+				// sim = function.getSimilarity(composedAttribute, composedAttribute, 
+				//		profiles.get(mapping.getSourceIndividual().toString()), 
+				//		profiles.get(mapping.getTargetIndividual().toString()));
+				
+				sim = ((double)overlapTokens.size())/denominator;
+				
+				if(useGeoProfiles) {
+					sim = sim*0.5 + getGeoSimilarity(geoProfiles.get(mapping.getSourceIndividual().toString()), geoProfiles.get(mapping.getTargetIndividual().toString()))*0.5;
+				}
+				
+				sims.put(mapping, sim);
 				
 				if(mapping.isCorrect()) {
 					actuallyCorrect = mapping;
 					actuallyCorrectSim = sim;
 				}
 				
-				if(this.geoProfiles.containsKey(mapping.getSourceIndividual().toString())
-						&&this.geoProfiles.containsKey(mapping.getTargetIndividual().toString())) {
-					sim = sim*0.5 + getGeoSimilarity(geoProfiles.get(mapping.getSourceIndividual().toString()), geoProfiles.get(mapping.getTargetIndividual().toString()));
-				}
-				
-				if((bestMapping==null)||(sim>=bestSim)) {
+			} else {
+				log.error("error: ");
+				if(!profiles.containsKey(mapping.getSourceIndividual().toString())) {
+					System.out.println("Source not found: "+mapping.getSourceIndividual().toString());
+				} else if(!profiles.containsKey(mapping.getTargetIndividual().toString())) {
+					System.out.println("Target not found: "+mapping.getTargetIndividual().toString());
+				} 
+			}
+			
+			profileSizes.put(mapping, set1.size()+set2.size());
+			
+			if(sim>=1.0) {
+				System.out.println("here");
+			}
+			
+			if((bestMapping==null)) {
+				bestMapping = mapping;
+				bestSim = sim;
+			} else if(sim-bestSim>epsilon) {
+				bestMapping = mapping;
+				bestSim = sim;
+			} else if(Math.abs(sim-bestSim)<=epsilon) {
+				if(profileSizes.get(mapping)>profileSizes.get(bestMapping)) {
 					bestMapping = mapping;
 					bestSim = sim;
 				}
 			}
 		}
 		
+		if(bestSim>=1.0) {
+			System.out.println("here");
+		}
+		
+		if(actuallyCorrect==null) {
+			System.out.println("here");
+		}
+		
+		// Count how many still almost the same
+		int count = 0;
+		for(AtomicMapping mapping : sims.keySet()) {
+			sim = sims.get(mapping);
+			if(Math.abs(bestSim-sim)<epsilon) {
+				count ++;
+			}
+			
+		}
+		/*if(count > 1) {
+			return null;
+		}*/
+		
 		if(!bestMapping.isCorrect()) {
 			if(actuallyCorrect!=null) {
 				this.countNonDiscErrors ++;
-			} 
-			/*log.error("Preferred an incorrect mapping over the correct one: ");
+			}  
+			log.error("Preferred an incorrect mapping over the correct one: ");
 			log.error("Best sim: "+bestSim);
 			log.error("Correct sim: "+actuallyCorrectSim);
 			log.error(profiles.get(
 					bestMapping.getSourceIndividual().toString()));
 			log.error(profiles.get(
 					bestMapping.getTargetIndividual().toString()));
-			log.error(
-					profiles.get(actuallyCorrect.getSourceIndividual().toString()));
-			log.error(
-					profiles.get(actuallyCorrect.getTargetIndividual().toString()));
-			log.error("");*/
+			if(actuallyCorrect!=null) {
+				log.error(
+						profiles.get(actuallyCorrect.getSourceIndividual().toString()));
+				log.error(
+						profiles.get(actuallyCorrect.getTargetIndividual().toString()));
+			} else {
+				log.error("");
+			}
+			log.error("");
 			
 		}
 		
@@ -352,11 +596,19 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 	
 	private void addToProfile(String uri, String value) {
 		String newVal;
-		if(this.profiles.containsKey(uri)) {
-			newVal = profiles.get(uri)+" "+value;
-		} else {
-			newVal = value;
+		
+		Set<String> alternatives = KnoFussUtils.getAlternativeStringValues(value);
+		
+		alternatives.add(value);
+		
+		newVal = "";
+		for(String tmp : alternatives) {
+			newVal = newVal + " " +tmp;
 		}
+		newVal = newVal.trim();
+		if(this.profiles.containsKey(uri)) {
+			newVal = profiles.get(uri)+" "+newVal;
+		} 
 		this.profiles.put(uri, newVal);
 	}
 	
@@ -399,4 +651,21 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 		map.put(property, value);
 	}
 
+	
+	static private List<String> tokenize(String val) {
+		return tokenize(val, " \t\n\r\f:(),-.");
+		
+	}
+	
+	static private List<String> tokenize(String val, String chars) {
+		List<String> res = new ArrayList<String>();
+		String token;
+		StringTokenizer tokenizer = new StringTokenizer(val.toLowerCase(), chars);
+		while(tokenizer.hasMoreTokens()) {
+			token = tokenizer.nextToken();
+			res.add(token);
+		}
+		return res;
+	}
+	
 }

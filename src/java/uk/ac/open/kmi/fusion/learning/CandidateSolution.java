@@ -238,15 +238,32 @@ public class CandidateSolution {
 		return applySolution(cache, false);
 	}*/
 	
-	public Map<Integer, Double> applySolution(MemoryInstanceCache cache, boolean useSampling) {
-		if((!useSampling)||(solutions==null)) {
-			ObjectContextModelMatcherForGenetic matcher = new ObjectContextModelMatcherForGenetic();
+	public Map<Integer, Double> applySolution(MemoryInstanceCache cache, boolean useSampling, boolean isFinal) {
+		if(!isFinal) {
+			if((!useSampling)||(solutions==null)) {
+				// ObjectContextModelMatcherForGenetic matcher = new ObjectContextModelMatcherForGenetic();
+				// ObjectContextModelMatcherForGeneticExperimental matcher = new ObjectContextModelMatcherForGeneticExperimental();
+				
+				// ObjectContextModelMatcherForGeneticExperimental2 matcher = new ObjectContextModelMatcherForGeneticExperimental2();
+				ContextModelMatcherForGeneticNeighborhoodGrowth matcher = new ContextModelMatcherForGeneticNeighborhoodGrowth();
+				
+				matcher.setObjectContextModel(modelSpec);
+				
+				solutions = matcher.execute(modelSpec.getThreshold(), cache, useSampling, isFinal);
+				// solutions = matcher.execute(modelSpec.getThreshold(), cache, useSampling);
+			} else {
+				log.info(this.toString());
+			}
+		} else {
+			// ObjectContextModelMatcherForGenetic matcher = new ObjectContextModelMatcherForGenetic();
+			// ObjectContextModelMatcherForGeneticExperimental matcher = new ObjectContextModelMatcherForGeneticExperimental();
+			// ObjectContextModelMatcherForGeneticExperimental2 matcher = new ObjectContextModelMatcherForGeneticExperimental2();
+			ContextModelMatcherForGeneticNeighborhoodGrowth matcher = new ContextModelMatcherForGeneticNeighborhoodGrowth();
 			
 			matcher.setObjectContextModel(modelSpec);
 			
-			solutions = matcher.execute(modelSpec.getThreshold(), cache, useSampling);
-		} else {
-			log.info(this.toString());
+			solutions = matcher.execute(modelSpec.getThreshold(), cache, useSampling, isFinal);
+			// solutions = matcher.execute(modelSpec.getThreshold(), cache, useSampling);
 		}
 		 
 		return solutions;

@@ -31,6 +31,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.SimpleFSDirectory;
 import org.apache.lucene.util.Version;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.RDFS;
 
 import uk.ac.open.kmi.common.utils.LuceneUtils;
 import uk.ac.open.kmi.common.utils.Utils;
@@ -144,14 +145,47 @@ public class LuceneAllFieldsSearchStrategy extends AbstractLuceneSearchStrategy 
 	    		}
 	    	}
 	    	
-	    	if(label!=null) {
+	    	/*if(label!=null) {
+	    		TermQuery termQuery = new TermQuery(new Term(RDFS.LABEL.toString(), label));
 	    		
-	    	}
+	    		TopDocs hits;
+	    		
+	    		if(type==null) {
+	    			hits = indexSearcher.search(termQuery, this.getCutOff());
+	    		} else {
+	    			TermsFilter filter = new TermsFilter();
+	    			filter.addTerm(new Term(RDF.TYPE.toString(), type));
+	    			hits = indexSearcher.search(termQuery, filter, this.getCutOff());
+	    		}
+	    		
+	    		double topScore = -1;
+	    		
+	    		if(hits.totalHits>0) {
+		    		Document doc;
+			    		
+		    		for(int i=0;i<hits.scoreDocs.length;i++) {
+		    			
+		    			if(topScore<0) topScore = hits.scoreDocs[i].score;
+		    			doc = indexSearcher.doc(hits.scoreDocs[i].doc);
+		    				
+		    			doc = indexSearcher.doc(hits.scoreDocs[i].doc);
+		    				if(Math.abs(hits.scoreDocs[i].score-topScore)>0.1) {
+		    					if(label.toLowerCase().equals("bulgaria")) {
+		    						System.out.println("here");
+		    					}
+		    					System.out.println(label+" : "+doc.get("http://www.geonames.org/ontology#name"));
+		    					break;
+		    				}
+		    			docs.put(doc.get("uri"), doc);
+		    			
+		    		}
+	    		}
+	    	}*/
 	    	
 	    	String queryString = LuceneUtils.getTransducedQuery(getConcatenatedString(allFieldValues));
-	    	/*if(queryString.contains("ukraine")) {
+	    	if(queryString.contains("las vegas")) {
 	    		System.out.println("here");
-	    	}*/
+	    	}
 	    	Query query = null;
     		QueryParser queryParser = new MultiFieldQueryParser(Version.LUCENE_30, searchFields, analyzer);
     		if(!queryString.isEmpty()) {
@@ -161,21 +195,25 @@ public class LuceneAllFieldsSearchStrategy extends AbstractLuceneSearchStrategy 
 	    		
 	    		if(type==null) {
 	    			hits = indexSearcher.search(query, this.getCutOff());
+	    			// hits = indexSearcher.search(query, indexReader.numDocs());
 	    		} else {
 	    			TermsFilter filter = new TermsFilter();
 	    			filter.addTerm(new Term(RDF.TYPE.toString(), type));
 	    			hits = indexSearcher.search(query, filter, this.getCutOff());
+	    			// hits = indexSearcher.search(query, filter, indexReader.numDocs());
 	    		}
 	    		
 	    		double topScore = -1;
 	    		
+	    		Fieldable[] labelFields;
 	    		if(hits.totalHits>0) {
 		    		Document doc;
 			    		
 		    		for(int i=0;i<hits.scoreDocs.length;i++) {
-		    			if((hits.scoreDocs[i].score>=threshold)) {
+		    			doc = indexSearcher.doc(hits.scoreDocs[i].doc);
+		    			if((hits.scoreDocs[i].score>=threshold)&&(i<this.getCutOff())) {
 		    				if(topScore<0) topScore = hits.scoreDocs[i].score;
-		    				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
+		    				
 		    				
 		    				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
 		    				/*if(Math.abs(hits.scoreDocs[i].score-topScore)>0.1) {
@@ -188,6 +226,16 @@ public class LuceneAllFieldsSearchStrategy extends AbstractLuceneSearchStrategy 
 		    				docs.put(doc.get("uri"), doc);
 		    			} else {
 		    				break;
+		    				/*if(label!=null) {
+			    				labelFields = doc.getFields(RDFS.LABEL.toString());
+			    				if(labelFields!=null) {
+				    				for(Fieldable f : labelFields) {
+				    					if(f.stringValue().trim().toLowerCase().equals(label.toLowerCase())) {
+				    						docs.put(doc.get("uri"), doc);
+				    					}
+				    				}
+			    				}
+		    				}*/
 		    			}
 		    		}
 	    		}

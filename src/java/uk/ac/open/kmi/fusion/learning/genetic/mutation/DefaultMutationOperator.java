@@ -15,7 +15,7 @@ import uk.ac.open.kmi.fusion.api.impl.aggregation.AggregationFunctionFactory;
 import uk.ac.open.kmi.fusion.api.impl.valuematching.ValueMatchingFunctionFactory;
 import uk.ac.open.kmi.fusion.learning.CandidateSolution;
 import uk.ac.open.kmi.fusion.learning.Genotype;
-import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitness;
+// import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitness;
 
 public class DefaultMutationOperator implements IMutationOperator {
 
@@ -121,20 +121,22 @@ public class DefaultMutationOperator implements IMutationOperator {
 			}
 			
 		} else if(val<pAddOrRemove+pChangeWeight) {
-			index = validComponents.get((int)(Math.random()*validComponents.size()));
-			
-			y = index%columns;
-			x = index/columns;
-			if((validComponents.size()>1)||(Math.random()<0.5)) {
+			if(validComponents.size()>0) {
+				index = validComponents.get((int)(Math.random()*validComponents.size()));
 				
-				double weightChange = Math.random()*(0.8/validComponents.size())+0.2/validComponents.size();
-				if(Math.random()<0.5) {
-					childGenotype.getGenotypeWeights()[x][y] = Math.max(childGenotype.getGenotypeWeights()[x][y]-weightChange, 0);
+				y = index%columns;
+				x = index/columns;
+				if((validComponents.size()>1)||(Math.random()<0.5)) {
+					
+					double weightChange = Math.random()*(0.8/validComponents.size())+0.2/validComponents.size();
+					if(Math.random()<0.5) {
+						childGenotype.getGenotypeWeights()[x][y] = Math.max(childGenotype.getGenotypeWeights()[x][y]-weightChange, 0);
+					} else {
+						childGenotype.getGenotypeWeights()[x][y] = Math.min(childGenotype.getGenotypeWeights()[x][y]+weightChange, 1);
+					}
 				} else {
-					childGenotype.getGenotypeWeights()[x][y] = Math.min(childGenotype.getGenotypeWeights()[x][y]+weightChange, 1);
+					childGenotype.getGenotypeFunctions()[x][y] = ValueMatchingFunctionFactory.getRandomInstanceForAttributes(sourceProperties.get(x), targetProperties.get(y));
 				}
-			} else {
-				childGenotype.getGenotypeFunctions()[x][y] = ValueMatchingFunctionFactory.getRandomInstanceForAttributes(sourceProperties.get(x), targetProperties.get(y));
 			}
 		} else if(val<pAddOrRemove+pChangeWeight+pChangeThreshold) {
 

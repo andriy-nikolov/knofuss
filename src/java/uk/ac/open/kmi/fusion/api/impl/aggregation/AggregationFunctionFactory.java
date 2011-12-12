@@ -10,14 +10,14 @@ public final class AggregationFunctionFactory {
 
 	private static String[] availableFunctionTypes = new String[]{
 		IAggregationFunction.AVERAGE,
-		IAggregationFunction.MAX
+		// IAggregationFunction.MAX
 	};
 	
 	private static Map<String, IAggregationFunction> pool = new HashMap<String, IAggregationFunction>();
 	
 	static {
 		pool.put(IAggregationFunction.AVERAGE, AverageAggregationFunction.getInstance());
-		pool.put(IAggregationFunction.MAX, MaxAggregationFunction.getInstance());
+		// pool.put(IAggregationFunction.MAX, MaxAggregationFunction.getInstance());
 	}
 	
 	private AggregationFunctionFactory() {

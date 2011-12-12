@@ -30,7 +30,7 @@ public final class ValueMatchingFunctionFactory {
 		IValueMatchingFunction.JACCARD,
 		IValueMatchingFunction.OVERLAP,
 		IValueMatchingFunction.DICE,
-		IValueMatchingFunction.ABBREVIATION,
+		// IValueMatchingFunction.ABBREVIATION,
 		IValueMatchingFunction.DATE,
 		IValueMatchingFunction.DOUBLE,
 		//IValueMatchingFunction.AVERAGE_JARO_WINKLER,
@@ -53,7 +53,7 @@ public final class ValueMatchingFunctionFactory {
 		pool.put(IValueMatchingFunction.JACCARD, JaccardValueMatchingFunction.getInstance());
 		pool.put(IValueMatchingFunction.OVERLAP, OverlapCoefficientValueMatchingFunction.getInstance());
 		// pool.put(IValueMatchingFunction.DICE, DiceCoefficientValueMatchingFunction.getInstance());
-		pool.put(IValueMatchingFunction.ABBREVIATION, AbbreviationValueMatchingFunction.getInstance());
+		// pool.put(IValueMatchingFunction.ABBREVIATION, AbbreviationValueMatchingFunction.getInstance());
 		pool.put(IValueMatchingFunction.DATE, DateValueMatchingFunction.getInstance());
 		pool.put(IValueMatchingFunction.DOUBLE, DoubleValueMatchingFunction.getInstance());		
 		

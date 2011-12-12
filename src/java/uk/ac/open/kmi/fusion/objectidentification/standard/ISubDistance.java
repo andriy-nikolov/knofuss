@@ -65,7 +65,8 @@ public class ISubDistance extends AbstractStringMetric implements Serializable {
 			
 			
 			
-			if(bestLength>0) {
+			// if(bestLength>0) {
+			if(bestLength>1) {
 				sumlength+=longestSubstringParams[2];
 				if(longestSubstringParams[0]>0) {
 					tokens1.add(topToken1.substring(0, longestSubstringParams[0]));

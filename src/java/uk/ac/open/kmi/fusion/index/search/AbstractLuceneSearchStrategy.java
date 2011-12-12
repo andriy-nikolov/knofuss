@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
@@ -67,7 +68,7 @@ public abstract class AbstractLuceneSearchStrategy implements
 		try {
 			this.indexReader = IndexReader.open(directory);
 			this.indexSearcher = new IndexSearcher(directory);
-			countStopwords();
+			// countStopwords();
 			
 		} catch(IOException e) {
 			e.printStackTrace();
@@ -121,9 +122,17 @@ public abstract class AbstractLuceneSearchStrategy implements
 	
 	protected static String getConcatenatedString(List<String> strs) {
 		StringBuffer buffer = new StringBuffer();
+		StringTokenizer tokenizer;
+		String token;
 		for(String str : strs) {
-			buffer.append(LuceneUtils.getCleanedString(str));
-			buffer.append(' ');
+			tokenizer = new StringTokenizer(LuceneUtils.getCleanedString(str), " ");
+			while(tokenizer.hasMoreTokens()) {
+				token = tokenizer.nextToken();
+				if(buffer.toString().contains(token)) continue;
+				buffer.append(token);
+				buffer.append(' ');
+			}
+			
 		}
 		return buffer.toString().trim();
 	}

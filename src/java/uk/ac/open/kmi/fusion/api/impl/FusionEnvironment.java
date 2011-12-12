@@ -84,6 +84,8 @@ public class FusionEnvironment {
 	private String defaultNamespaceURI;
 	private Map<String, String> namespaceURITable;
 	private List<FusionMethodWrapper> methodWrappers;
+	private Map<String, String> abbreviations; 
+	
 	// private Map<String, FusionMethodWrapper> methodWrapperTable;
 	// private Map<String, ConflictStatementCluster> conflictSetTable;
 	// private RepositoryConnection connection;
@@ -118,6 +120,13 @@ public class FusionEnvironment {
 		configObjectRegistry = new HashMap<Resource, FusionConfigurationObject>();
 		linkSessions = new LinkedList<ILinkSession>();
 		repositoryManagerRegistry = new HashMap<String, RepositoryManager>();
+		abbreviations = new HashMap<String, String>();
+	}
+	
+	
+
+	public Map<String, String> getAbbreviations() {
+		return abbreviations;
 	}
 
 	protected FusionEnvironment() {

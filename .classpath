@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="uk/ac/open/kmi/fusion/objectidentification/standard/SimMetricsObjectIdentificationGlobals.java|uk/ac/open/kmi/fusion/util/KnoFussSingleFileOntoloaderStandalone.java|uk/ac/open/kmi/fusion/MultiOntologyUtil.java" kind="src" path="src/java"/>
+	<classpathentry excluding="uk/ac/open/kmi/fusion/objectidentification/standard/SimMetricsObjectIdentificationGlobals.java|uk/ac/open/kmi/fusion/util/KnoFussSingleFileOntoloaderStandalone.java|uk/ac/open/kmi/fusion/MultiOntologyUtil.java|uk/ac/open/kmi/fusion/filter/OneToOneFilterOld.java" kind="src" path="src/java"/>
 	<classpathentry kind="src" path="src/test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/secondstring-20060615.jar"/>
