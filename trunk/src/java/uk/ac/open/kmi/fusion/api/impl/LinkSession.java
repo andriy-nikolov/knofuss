@@ -97,6 +97,8 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 	private Map<String, OIComparison> goldStandard;
 	private String goldStandardPath = null;
 	
+	private String abbreviationsPath = null;
+	
 	ObjectIdentificationHandler objectIdentificationHandler;
 	ConflictDetectionHandler conflictDetectionHandler;
 	InconsistencyResolutionHandler inconsistencyResolutionHandler;
@@ -126,14 +128,10 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 		init();
 	}
 
-	
-	
 	public LinkSession(Resource rdfIndividual, FusionEnvironment environment) {
 		super(rdfIndividual, environment);
 		init();
 	}
-
-	
 
 	@Override
 	public void readFromRDFIndividual(RepositoryConnection connection)
@@ -166,6 +164,8 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 			this.resultsFileFormat = getResultsFileFormat(((Literal)statement.getObject()).stringValue());
 		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.GOLD_STANDARD)) {
 			this.goldStandardPath = ((Literal)statement.getObject()).stringValue().trim();
+		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.ABBREVIATIONS_FILE)) {
+			this.abbreviationsPath = ((Literal)statement.getObject()).stringValue().trim();
 		}
 	}
 
@@ -191,6 +191,14 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 	public synchronized void run() throws FusionException {
 		if(this.goldStandardPath!=null) {
 			this.goldStandard = KnoFussUtils.loadGoldStandardFromFile(this.goldStandardPath);
+		}
+		
+		if(this.abbreviationsPath!=null) {
+			try {
+				this.loadAbbreviations(this.abbreviationsPath);
+			} catch(IOException e) {
+				throw new FusionException("Cannot load abbreviations from "+this.abbreviationsPath, e);
+			}
 		}
 		
 		sourceDataset.prepare();
@@ -316,7 +324,7 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 				for(AtomicMapping mapping : falsePositives) {
 					mapping.writeToXML(writer);
 				}
-				
+				writer.println("</ResultSet>");
 				writer.println("</DocElement>");
 				
 				log.info("Written "+falsePositives.size()+" false positives");
@@ -346,7 +354,7 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 					
 					mapping.writeToXML(writer);
 				}
-				
+				writer.println("</ResultSet>");
 				writer.println("</DocElement>");
 				log.info("Written "+i+" false negatives");
 			} finally {
@@ -591,6 +599,25 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 			}
 		} catch(Exception e) {
 			log.fatal("Could not save results as XML mappings in the KnoFuss custom format: ", e);
+		}
+	}
+	
+	private void loadAbbreviations(String abbreviationsPath) throws IOException {
+		if(abbreviationsPath!=null) {
+			BufferedReader reader = Utils.openBufferedFileReader(abbreviationsPath);
+			String line;
+			String[] vals;
+			int i;
+			Map<String, String> abbreviationsMap = FusionEnvironment.getInstance().getAbbreviations();
+			while((line = reader.readLine())!=null) {
+				vals = line.split(",");
+				if(vals.length>1) {
+					for(i=1;i<vals.length;i++) {
+						abbreviationsMap.put(vals[i].trim().toLowerCase(), vals[0].trim().toLowerCase());
+					}
+				}
+			}
+			reader.close();
 		}
 	}
 	

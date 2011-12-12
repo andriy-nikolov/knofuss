@@ -35,6 +35,9 @@ public class AverageAggregationFunction implements IAggregationFunction {
 			List<? extends Object> sourceValues = source.getValuesByAttribute(spec.getSourceAttribute());
 			List<? extends Object> targetValues = target.getValuesByAttribute(spec.getTargetAttribute());
 			
+			/*if((sourceValues==null)||(targetValues==null)) {
+				return 0.0;
+			}*/
 			/*if(spec.getSourcePath().contains("tmp")
 					&&spec.getTargetPath().contains("http://xmlns.com/foaf/0.1/name")) {
 				if(sourceValues!=null) {

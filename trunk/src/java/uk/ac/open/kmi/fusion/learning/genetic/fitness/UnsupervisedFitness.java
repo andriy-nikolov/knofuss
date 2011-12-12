@@ -93,8 +93,10 @@ public class UnsupervisedFitness implements IFitnessFunction {
 			
 		} else {
 			
-			// double alpha = 0.01;
-			double alpha = 1;
+			double alpha = 0.01;
+			// double alpha = 1;
+			
+			// double alpha = 100;
 			
 			double overlapDegree = 1;
 			

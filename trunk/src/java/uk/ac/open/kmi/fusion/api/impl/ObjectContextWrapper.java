@@ -20,6 +20,7 @@ import org.openrdf.repository.RepositoryException;
 import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IObjectContextWrapper;
+import uk.ac.open.kmi.fusion.util.KnoFussUtils;
 
 public class ObjectContextWrapper implements IObjectContextWrapper {
 	
@@ -115,6 +116,7 @@ public class ObjectContextWrapper implements IObjectContextWrapper {
 			if(val.trim().endsWith("\"")) {
 				val = val.trim().substring(0, val.length()-1);
 			}
+			
 			attribute = model.getSourceAttributeByVarName(curVar);
 			if(attribute!=null) {
 				addValue(attribute, val);
@@ -134,8 +136,18 @@ public class ObjectContextWrapper implements IObjectContextWrapper {
 			tmpValueSet = new LinkedList<Object>();
 			this.valueTable.put(attribute, tmpValueSet);
 		}
+		
 		if(!tmpValueSet.contains(value)) {
 			tmpValueSet.add(value);
+		}
+		
+		if(value instanceof String) {
+			Set<String> alts = KnoFussUtils.getAlternativeStringValues((String)value);
+			for(String alt : alts) {
+				if(!tmpValueSet.contains(alt)) {
+					tmpValueSet.add(alt);
+				}
+			}
 		}
 		
 		

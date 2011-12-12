@@ -39,6 +39,7 @@ import uk.ac.open.kmi.fusion.api.impl.AttributeType;
 import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
 import uk.ac.open.kmi.fusion.api.impl.FusionMethodWrapper;
 import uk.ac.open.kmi.fusion.util.FusionException;
+import uk.ac.open.kmi.fusion.util.LoggingUtils;
 import uk.ac.open.kmi.fusion.index.LuceneBlockedDiskIndexer;
 import uk.ac.open.kmi.fusion.learning.cache.CacheEntry;
 import uk.ac.open.kmi.fusion.learning.cache.CachedPair;
@@ -63,7 +64,9 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 	private double mutationRate = 0.6;
 	private double crossoverRate = 0.3;
 	
-	private boolean addMissing = false;
+	// private boolean addMissing = false;
+	private boolean addMissing = true;
+
 	private boolean useSampling = false;
 	
 	private int sampleSize = 0;
@@ -156,7 +159,7 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 			
 			Map<Integer, Double> finalResults = candidateSolutionPool.run(useSampling);
 			CandidateSolution finalSolution = candidateSolutionPool.getFinalSolution();
-			doFilteringByClasses(finalResults, cache, goldStandardEncoded.keySet(), finalSolution.getFitness(), context.getRestrictedTypesTarget().get(0)); 
+			// doFilteringByClasses(finalResults, cache, goldStandardEncoded.keySet(), finalSolution.getFitness(), context.getRestrictedTypesTarget().get(0)); 
 			
 			return createAtomicMappings(finalResults, cache, candidateSolutionPool.getFinalSolution());
 			
@@ -191,6 +194,7 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 				System.out.println("here");
 				targetPropertiesPool.add(attribute);
 			}*/
+			// if(val>=0.95) {
 			if(val>=0.5) {
 				if((!key.equals(Utils.FOAF_NS+"name"))&&(!key.equals("http://oaei.ontologymatching.org/2010/IIMBTBOX/article"))) {
 					// Many thanks to the DBPedia bug which assigns the person's birth year as her name !
@@ -270,9 +274,9 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 							(!sourceAttribute.getType().equals(AttributeType.INTEGER))&&
 							(!sourceAttribute.getType().equals(AttributeType.DATE))&&
 							(sourceEntry.getValueTable().containsKey(sourceAttribute.getPropertyPath()))) {
-						if(sourceEntry.getValueTable().get(sourceAttribute.getPropertyPath()).contains("Washington")) {
+						/*if(sourceEntry.getValueTable().get(sourceAttribute.getPropertyPath()).contains("Washington")) {
 							System.out.println("here");
-						}
+						}*/
 						tmpList = new LinkedList<String>();
 						searchValues.put(sourceAttribute.getPropertyPath(), tmpList);
 						tmpObjectList = sourceEntry.getValueTable().get(sourceAttribute.getPropertyPath());
@@ -334,13 +338,20 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 						sourceEntry = cache.getSourceCacheEntry(FusionEnvironment.getInstance().getFusionKbValueFactory().createURI(uris[0].trim()));
 						doc = blocker.findByURI(uris[1].trim());
 						if(doc==null) {
-							// System.out.println(uris[1].trim());
+							System.out.println(uris[1].trim());
 							missed ++;
 						} else {
 							targetEntry = cache.getTargetCacheEntry(FusionEnvironment.getInstance().getMainKbValueFactory().createURI(uris[1].trim()));
 							targetEntry.readPropertiesFromLuceneDocument(doc);
 							pair = cache.addPairToCache(sourceEntry, targetEntry, true);
-							// log.info("Missed: "+sourceEntry.getValueTable().get("http://www.w3.org/2004/02/skos/core#prefLabel").get(0)+" : "+targetEntry.getValueTable().get("http://www.geonames.org/ontology#name").get(0));
+							try {
+								log.info(sourceEntry.getUri().toString());
+								log.info(targetEntry.getUri().toString());
+								log.info("Missed: "+sourceEntry.getValueTable().get("http://www.w3.org/2004/02/skos/core#prefLabel").get(0));
+								log.info(" : "+targetEntry.getValueTable().get(RDFS.LABEL.toString()).get(0));
+							} catch(NullPointerException e) {
+								e.printStackTrace();
+							}
 							if(!addMissing) {
 								pair.setMissing(true);
 							}
@@ -353,6 +364,9 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 			}
 			
 			log.info("Gold standard size: "+goldStandardEncoded.size());
+			
+			LoggingUtils.writeURIPairsToFile(cache, "cachedPairs.txt");
+			
 		} catch(Exception e) {
 			throw new FusionException("Could not create the cache of instance pairs for comparison: ", e);
 		}
@@ -499,6 +513,8 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 					}
 					
 				}
+				log.info("Source instances: "+cache.getSourceCachedEntries().size());
+				
 				log.info(paths.size());
 				
 				for(String tmp : paths) {

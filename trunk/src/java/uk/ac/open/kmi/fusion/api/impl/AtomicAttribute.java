@@ -13,8 +13,8 @@ public class AtomicAttribute implements IAttribute {
 	String propertyPath;
 	AttributeType type;
 	
-	double min = 0.0;
-	double max = 0.0;
+	double min = -180.0;
+	double max = 180.0;
 	
 	String variableName;
 	

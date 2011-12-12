@@ -24,13 +24,11 @@ import uk.ac.open.kmi.fusion.api.*;
 import uk.ac.open.kmi.fusion.api.impl.*;
 // import uk.ac.open.kmi.fusion.index.LuceneDiskIndexer;
 // import uk.ac.open.kmi.fusion.index.LuceneDiskIndexerAllFields;
-import uk.ac.open.kmi.fusion.learning.SimilarityComparator;
-import uk.ac.open.kmi.fusion.learning.cache.CachedPair;
 import uk.ac.open.kmi.fusion.objectidentification.*;
 import uk.ac.open.kmi.fusion.objectidentification.standard.*;
 import uk.ac.open.kmi.fusion.util.*;
 
-public class ObjectContextModelMatcher {
+public class ObjectContextModelMatcherThresholdBased {
 	ObjectContextModel instanceModel;
 	ApplicationContext applicationContext;
 	Set<LuceneBackedObjectContextWrapper> sourceResources;
@@ -52,26 +50,7 @@ public class ObjectContextModelMatcher {
 	
 	Map<String, Set<String>> targetUrisByClass;
 	
-	private class SelectorComparator implements Comparator<ComparisonPair> {
-
-		@Override
-		public int compare(ComparisonPair arg0, ComparisonPair arg1) {
-			double sim1 = arg0.getSimilarity();
-			double sim2 = arg1.getSimilarity();
-			
-			if(sim1<sim2) {
-				return 1;
-			} else if(sim1>sim2) {
-				return -1;
-			} else {
-				return 0;
-			}
-			
-		}
-		
-	}
-	
-	private static Logger log = Logger.getLogger(ObjectContextModelMatcher.class); 
+	private static Logger log = Logger.getLogger(ObjectContextModelMatcherThresholdBased.class); 
 	
 	//RDF2txtTranslator translator;
 	
@@ -85,7 +64,7 @@ public class ObjectContextModelMatcher {
 		targetUrisByClass = new HashMap<String, Set<String>>();
 	}
 	
-	public ObjectContextModelMatcher() {
+	public ObjectContextModelMatcherThresholdBased() {
 		init();
 	}
 	
@@ -253,8 +232,8 @@ public class ObjectContextModelMatcher {
 						
 						pair = new ComparisonPair(resSource, resTarget);
 						
-						if(resTarget.getIndividual().toString().equals("http://sws.geonames.org/5282825/")&&
-								resSource.getIndividual().toString().equals("http://data.nytimes.com/N71660314463312318041")
+						if(resTarget.getIndividual().toString().equals("http://dbpedia.org/resource/Mike_Figgis")&&
+								resSource.getIndividual().toString().equals("http://data.linkedmdb.org/music_contributor/3282")
 								) {
 							log.info("here");
 						}
@@ -307,8 +286,6 @@ public class ObjectContextModelMatcher {
 					minmax = top;
 				}
 			}
-			
-			
 			
 			log.info("Minimal reasonable threshold: "+minmax);
 			log.info("Total time: "+(System.currentTimeMillis()-initTime));
@@ -549,58 +526,7 @@ public class ObjectContextModelMatcher {
 	
 
 	protected void addToModel() {
-		SelectorComparator comparator = new SelectorComparator();
-		List<ComparisonPair> sortedPairs;
-		List<ComparisonPair> pairs;
-		ComparisonPair selectedPair;
-		double sim, bestSim;
-		double epsilon = 0.0000001;
-		CachedPair testPair;
-		AtomicMapping curAtomicMapping;
 		int i;
-		for(LuceneBackedObjectContextWrapper sourceWrapper : candidatePairs.keySet()) {
-			pairs = candidatePairs.get(sourceWrapper);
-			
-			sortedPairs = new ArrayList<ComparisonPair>(pairs);
-			Collections.sort(sortedPairs, comparator);
-			selectedPair = sortedPairs.get(0);
-			
-			/*if(testPair.getCandidateInstance().getUri().toString().equals("http://data.nytimes.com/N45527707190659418771")) {
-				log.info("here");
-			}*/
-			
-			bestSim = selectedPair.getSimilarity();
-			curAtomicMapping = createAtomicMappingFromInstanceComparator(selectedPair);
-			if(curAtomicMapping!=null) {
-				mappings.add(curAtomicMapping);
-				/*if(selectedPair.getSimilarity()>=threshold) {
-					curAtomicMapping.setAccepted(true);
-				}*/
-			}
-			
-			// results.put(selectedPairId, bestSim);
-			for(i = 1;i<sortedPairs.size();i++) {
-				selectedPair = sortedPairs.get(i);
-				sim = selectedPair.getSimilarity();
-				if(Math.abs(sim-bestSim)<=epsilon) {
-					
-					curAtomicMapping = createAtomicMappingFromInstanceComparator(selectedPair);
-					if(curAtomicMapping!=null) {
-						mappings.add(curAtomicMapping);
-						/*if(selectedPair.getSimilarity()>=threshold) {
-							curAtomicMapping.setAccepted(true);
-						}*/
-					}
-					
-				} else {
-					 
-					break;
-				}
-			}
-		}
-		
-		
-		/*int i;
 		ComparisonPair comparator;
 		AtomicMapping curAtomicMapping;
 		for(IObjectContextWrapper source : candidatePairs.keySet()) {
@@ -616,7 +542,7 @@ public class ObjectContextModelMatcher {
 				}
 				
 			}
-		}*/
+		}
 	}
 	
 	protected AtomicMapping createAtomicMappingFromInstanceComparator(ComparisonPair comparator) {

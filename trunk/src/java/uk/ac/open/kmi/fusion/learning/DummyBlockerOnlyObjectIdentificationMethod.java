@@ -16,6 +16,7 @@ import org.openrdf.OpenRDFException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
@@ -39,6 +40,8 @@ import uk.ac.open.kmi.fusion.api.impl.AttributeType;
 import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
 import uk.ac.open.kmi.fusion.api.impl.FusionMethodWrapper;
 import uk.ac.open.kmi.fusion.util.FusionException;
+import uk.ac.open.kmi.fusion.util.LoggingUtils;
+import uk.ac.open.kmi.fusion.index.LuceneBlockedDiskIndexer;
 import uk.ac.open.kmi.fusion.learning.cache.CacheEntry;
 import uk.ac.open.kmi.fusion.learning.cache.CachedPair;
 import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
@@ -123,160 +126,196 @@ public class DummyBlockerOnlyObjectIdentificationMethod implements
 	private void doBlocking(ApplicationContext context, MemoryInstanceCache cache, Map<Integer, String> goldStandardEncoded, List<AtomicAttribute> sourcePropertiesPool, List<AtomicAttribute> targetPropertiesPool) throws FusionException {
 		
 		try {
-		ILuceneBlocker blocker = context.getBlocker();
+			ILuceneBlocker blocker = context.getBlocker();
 
-		// Set<String> targetPropertiesSet = new HashSet<String>();
-		
-		Map<AtomicAttribute, Integer> targetAttributeCounts = new HashMap<AtomicAttribute, Integer>();
-		
-		Map<String, AttributeProfileInDataset> targetAttributes = new HashMap<String, AttributeProfileInDataset>();
-		
-		int size = context.getLinkSession().getTargetDataset().copyRelevantSubsetToBlocker(blocker, context, targetAttributes);
-		double val;
-		AtomicAttribute attribute;
-		for(String key : targetAttributes.keySet()) {
-			val = ((double)targetAttributes.get(key).getMentionedIn())/size;
-			attribute = targetAttributes.get(key).createAttribute();
-			targetAttributeCounts.put(attribute, targetAttributes.get(key).getMentionedIn());
-			if(val>=0.1) {
-				if((!key.equals(Utils.FOAF_NS+"name"))/*&&(!key.equals("http://oaei.ontologymatching.org/2010/IIMBTBOX/article"))*/) {
-					// Many thanks to the DBPedia bug which assigns the person's birth year as her name !
+			// Set<String> targetPropertiesSet = new HashSet<String>();
+			
+			Map<AtomicAttribute, Integer> targetAttributeCounts = new HashMap<AtomicAttribute, Integer>();
+			
+			Map<String, AttributeProfileInDataset> targetAttributes = new HashMap<String, AttributeProfileInDataset>();
+			
+			int size = context.getLinkSession().getTargetDataset().copyRelevantSubsetToBlocker(blocker, context, targetAttributes);
+			
+			// int size = 7857409; 
+			
+			double val;
+			AtomicAttribute attribute;
+			for(String key : targetAttributes.keySet()) {
+				val = ((double)targetAttributes.get(key).getMentionedIn())/size;
+				attribute = targetAttributes.get(key).createAttribute();
+				targetAttributeCounts.put(attribute, targetAttributes.get(key).getMentionedIn());
+				/*if(key.equals(RDFS.LABEL.toString())) {
+					System.out.println("here");
 					targetPropertiesPool.add(attribute);
-				}
-			}
-		}
-		
-		CountMapKeyByValueSizeComparator<AtomicAttribute> comparator = new CountMapKeyByValueSizeComparator<AtomicAttribute>(targetAttributeCounts, true);
-		Collections.sort(targetPropertiesPool, comparator);
-		
-		Map<String, Document> docs;
-		int cacheSize = 0;
-		CacheEntry targetEntry;
-		
-		int tp = 0;
-		int i = 0;
-		String signature;
-		
-		boolean goldStandardAvailable = context.isGoldStandardAvailable();
-		Map<String, OIComparison> goldStandard;
-		Set<String> missedKeys;
-		if(goldStandardAvailable) {
-			goldStandard = context.getGoldStandard();
-			missedKeys = new HashSet<String>(goldStandard.keySet());
-		} else {
-			goldStandard = new HashMap<String, OIComparison>(0);
-			missedKeys = new HashSet<String>(0);
-		}
-		String type = context.getRestrictedTypesTarget().get(0);
-		
-		
-		String[] targetPropertyArray = new String[targetPropertiesPool.size()];
-		// targetPropertyArray = targetPropertiesPool.toArray(targetPropertyArray);
-		AtomicAttribute attr;
-		for(int j=0;j<targetPropertiesPool.size();j++) {
-			attr = targetPropertiesPool.get(j);
-			targetPropertyArray[j] = attr.getPropertyPath();
-		}
-		
-		//if(useBlocking) {
-		
-		log.info("Caching starts");
-		i=0;
-		
-		Map<String, List<String>> searchValues = new HashMap<String, List<String>>();
-		CachedPair pair;
-		
-		List<String> tmpList;
-		List<? extends Object> tmpObjectList;
-		
-		for(CacheEntry sourceEntry : cache.getSourceCachedEntries()) {
-			searchValues.clear();
-			//searchValues.put(Utils.FOAF_NS+"name", sourceEntry.getValueTable().get(Utils.FOAF_NS+"name"));
-			if(sourceEntry.getUri().toString().endsWith("kristin_minter")) {
-				log.debug("here");
-			}
-			
-			for(AtomicAttribute sourceAttribute : sourcePropertiesPool) {
-				if(!sourceAttribute.getType().equals(AttributeType.LONG_TEXT)&&(sourceEntry.getValueTable().containsKey(sourceAttribute.getPropertyPath()))) {
-					tmpList = new LinkedList<String>();
-					searchValues.put(sourceAttribute.getPropertyPath(), tmpList);
-					tmpObjectList = sourceEntry.getValueTable().get(sourceAttribute);
-					for(Object obj : tmpObjectList) {
-						if(obj instanceof String) {
-							tmpList.add((String)obj);
-						}
-					}
-					
-				}
-			}
-
-			docs = blocker.findClosestDocuments(searchValues, targetPropertyArray, blocker.getThreshold(), type);
-			cacheSize+=docs.size();
-			i++;
-			for(String key : docs.keySet()) {
-				signature = sourceEntry.getUri().toString()+" : "+key;
-				
-				targetEntry = cache.getTargetCacheEntry(FusionEnvironment.getInstance().getMainKbValueFactory().createURI(key));
-				
-				targetEntry.readPropertiesFromLuceneDocument(docs.get(key));
-				pair = cache.addPairToCache(sourceEntry, targetEntry, false);
-				
-				if(goldStandardAvailable) { 
-					if(goldStandard.containsKey(sourceEntry.getUri().toString()+" : "+key)) {
-						tp++;
-						pair.setGoldStandard(true);
-						goldStandardEncoded.put(pair.getId(), signature);
-						missedKeys.remove(signature);
+				}*/
+				if(val>=0.5) {
+					if((!key.equals(Utils.FOAF_NS+"name"))&&(!key.equals("http://oaei.ontologymatching.org/2010/IIMBTBOX/article"))) {
+						// Many thanks to the DBPedia bug which assigns the person's birth year as her name !
+						targetPropertiesPool.add(attribute);
 					}
 				}
 			}
-			if((i%100)==0) {
-				log.info("Cached "+i+" instances, cache size: "+cacheSize);
-			}
-				
-		}
-				
-		double recall = ((double)tp)/goldStandard.size();
-		String[] uris;
-		log.info("Cache filled, size: "+cacheSize+", recall: "+recall);
 			
-			// Add the pairs which were missed by the blocker to the goldStandard
+			/*Attribute name = new Attribute("http://www.geonames.org/ontology#name", AttributeType.NOMINAL_MULTI_TOKEN);
+			targetPropertiesPool.add(name);
+			targetAttributeCounts.put(name, 7857409);
+			Attribute longitude = new Attribute("http://www.w3.org/2003/01/geo/wgs84_pos#long", AttributeType.CONTINUOUS);
+			targetPropertiesPool.add(longitude);
+			targetAttributeCounts.put(longitude, 7857409);
+			Attribute latitude = new Attribute("http://www.w3.org/2003/01/geo/wgs84_pos#lat", AttributeType.CONTINUOUS);
+			targetPropertiesPool.add(latitude);
+			targetAttributeCounts.put(latitude, 7857409);*/
+			
+			CountMapKeyByValueSizeComparator<AtomicAttribute> comparator = new CountMapKeyByValueSizeComparator<AtomicAttribute>(targetAttributeCounts, true);
+			Collections.sort(targetPropertiesPool, comparator);
+			
+			Map<String, Document> docs;
+			int cacheSize = 0;
+			CacheEntry targetEntry;
+			
+			int tp = 0;
+			int i = 0;
+			String signature;
+			
+			boolean goldStandardAvailable = context.isGoldStandardAvailable();
+//			boolean goldStandardAvailable = false;
+			Map<String, OIComparison> goldStandard;
+			Set<String> missedKeys;
 			if(goldStandardAvailable) {
-				CacheEntry sourceEntry;
-				Document doc;
-				int missed = 0;
-				int relevant = 0;
-				URI sourceEntryURI;
-				for(String sign : missedKeys) {
-					uris = sign.split(" : ");
-					sourceEntryURI = FusionEnvironment.getInstance().getFusionKbValueFactory().createURI(uris[0].trim());
-					if(cache.containsSourceCacheEntry(sourceEntryURI)) {
-						relevant++;
-						sourceEntry = cache.getSourceCacheEntry(FusionEnvironment.getInstance().getFusionKbValueFactory().createURI(uris[0].trim()));
-						doc = blocker.findByURI(uris[1].trim());
-						if(doc==null) {
-							// System.out.println(uris[1].trim());
-							missed ++;
-						} else {
-							targetEntry = cache.getTargetCacheEntry(FusionEnvironment.getInstance().getMainKbValueFactory().createURI(uris[1].trim()));
-							targetEntry.readPropertiesFromLuceneDocument(doc);
-							pair = cache.addPairToCache(sourceEntry, targetEntry, true);
-							if(!addMissing) {
-								pair.setMissing(true);
+				goldStandard = context.getGoldStandard();
+				missedKeys = new HashSet<String>(goldStandard.keySet());
+			} else {
+				goldStandard = new HashMap<String, OIComparison>(0);
+				missedKeys = new HashSet<String>(0);
+			}
+			String type = context.getRestrictedTypesTarget().get(0);
+			
+			
+			// targetPropertyArray = targetPropertiesPool.toArray(targetPropertyArray);
+			AtomicAttribute attr;
+			List<String> chosenTargetProperties = new ArrayList<String>();
+			
+			for(int j=0;j<targetPropertiesPool.size();j++) {
+				attr = targetPropertiesPool.get(j);
+				if((attr.getType()==AttributeType.NOMINAL)||(attr.getType()==AttributeType.NOMINAL_MULTI_TOKEN))
+					chosenTargetProperties.add(attr.getPropertyPath());
+			}
+			
+			String[] targetPropertyArray = new String[chosenTargetProperties.size()];
+			
+			for(int j=0;j<chosenTargetProperties.size();j++) {
+				targetPropertyArray[j] = chosenTargetProperties.get(j);
+			}
+			//if(useBlocking) {
+			
+			log.info("Caching starts");
+			i=0;
+			
+			Map<String, List<String>> searchValues = new HashMap<String, List<String>>();
+			CachedPair pair;
+			List<String> tmpList;
+			List<? extends Object> tmpObjectList;
+			
+			for(CacheEntry sourceEntry : cache.getSourceCachedEntries()) {
+				searchValues.clear();
+				//searchValues.put(Utils.FOAF_NS+"name", sourceEntry.getValueTable().get(Utils.FOAF_NS+"name"));
+				if(!(blocker instanceof LuceneBlockedDiskIndexer)) {
+					for(AtomicAttribute sourceAttribute : sourcePropertiesPool) {
+						if(
+								(!sourceAttribute.getType().equals(AttributeType.LONG_TEXT))&&
+								(!sourceAttribute.getType().equals(AttributeType.CONTINUOUS))&&
+								(!sourceAttribute.getType().equals(AttributeType.INTEGER))&&
+								(!sourceAttribute.getType().equals(AttributeType.DATE))&&
+								(sourceEntry.getValueTable().containsKey(sourceAttribute.getPropertyPath()))) {
+							/*if(sourceEntry.getValueTable().get(sourceAttribute.getPropertyPath()).contains("Washington")) {
+								System.out.println("here");
+							}*/
+							tmpList = new LinkedList<String>();
+							searchValues.put(sourceAttribute.getPropertyPath(), tmpList);
+							tmpObjectList = sourceEntry.getValueTable().get(sourceAttribute.getPropertyPath());
+							for(Object obj : tmpObjectList) {
+								if(obj instanceof String) {
+									tmpList.add((String)obj);
+								}
 							}
-							goldStandardEncoded.put(pair.getId(), sign);
+						}
+					}
+				} else {
+					tmpList = new ArrayList<String>(1);
+					tmpList.add(sourceEntry.getUri().toString());
+					searchValues.put("uri", tmpList);
+				}
+				
+				docs = blocker.findClosestDocuments(searchValues, targetPropertyArray, blocker.getThreshold(), type);
+				cacheSize+=docs.size();
+				i++;
+				for(String key : docs.keySet()) {
+					signature = sourceEntry.getUri().toString()+" : "+key;
+					
+					targetEntry = cache.getTargetCacheEntry(FusionEnvironment.getInstance().getMainKbValueFactory().createURI(key));
+					
+					targetEntry.readPropertiesFromLuceneDocument(docs.get(key));
+					pair = cache.addPairToCache(sourceEntry, targetEntry, false);
+					
+					if(goldStandardAvailable) { 
+						if(goldStandard.containsKey(sourceEntry.getUri().toString()+" : "+key)) {
+							tp++;
+							pair.setGoldStandard(true);
+							goldStandardEncoded.put(pair.getId(), signature);
+							missedKeys.remove(signature);
+						}
+					}
+				}
+				if((i%100)==0) {
+					log.info("Cached "+i+" instances, cache size: "+cacheSize);
+				}
+					
+			}
+					
+			double recall = ((double)tp)/goldStandard.size();
+			String[] uris;
+			log.info("Cache filled, size: "+cacheSize+", recall: "+recall);
+				
+			// Add the pairs which were missed by the blocker to the goldStandard
+				if(goldStandardAvailable) {
+					CacheEntry sourceEntry;
+					Document doc;
+					int missed = 0;
+					int relevant = 0;
+					URI sourceEntryURI;
+					for(String sign : missedKeys) {
+						uris = sign.split(" : ");
+						sourceEntryURI = FusionEnvironment.getInstance().getFusionKbValueFactory().createURI(uris[0].trim());
+						if(cache.containsSourceCacheEntry(sourceEntryURI)) {
+							relevant++;
+							sourceEntry = cache.getSourceCacheEntry(FusionEnvironment.getInstance().getFusionKbValueFactory().createURI(uris[0].trim()));
+							doc = blocker.findByURI(uris[1].trim());
+							if(doc==null) {
+								// System.out.println(uris[1].trim());
+								missed ++;
+							} else {
+								targetEntry = cache.getTargetCacheEntry(FusionEnvironment.getInstance().getMainKbValueFactory().createURI(uris[1].trim()));
+								targetEntry.readPropertiesFromLuceneDocument(doc);
+								pair = cache.addPairToCache(sourceEntry, targetEntry, true);
+								log.info("Missed: "+sourceEntry.getValueTable().get("http://www.w3.org/2004/02/skos/core#prefLabel").get(0)+" : "+targetEntry.getValueTable().get(RDFS.LABEL.toString()).get(0));
+								if(!addMissing) {
+									pair.setMissing(true);
+								}
+								goldStandardEncoded.put(pair.getId(), sign);
+							}
 						}
 					}
 					
+					log.info("Missed comparison pairs added: "+(relevant-missed)+", could not find: "+missed);
 				}
 				
-				log.info("Missed comparison pairs added: "+(relevant-missed)+", could not find: "+missed);
+				log.info("Gold standard size: "+goldStandardEncoded.size());
+				
+				LoggingUtils.writeURIPairsToFile(cache, "cachedPairs.txt");
+				
+			} catch(Exception e) {
+				throw new FusionException("Could not create the cache of instance pairs for comparison: ", e);
 			}
-			
-			log.info("Gold standard size: "+goldStandardEncoded.size());
-		} catch(Exception e) {
-			throw new FusionException("Could not create the cache of instance pairs for comparison: ", e);
-		}
 	}
 	
 	
@@ -310,6 +349,7 @@ public class DummyBlockerOnlyObjectIdentificationMethod implements
 		// Retrieve all direct paths
 		String tmpQuery = tmpQueryParser.getFilteredQuery();
 		log.info("Query: "+tmpQuery);
+		log.info("Size: "+FusionEnvironment.getInstance().getFusionRepositoryConnection().size());
 		TupleQuery query = FusionEnvironment.getInstance().getFusionRepositoryConnection().prepareTupleQuery(QueryLanguage.SPARQL, tmpQuery);
 		TupleQueryResult res = query.evaluate();
 		Set<AtomicAttribute> sourcePropertiesSet = new HashSet<AtomicAttribute>();
@@ -336,6 +376,7 @@ public class DummyBlockerOnlyObjectIdentificationMethod implements
 				if(bs.getValue("property") instanceof URI) {
 					propertyURI = (URI)bs.getValue("property");
 					if(propertyURI.equals(RDF.TYPE)) continue;
+					
 					// if(propertyURI.equals("http://oaei.ontologymatching.org/2010/IIMBTBOX/article")) continue;
 					if(bs.getValue("obj") instanceof Literal) {
 						if(sourceAttributeProfiles.containsKey(propertyURI.toString())) {
@@ -353,22 +394,13 @@ public class DummyBlockerOnlyObjectIdentificationMethod implements
 						
 						tokens = Utils.splitByStringTokenizer(val, " \t\n\r\f:(),-.");
 						currentAttributeProfile.setAverageNumberOfTokens(currentAttributeProfile.getAverageNumberOfTokens()+tokens.size());
-						if(currentAttributeProfile.isInteger()) {
-							try {
-								Integer.parseInt(val);
-							} catch(NumberFormatException e) {
-								currentAttributeProfile.setInteger(false);
-							}
-						}
-						if(currentAttributeProfile.isDouble()) {
-							try {
-								Double.parseDouble(val);
-							} catch(NumberFormatException e) {
-								currentAttributeProfile.setDouble(false);
-							}
-						}
+						currentAttributeProfile.doTypeChecking(val);
 						// sourcePropertiesSet.add(propertyURI.toString());
+						/*if(propertyURI.toString().endsWith("prefLabel")) {
+							System.out.println(val);
+						}*/
 						currentCacheEntry.addValue(propertyURI.toString(), val);
+						
 					}
 				}
 			}
@@ -433,22 +465,7 @@ public class DummyBlockerOnlyObjectIdentificationMethod implements
 						val = SesameUtils.cleanSesameLiteralValue((Literal)bs.getValue("obj"));
 						tokens = Utils.splitByStringTokenizer(val, " \t\n\r\f:(),-.");
 						currentAttributeProfile.setAverageNumberOfTokens(currentAttributeProfile.getAverageNumberOfTokens()+tokens.size());
-						if(currentAttributeProfile.isInteger()) {
-							try {
-								Integer.parseInt(val);
-							} catch(NumberFormatException e) {
-								currentAttributeProfile.setInteger(false);
-							}
-						}
-						if(currentAttributeProfile.isDouble()) {
-							try {
-								Double.parseDouble(val);
-							} catch(NumberFormatException e) {
-								currentAttributeProfile.setDouble(false);
-							}
-						}
-						
-						
+						currentAttributeProfile.doTypeChecking(val);
 						// sourcePropertiesSet.add(path);
 						currentCacheEntry.addValue(path, val);
 						
@@ -457,6 +474,8 @@ public class DummyBlockerOnlyObjectIdentificationMethod implements
 					}
 					
 				}
+				log.info("Source instances: "+cache.getSourceCachedEntries().size());
+				
 				log.info(paths.size());
 				
 				for(String tmp : paths) {
@@ -470,11 +489,18 @@ public class DummyBlockerOnlyObjectIdentificationMethod implements
 			
 		}
 		
+		double freq;
 		for(String key : sourceAttributeProfiles.keySet()) {
 			currentAttributeProfile = sourceAttributeProfiles.get(key);
 			currentAttributeProfile.summarize();
+			
+			freq = ((double)currentAttributeProfile.getMentionedIn())/cache.getSourceCachedEntries().size();
+			
 			currentAttribute = currentAttributeProfile.createAttribute();
-			sourcePropertiesSet.add(currentAttribute);
+			
+			if((currentAttribute.getType()!=AttributeType.INTEGER)&&(freq>0.6)&&(!currentAttribute.getPropertyPath().endsWith("search_api_query"))) {
+				sourcePropertiesSet.add(currentAttribute);
+			}
 		}
 		
 		log.info("Initialize source property pool... finished");

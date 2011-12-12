@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
@@ -14,6 +15,7 @@ import org.openrdf.model.vocabulary.RDF;
 import uk.ac.open.kmi.fusion.api.IObjectContextWrapper;
 import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
 import uk.ac.open.kmi.fusion.learning.CacheEntryBackedObjectContextWrapper;
+import uk.ac.open.kmi.fusion.util.KnoFussUtils;
 
 public class CacheEntry {
 
@@ -79,6 +81,15 @@ public class CacheEntry {
 		}
 		if(!tmpValueSet.contains(value)) {
 			tmpValueSet.add(value);
+		}
+		
+		if(value instanceof String) {
+			Set<String> alts = KnoFussUtils.getAlternativeStringValues((String)value);
+			for(String alt : alts) {
+				if(!tmpValueSet.contains(alt)) {
+					tmpValueSet.add(alt);
+				}
+			}
 		}
 		
 	}
