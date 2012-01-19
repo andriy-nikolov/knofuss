@@ -54,7 +54,7 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 	private FusionMethodWrapper descriptor;
 	private static Logger log = Logger.getLogger(GeneticAlgorithmObjectIdentificationMethod.class);
 	
-	private int depth = 2;
+	private int depth = 1;
 	
 	// private boolean useUnsupervisedFitness = true;
 	private boolean useUnsupervisedFitness = true;

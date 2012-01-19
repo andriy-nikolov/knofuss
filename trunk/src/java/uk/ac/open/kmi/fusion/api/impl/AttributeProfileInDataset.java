@@ -47,7 +47,7 @@ public class AttributeProfileInDataset {
 			}
 		} else if(isDate) {
 			attribute.setType(AttributeType.DATE);
-		} else if(averageNumberOfTokens>5) {
+		} else if(averageNumberOfTokens>10) {
 			attribute.setType(AttributeType.LONG_TEXT);
 		} else if(averageNumberOfTokens<=1.01) {
 			attribute.setType(AttributeType.NOMINAL);
