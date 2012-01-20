@@ -32,8 +32,8 @@ import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.DefaultFitnessFunction;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.F1Fitness;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.IFitnessFunction;
-// import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitness;
-import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitnessNeighbourhoodGrowth;
+import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitness;
+// import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitnessNeighbourhoodGrowth;
 import uk.ac.open.kmi.fusion.learning.genetic.crossover.CrossoverOperatorFactory;
 import uk.ac.open.kmi.fusion.learning.genetic.crossover.ICrossoverOperator;
 import uk.ac.open.kmi.fusion.learning.genetic.mutation.IMutationOperator;
@@ -155,8 +155,8 @@ public class CandidateSolutionPool {
 		double epsilon = 0.000001;
 		int numberOfIterations = 0;
 		F1Fitness realFitness;
-		// UnsupervisedFitness unsupervisedFitness;
-		UnsupervisedFitnessNeighbourhoodGrowth unsupervisedFitness;
+		UnsupervisedFitness unsupervisedFitness;
+		// UnsupervisedFitnessNeighbourhoodGrowth unsupervisedFitness;
 	
 		int iterations = 0;
 		int solutions;
@@ -183,8 +183,8 @@ public class CandidateSolutionPool {
 				solutions ++;
 				solutionResults = solution.applySolution(cache, useSampling, false);
 				realFitness = this.evaluateFitness(solution, solutionResults.keySet(), sampleGoldStandard);
-				// unsupervisedFitness = UnsupervisedFitness.calculateUnsupervisedFitness(solution, solutionResults, cache);
-				unsupervisedFitness = UnsupervisedFitnessNeighbourhoodGrowth.calculateUnsupervisedFitness(solution, solutionResults, cache);
+				unsupervisedFitness = UnsupervisedFitness.calculateUnsupervisedFitness(solution, solutionResults, cache);
+				// unsupervisedFitness = UnsupervisedFitnessNeighbourhoodGrowth.calculateUnsupervisedFitness(solution, solutionResults, cache);
 				
 				if(solutions==10) {
 					log.info("Top 10");
@@ -302,8 +302,8 @@ public class CandidateSolutionPool {
 			this.finalSolutionResults = bestSolution.applySolution(cache, false, true);
 			
 			realFitness = this.evaluateFitness(finalSolution, finalSolutionResults.keySet(), goldStandardSet);
-			// unsupervisedFitness = UnsupervisedFitness.calculateUnsupervisedFitness(finalSolution, finalSolutionResults, cache);
-			unsupervisedFitness = UnsupervisedFitnessNeighbourhoodGrowth.calculateUnsupervisedFitness(finalSolution, finalSolutionResults, cache);
+			unsupervisedFitness = UnsupervisedFitness.calculateUnsupervisedFitness(finalSolution, finalSolutionResults, cache);
+			// unsupervisedFitness = UnsupervisedFitnessNeighbourhoodGrowth.calculateUnsupervisedFitness(finalSolution, finalSolutionResults, cache);
 			
 			log.info("Best unsupervised fitness after threshold cut-off: "+unsupervisedFitness.getValue()+", pseudo precision: "+unsupervisedFitness.getPrecision()+", pseudo recall: "+unsupervisedFitness.getRecall());
 			log.info("Best real fitness corresponding to the best unsupervised fitness after threshold cut-off: "+realFitness.getValue()+", precision: "+realFitness.getPrecision()+", recall: "+realFitness.getRecall());
