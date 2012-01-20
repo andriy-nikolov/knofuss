@@ -1,0 +1,3 @@
+The command to run an example (taken from the OAEI 2010 benchmark)
+
+java -Xmx4000m -jar dist/knofuss-standalone.jar -c example/example-config-restaurant.rdf
