@@ -39,6 +39,8 @@
 	</target>
 
 	<target name="distfiles">
+	       <mkdir dir="${dist}" />
+	       
 	       <!-- Copy in lib files -->
 	        <mkdir dir="${dist}/lib" />
 
