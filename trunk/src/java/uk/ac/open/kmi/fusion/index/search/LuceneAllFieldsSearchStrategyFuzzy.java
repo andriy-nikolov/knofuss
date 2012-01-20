@@ -142,12 +142,12 @@ public class LuceneAllFieldsSearchStrategyFuzzy extends AbstractLuceneSearchStra
 	    	String queryStringTmp = LuceneUtils.getTransducedQuery(getConcatenatedString(allFieldValues));
 	    	String queryString = queryStringTmp;
 	    	
-	    	/*StringTokenizer tokenizer = new StringTokenizer(queryStringTmp, " ");
+	    	StringTokenizer tokenizer = new StringTokenizer(queryStringTmp, " ");
 	    	
 	    	while(tokenizer.hasMoreTokens()) {
 	    		queryString+=tokenizer.nextToken();
 	    		queryString+="~0.6 ";
-	    	}*/
+	    	}
 	    	
 	    	Query query = null;
     		QueryParser queryParser = new MultiFieldQueryParser(Version.LUCENE_30, searchFields, analyzer);
