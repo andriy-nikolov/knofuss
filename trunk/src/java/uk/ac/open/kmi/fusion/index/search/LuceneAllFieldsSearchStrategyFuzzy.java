@@ -46,6 +46,8 @@ public class LuceneAllFieldsSearchStrategyFuzzy extends AbstractLuceneSearchStra
 
 	String[] fieldNames;
 	
+	protected double fuzzyThreshold = 0.6;
+	
 	Logger log = Logger.getLogger(LuceneAllFieldsSearchStrategyFuzzy.class);
 	
 	public LuceneAllFieldsSearchStrategyFuzzy(Directory directory) {
@@ -140,13 +142,13 @@ public class LuceneAllFieldsSearchStrategyFuzzy extends AbstractLuceneSearchStra
 	    	}
 	    	
 	    	String queryStringTmp = LuceneUtils.getTransducedQuery(getConcatenatedString(allFieldValues));
-	    	String queryString = queryStringTmp;
+	    	String queryString = "";
 	    	
 	    	StringTokenizer tokenizer = new StringTokenizer(queryStringTmp, " ");
 	    	
 	    	while(tokenizer.hasMoreTokens()) {
 	    		queryString+=tokenizer.nextToken();
-	    		queryString+="~0.6 ";
+	    		queryString+="~"+Double.toString(this.fuzzyThreshold)+" ";
 	    	}
 	    	
 	    	Query query = null;
@@ -183,5 +185,14 @@ public class LuceneAllFieldsSearchStrategyFuzzy extends AbstractLuceneSearchStra
 
 	}
 
+	public double getFuzzyThreshold() {
+		return fuzzyThreshold;
+	}
+
+	public void setFuzzyThreshold(double fuzzyThreshold) {
+		this.fuzzyThreshold = fuzzyThreshold;
+	}
+
+	
 	
 }
