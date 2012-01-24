@@ -25,19 +25,20 @@
 
   <SesameDataSource rdf:ID="SourceOWLIMRepository">
     <configurationFile>source-owlim.ttl</configurationFile>
-    <path>c:/dataset/OWLIM</path>
+    <path>data/sesame</path>
     <name>source-default</name>
     <refresh>true</refresh>
     <loadFrom rdf:resource="#EventsSource"/>
   </SesameDataSource>
   
   <FileDump rdf:ID="EventsSource">
-	<dataFile>d:/work/dataset/events/eventful/events-subset.nt</dataFile>
+	<!-- <dataFile>d:/work/dataset/events/eventful/events-subset.nt</dataFile> -->
+        <dataFile>d:/work/dataset/events/eventful.nt</dataFile>
   </FileDump>
     
   <SesameDataSource rdf:ID="TargetOWLIMRepository">
     <configurationFile>target-owlim.ttl</configurationFile>
-    <path>c:/dataset/OWLIM</path>
+    <path>data/sesame</path>
     <name>target-default</name>
     <refresh>true</refresh>
     <loadFrom rdf:resource="#EventsTarget"/>
@@ -45,15 +46,17 @@
   </SesameDataSource>
 
   <FileDump rdf:ID="EventsTarget">
-	<dataFile>d:/work/dataset/events/eventful/events-subset.nt</dataFile>
+	<!-- <dataFile>d:/work/dataset/events/eventful/events-subset.nt</dataFile> -->
 	<!-- <dataFile>d:/work/dataset/events/lastfm/events.nt</dataFile> -->
+	<dataFile>d:/work/dataset/events/upcoming.nt</dataFile>
   </FileDump>
 
   <LuceneDiskBlocker rdf:ID="LuceneIndexAllFields">
-    <path>c:/dataset/lucene/oaei2011</path>
-    <searchStrategy>all</searchStrategy>
+    <path>data/lucene</path>
+    <searchStrategy>fuzzy</searchStrategy>
     <refresh>true</refresh>
     <threshold>0.0</threshold>
+    <fuzzyThreshold>0.0</fuzzyThreshold>
     <depth>2</depth>
     <cutOff>30</cutOff>
   </LuceneDiskBlocker>
@@ -63,8 +66,8 @@
   <LinkSession rdf:ID="MainLinkSession">
     <sourceDataset rdf:resource="#SourceOWLIMRepository"/>
     <targetDataset rdf:resource="#TargetOWLIMRepository"/>
-    <instanceMatchingSpec rdf:resource="#EventGeneticApplicationContext"/>
-    <!-- <instanceMatchingSpec rdf:resource="#EventPredefinedApplicationContext"/> -->
+    <!-- <instanceMatchingSpec rdf:resource="#EventGeneticApplicationContext"/> -->
+    <instanceMatchingSpec rdf:resource="#EventPredefinedApplicationContext"/>
     <!-- <datasetMatchingSpec rdf:resource="#PostFilterApplicationContext"/> -->
     <!-- <datasetMatchingSpec rdf:resource="#FunctionalApplicationContext"/> -->
     <!-- <goldStandard>C:/Dataset/oaei2011/goldstandards/nyt-dbpedia-organizations-mappings.rdf</goldStandard> -->
@@ -134,41 +137,14 @@
 	<hasObjectModel>
 	      <ObjectContextModel>
 		<aggregationFunction>average</aggregationFunction>
-		<threshold>0.75</threshold>
+		<threshold>1.0</threshold>
 		<variableComparison>
 		   <VariableComparisonSpec>
 		     <variable>name</variable>
 		     <sourcePath>?uri dc:title ?name .</sourcePath>
 		     <targetPath>?uri dc:title ?name .</targetPath>
-		     <metric>i-sub</metric>
-                     <weight>0.25</weight>
-		   </VariableComparisonSpec>
-		</variableComparison>
-		<variableComparison>
-		   <VariableComparisonSpec>
-		     <variable>time</variable>
-		     <sourcePath>?uri lode:atTime ?x . ?x w3ctime:inXSDDateTime ?time . </sourcePath>
-		     <targetPath>?uri lode:atTime ?x . ?x w3ctime:inXSDDateTime ?time . </targetPath>
-		     <metric>date</metric>
-                     <weight>0.25</weight>
-		   </VariableComparisonSpec>
-		</variableComparison>
-		<variableComparison>
-		   <VariableComparisonSpec>
-		     <variable>long</variable>
-		     <sourcePath>?uri lode:inSpace ?y . ?y wgs84:long ?long . </sourcePath>
-		     <targetPath>?uri lode:inSpace ?y . ?y wgs84:long ?long . </targetPath>
-		     <metric>double</metric>
-                     <weight>0.125</weight>
-		   </VariableComparisonSpec>
-		</variableComparison>
-		<variableComparison>
-		   <VariableComparisonSpec>
-		     <variable>lat</variable>
-		     <sourcePath>?uri lode:inSpace ?y . ?y wgs84:lat ?lat . </sourcePath>
-		     <targetPath>?uri lode:inSpace ?y . ?y wgs84:lat ?lat . </targetPath>
-		     <metric>double</metric>
-                     <weight>0.125</weight>
+		     <metric>jaro</metric>
+                     <weight>1</weight>
 		   </VariableComparisonSpec>
 		</variableComparison>
 	      </ObjectContextModel> 
