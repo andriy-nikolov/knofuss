@@ -14,7 +14,6 @@ public class CompositeAttribute implements IAttribute {
 	
 	@Override
 	public AttributeType getType() {
-		// TODO Auto-generated method stub
 		return AttributeType.COMPOSITE;
 	}
 	

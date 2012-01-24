@@ -10,6 +10,7 @@ import java.util.Set;
 
 import uk.ac.open.kmi.common.utils.Utils;
 import uk.ac.open.kmi.fusion.api.IAttribute;
+import uk.ac.open.kmi.fusion.api.ICustomValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.AttributeType;
 
@@ -36,7 +37,7 @@ public final class ValueMatchingFunctionFactory {
 		//IValueMatchingFunction.AVERAGE_JARO_WINKLER,
 	};
 	
-	private static Map<String, IValueMatchingFunction> pool = new HashMap<String, IValueMatchingFunction>();
+	private static Map<String, IValueMatchingFunction<? extends Object>> pool = new HashMap<String, IValueMatchingFunction<? extends Object>>();
 	
 	static {
 		pool.put(IValueMatchingFunction.JARO, JaroValueMatchingFunction.getInstance());
@@ -59,12 +60,16 @@ public final class ValueMatchingFunctionFactory {
 		
 	}
 	
-	public static IValueMatchingFunction getInstance(String name) {
+	public static IValueMatchingFunction<? extends Object> getInstance(String name) {
 		if(pool.containsKey(name)) {
 			return pool.get(name);
 		} else {
 			throw new IllegalArgumentException("Unknown value matching function: "+name);
 		}
+	}
+	
+	public static void addToPool(ICustomValueMatchingFunction<? extends Object> function) {
+		pool.put(function.toString(), function);
 	}
 	
 /*	public static IValueMatchingFunction getRandomInstance() {
@@ -77,10 +82,10 @@ public final class ValueMatchingFunctionFactory {
 		return res;
 	}*/
 	
-	public static List<IValueMatchingFunction> getApplicableFunctionsForAttributes(IAttribute attr1, IAttribute attr2) {
+	public static List<IValueMatchingFunction<? extends Object>> getApplicableFunctionsForAttributes(IAttribute attr1, IAttribute attr2) {
 		
-		Set<IValueMatchingFunction> applicableFunctions = new HashSet<IValueMatchingFunction>();
-		IValueMatchingFunction tmp;
+		Set<IValueMatchingFunction<? extends Object>> applicableFunctions = new HashSet<IValueMatchingFunction<? extends Object>>();
+		IValueMatchingFunction<? extends Object> tmp;
 		
 		for(String key : pool.keySet()) {
 			tmp = pool.get(key);
@@ -92,15 +97,15 @@ public final class ValueMatchingFunctionFactory {
 			}
 		}
 		
-		return new ArrayList<IValueMatchingFunction>(applicableFunctions);
+		return new ArrayList<IValueMatchingFunction<? extends Object>>(applicableFunctions);
 		
 	}
 	
-	public static IValueMatchingFunction getRandomInstanceForAttributes(IAttribute attr1, IAttribute attr2) {
+	public static IValueMatchingFunction<? extends Object> getRandomInstanceForAttributes(IAttribute attr1, IAttribute attr2) {
 		
-		IValueMatchingFunction res = null;
+		IValueMatchingFunction<? extends Object> res = null;
 		
-		List<IValueMatchingFunction> applicableFunctions = getApplicableFunctionsForAttributes(attr1, attr2);
+		List<IValueMatchingFunction<? extends Object>> applicableFunctions = getApplicableFunctionsForAttributes(attr1, attr2);
 		
 		if(applicableFunctions.size()>0) {
 			Collections.shuffle(applicableFunctions);

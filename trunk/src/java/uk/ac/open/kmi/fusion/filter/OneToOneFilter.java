@@ -383,7 +383,7 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 	private AtomicMapping findTheBestMapping(Set<AtomicMapping> mappings) {
 		
 		// IValueMatchingFunction<String> function = ValueMatchingFunctionFactory.getInstance("l2 levenshtein");
-		IValueMatchingFunction<String> function = ValueMatchingFunctionFactory.getInstance("overlap");
+		IValueMatchingFunction<String> function = (IValueMatchingFunction<String>)ValueMatchingFunctionFactory.getInstance("overlap");
 		countAlmostSame++;
 		//IValueMatchingFunction<String> function = SetDifferenceValueMatchingFunction.getInstance();
 		

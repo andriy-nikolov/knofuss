@@ -78,7 +78,7 @@ public class CandidateSolutionPool {
 	private List<ChartPoint2D> bestRealFitnessPoints;
 	private List<ChartPoint2D> bestRealFitnessCorrespondingToBestUnsupervisedFitnessPoints;
 	
-	Map<AtomicAttribute, Map<AtomicAttribute, List<IValueMatchingFunction>>> mapApplicableFunctions;
+	Map<AtomicAttribute, Map<AtomicAttribute, List<IValueMatchingFunction<? extends Object>>>> mapApplicableFunctions;
 
 	private ICrossoverOperator crossoverOperator;
 	private IMutationOperator mutationOperator;
@@ -118,7 +118,7 @@ public class CandidateSolutionPool {
 		bestUnsupervisedFitnessPoints = new LinkedList<ChartPoint2D>();
 		bestRealFitnessCorrespondingToBestUnsupervisedFitnessPoints = new LinkedList<ChartPoint2D>();
 		bestRealFitnessPoints = new LinkedList<ChartPoint2D>();
-		mapApplicableFunctions = new HashMap<AtomicAttribute, Map<AtomicAttribute, List<IValueMatchingFunction>>>();
+		mapApplicableFunctions = new HashMap<AtomicAttribute, Map<AtomicAttribute, List<IValueMatchingFunction<? extends Object>>>>();
 		
 		this.crossoverOperator = CrossoverOperatorFactory.getInstance(ICrossoverOperator.CROSSOVER_SPLIT_BY_MATRIX_INDEX);
 		this.mutationOperator = MutationOperatorFactory.getInstance(IMutationOperator.MUTATION_DEFAULT);
@@ -132,10 +132,10 @@ public class CandidateSolutionPool {
 			sampleGoldStandard = goldStandardSet;
 		}
 		
-		Map<AtomicAttribute, List<IValueMatchingFunction>> validFunctionsMap;
-		List<IValueMatchingFunction> validFunctions;
+		Map<AtomicAttribute, List<IValueMatchingFunction<? extends Object>>> validFunctionsMap;
+		List<IValueMatchingFunction<? extends Object>> validFunctions;
 		for(AtomicAttribute attribute1 : this.sourcePropertiesPool) {
-			validFunctionsMap = new HashMap<AtomicAttribute, List<IValueMatchingFunction>>();
+			validFunctionsMap = new HashMap<AtomicAttribute, List<IValueMatchingFunction<? extends Object>>>();
 			for(AtomicAttribute attribute2 : this.targetPropertiesPool) {
 				validFunctions = ValueMatchingFunctionFactory.getApplicableFunctionsForAttributes(attribute1, attribute2);
 				validFunctionsMap.put(attribute2, validFunctions);

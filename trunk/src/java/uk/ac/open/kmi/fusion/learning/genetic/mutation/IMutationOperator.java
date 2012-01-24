@@ -12,6 +12,6 @@ public interface IMutationOperator {
 	
 	public static final int MUTATION_DEFAULT = 0;
 
-	public abstract CandidateSolution mutate(CandidateSolution original, List<AtomicAttribute> sourceProperties, List<AtomicAttribute> targetProperties, Map<AtomicAttribute, Map<AtomicAttribute, List<IValueMatchingFunction>>> mapApplicableFunctions, boolean aligned);
+	public abstract CandidateSolution mutate(CandidateSolution original, List<AtomicAttribute> sourceProperties, List<AtomicAttribute> targetProperties, Map<AtomicAttribute, Map<AtomicAttribute, List<IValueMatchingFunction<? extends Object>>>> mapApplicableFunctions, boolean aligned);
 
 }

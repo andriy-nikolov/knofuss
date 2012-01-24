@@ -35,7 +35,7 @@ public class CandidateSolutionTest {
 	
 	ApplicationContext applicationContext;
 	
-	Map<AtomicAttribute, Map<AtomicAttribute, List<IValueMatchingFunction>>> mapApplicableFunctions;
+	Map<AtomicAttribute, Map<AtomicAttribute, List<IValueMatchingFunction<? extends Object>>>> mapApplicableFunctions;
 	
 	String[] sp = {
 			RDFS.LABEL.toString(),
@@ -51,7 +51,7 @@ public class CandidateSolutionTest {
 	@Before
 	public void setUp() throws Exception {
 		
-		mapApplicableFunctions = new HashMap<AtomicAttribute, Map<AtomicAttribute, List<IValueMatchingFunction>>>();
+		mapApplicableFunctions = new HashMap<AtomicAttribute, Map<AtomicAttribute, List<IValueMatchingFunction<? extends Object>>>>();
 		
 		sourceProperties = new ArrayList<AtomicAttribute>(sp.length);
 		targetProperties = new ArrayList<AtomicAttribute>(tp.length);
@@ -65,10 +65,10 @@ public class CandidateSolutionTest {
 			targetProperties.add(attribute);
 		}
 		
-		Map<AtomicAttribute, List<IValueMatchingFunction>> validFunctionsMap;
-		List<IValueMatchingFunction> validFunctionList;
+		Map<AtomicAttribute, List<IValueMatchingFunction<? extends Object>>> validFunctionsMap;
+		List<IValueMatchingFunction<? extends Object>> validFunctionList;
 		for(AtomicAttribute sourceAttribute : sourceProperties) {
-			validFunctionsMap = new HashMap<AtomicAttribute, List<IValueMatchingFunction>>();
+			validFunctionsMap = new HashMap<AtomicAttribute, List<IValueMatchingFunction<? extends Object>>>();
 			for(AtomicAttribute targetAttribute : targetProperties) {
 				validFunctionList = ValueMatchingFunctionFactory.getApplicableFunctionsForAttributes(sourceAttribute, targetAttribute);
 				validFunctionsMap.put(targetAttribute, validFunctionList);
@@ -107,7 +107,7 @@ public class CandidateSolutionTest {
 		
 		Genotype genotype = new Genotype(sourceProperties.size(), targetProperties.size());
 		
-		IValueMatchingFunction[][] functions = genotype.getGenotypeFunctions();
+		IValueMatchingFunction<? extends Object>[][] functions = genotype.getGenotypeFunctions();
 		Double[][] weights = genotype.getGenotypeWeights();
 		
 		functions[0][0] = ValueMatchingFunctionFactory.getInstance(IValueMatchingFunction.JARO_WINKLER);
