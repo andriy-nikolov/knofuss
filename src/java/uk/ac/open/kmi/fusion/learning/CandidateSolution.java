@@ -159,7 +159,7 @@ public class CandidateSolution {
 		this.genotype.setGenotypeFunctions(genotypeFunctions);
 	}
 
-	public static CandidateSolution createRandom(ApplicationContext applicationContext, List<AtomicAttribute> sourceProperties, List<AtomicAttribute> targetProperties, Map<AtomicAttribute, Map<AtomicAttribute, List<IValueMatchingFunction>>> mapApplicableFunctions, boolean aligned) {
+	public static CandidateSolution createRandom(ApplicationContext applicationContext, List<AtomicAttribute> sourceProperties, List<AtomicAttribute> targetProperties, Map<AtomicAttribute, Map<AtomicAttribute, List<IValueMatchingFunction<? extends Object>>>> mapApplicableFunctions, boolean aligned) {
 		int currentVarIndex = 0;
 		String currentVarName;
 		VariableComparisonSpecification specification;

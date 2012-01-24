@@ -32,7 +32,7 @@ public class DefaultMutationOperator implements IMutationOperator {
 	}
 
 	@Override
-	public CandidateSolution mutate(CandidateSolution original, List<AtomicAttribute> sourceProperties, List<AtomicAttribute> targetProperties, Map<AtomicAttribute, Map<AtomicAttribute, List<IValueMatchingFunction>>> mapApplicableFunctions, boolean aligned) {
+	public CandidateSolution mutate(CandidateSolution original, List<AtomicAttribute> sourceProperties, List<AtomicAttribute> targetProperties, Map<AtomicAttribute, Map<AtomicAttribute, List<IValueMatchingFunction<? extends Object>>>> mapApplicableFunctions, boolean aligned) {
 		
 		int rows = sourceProperties.size();
 		int columns = targetProperties.size();
@@ -111,7 +111,7 @@ public class DefaultMutationOperator implements IMutationOperator {
 				
 					// Flip the bit
 					//childGenotype.genotypeFunctions[x][y] = ValueMatchingFunctionFactory.getInstance(IValueMatchingFunction.JARO_WINKLER);
-					List<IValueMatchingFunction> functionsList = mapApplicableFunctions.get(sourceProperties.get(x)).get(targetProperties.get(y));
+					List<IValueMatchingFunction<? extends Object>> functionsList = mapApplicableFunctions.get(sourceProperties.get(x)).get(targetProperties.get(y));
 					Collections.shuffle(functionsList);
 					
 					childGenotype.getGenotypeFunctions()[x][y] = functionsList.get(0);

@@ -32,6 +32,7 @@ import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
 import uk.ac.open.kmi.fusion.api.IPersistentStore;
 import uk.ac.open.kmi.fusion.api.impl.datasource.FileDump;
 import uk.ac.open.kmi.fusion.api.impl.datasource.SesameDataSource;
+import uk.ac.open.kmi.fusion.api.impl.valuematching.ValueMatchingFunctionFactory;
 //import uk.ac.open.kmi.fusion.index.LuceneDiskIndexer;
 //import uk.ac.open.kmi.fusion.index.LuceneDiskIndexerAllFields;
 //import uk.ac.open.kmi.fusion.index.LuceneMemoryIndexerAllFields;
@@ -76,7 +77,6 @@ public class FusionEnvironment {
 	private Map<String, MappingSet> mappingSetTable;
 	private List<ConflictStatementCluster> conflictSets;	
 	private List<ObjectContextModel> contextModels;
-	// private Map<String, ObjectContextModel> contextModelTable;
 	private List<ObjectContextWrapper> contextWrappers;
 	private List<ApplicationContext> applicationContexts;
 	private Map<String, ObjectContextWrapper> contextWrapperTable;
@@ -84,6 +84,7 @@ public class FusionEnvironment {
 	private String defaultNamespaceURI;
 	private Map<String, String> namespaceURITable;
 	private List<FusionMethodWrapper> methodWrappers;
+	private List<ValueMatchingFunctionWrapper> valueMatchingFunctionWrappers;
 	private Map<String, String> abbreviations; 
 	
 	// private Map<String, FusionMethodWrapper> methodWrapperTable;
@@ -112,6 +113,8 @@ public class FusionEnvironment {
 		mappingSets = new ArrayList<MappingSet>();
 		mappingSetTable = new HashMap<String, MappingSet>();
 		methodWrappers = new ArrayList<FusionMethodWrapper>();
+		valueMatchingFunctionWrappers = new ArrayList<ValueMatchingFunctionWrapper>();
+		
 		// methodWrapperTable = new HashMap<String, FusionMethodWrapper>();
 		atomicMappingTable = new HashMap<String, AtomicMapping>();
 		// queryMappings = new HashMap<String, String>();
@@ -196,6 +199,8 @@ public class FusionEnvironment {
 				this.configObjectRegistry.put(res, obj);
 				if(obj instanceof LinkSession) {
 					this.linkSessions.add((LinkSession)obj);
+				} else if(obj instanceof ValueMatchingFunctionWrapper) {
+					this.valueMatchingFunctionWrappers.add((ValueMatchingFunctionWrapper)obj);
 				}
 			} catch(FusionException e) {
 				e.printStackTrace();
@@ -206,6 +211,10 @@ public class FusionEnvironment {
 		for(Resource res : this.configObjectRegistry.keySet()) {
 			obj = this.configObjectRegistry.get(res);
 			obj.readFromRDFIndividual(connection);
+			
+			if(obj instanceof ValueMatchingFunctionWrapper) {
+				ValueMatchingFunctionFactory.addToPool(((ValueMatchingFunctionWrapper) obj).getImplementation());
+			}
 		}
 		
 	}
@@ -364,6 +373,10 @@ public class FusionEnvironment {
 
 	public List<FusionMethodWrapper> getMethodWrappers() {
 		return methodWrappers;
+	}
+	
+	public List<ValueMatchingFunctionWrapper> getValueMatchingFunctionWrappers() {
+		return valueMatchingFunctionWrappers;
 	}
 
 	public void addAtomicMapping(AtomicMapping obj) {

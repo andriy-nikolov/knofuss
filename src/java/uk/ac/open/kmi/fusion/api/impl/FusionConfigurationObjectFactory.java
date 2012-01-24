@@ -40,6 +40,8 @@ public class FusionConfigurationObjectFactory {
 							return new ApplicationContext(resource, environment);
 						} else if(typeUri.equals(FusionMethodWrapper.TYPE_URI)) {
 							return new FusionMethodWrapper(resource, environment);
+						} else if(typeUri.equals(ValueMatchingFunctionWrapper.TYPE_URI)) {
+							return new ValueMatchingFunctionWrapper(resource, environment);
 						} else if(typeUri.equals(SesameDataSource.TYPE_URI)) {
 							return new SesameDataSource(resource, environment);
 						} else if(typeUri.equals(FileDump.TYPE_URI)) {

@@ -132,7 +132,11 @@
     <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >uk.ac.open.kmi.fusion.objectidentification.standard.StandardObjectIdentificationMethod</hasImplementingClass>
   </FusionMethod>
-  
+
+  <ValueMatchingFunction rdf:ID="TestEventValueMatchingFunction">
+    <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >uk.ac.open.kmi.fusion.api.impl.valuematching.TestEventValueMatchingFunction</hasImplementingClass>
+  </ValueMatchingFunction>
 
   <!-- Descriptor of the matching algorithm. 
   	   In this case, the unsupervised self-adaptive algorithm, 

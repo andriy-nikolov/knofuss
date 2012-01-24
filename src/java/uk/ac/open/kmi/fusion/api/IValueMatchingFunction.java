@@ -34,4 +34,5 @@ public interface IValueMatchingFunction<T> {
 	public AttributeType[][] suitableForTypes();
 	
 	public void setAttributeFeatures(IAttribute attr1, IAttribute attr2);
+	
 }

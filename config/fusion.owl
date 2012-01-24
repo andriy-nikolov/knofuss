@@ -330,8 +330,15 @@
 
     <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasImplementingClass">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
-        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionMethod"/>
         <rdfs:range rdf:resource="&xsd;string"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#FusionMethod"/>
+                    <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#ValueMatchingFunction"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
     </owl:DatatypeProperty>
     
 
@@ -689,14 +696,6 @@
     
 
 
-    <!-- http://kmi.open.ac.uk/fusion/fusion#SesameDataSource -->
-
-    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#SesameDataSource">
-        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#DataSource"/>
-    </owl:Class>
-    
-
-
     <!-- http://kmi.open.ac.uk/fusion/fusion#ObjectContext -->
 
     <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#ObjectContext">
@@ -727,6 +726,14 @@
     
 
 
+    <!-- http://kmi.open.ac.uk/fusion/fusion#SesameDataSource -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#SesameDataSource">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#DataSource"/>
+    </owl:Class>
+    
+
+
     <!-- http://kmi.open.ac.uk/fusion/fusion#SesameMemoryDataSource -->
 
     <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#SesameMemoryDataSource">
@@ -739,6 +746,14 @@
 
     <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#SesameNativeDataSource">
         <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#DataSource"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#ValueMatchingFunction -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#ValueMatchingFunction">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionConfigurationObject"/>
     </owl:Class>
     
 
