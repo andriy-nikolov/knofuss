@@ -85,6 +85,7 @@ public class LuceneDiskIndexer extends LuceneIndexer implements IPersistentStore
 					break;
 				case FUZZY:
 					this.searchStrategy = new LuceneAllFieldsSearchStrategyFuzzy(directory);
+					((LuceneAllFieldsSearchStrategyFuzzy)this.searchStrategy).setFuzzyThreshold(fuzzyThreshold);
 					break;
 				case ENHANCED:
 					this.searchStrategy = new LuceneAlignedFieldsEnhancedSearchStrategy(directory);

@@ -58,6 +58,7 @@ public interface FusionMetaVocabulary {
 	public static final String LOAD_FROM = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"loadFrom";
 	public static final String REFRESH = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"refresh";
 	public static final String CUT_OFF = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"cutOff";
+	public static final String FUZZY_THRESHOLD = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"fuzzyThreshold";
 	
 	public static final String FUSION_CONFIGURATION_OBJECT = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"FusionConfigurationObject";
 	public static final String APPLICATION_CONTEXT = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"ApplicationContext";

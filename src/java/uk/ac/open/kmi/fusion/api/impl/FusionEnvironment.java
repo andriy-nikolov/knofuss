@@ -86,7 +86,7 @@ public class FusionEnvironment {
 	private List<FusionMethodWrapper> methodWrappers;
 	private List<ValueMatchingFunctionWrapper> valueMatchingFunctionWrappers;
 	private Map<String, String> abbreviations; 
-	
+
 	// private Map<String, FusionMethodWrapper> methodWrapperTable;
 	// private Map<String, ConflictStatementCluster> conflictSetTable;
 	// private RepositoryConnection connection;

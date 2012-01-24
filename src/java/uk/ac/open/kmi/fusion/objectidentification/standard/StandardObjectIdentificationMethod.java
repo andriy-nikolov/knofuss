@@ -115,38 +115,42 @@ public class StandardObjectIdentificationMethod implements IObjectIdentification
 	}
 
 	private void compareWithGoldStandard(ApplicationContext context, List<AtomicMapping> resultMappings) {
-		Set<String> goldStandardMissed = new HashSet<String>(context.getGoldStandard().keySet());
 		
-		String key;
-		int tp = 0, fp = 0, fn = 0;
+		if(context.getGoldStandard()!=null) {
 		
-		for(AtomicMapping mapping : resultMappings) {
-			key = mapping.getSourceIndividual().toString()+" : "+mapping.getTargetIndividual().toString();
-
-			if(goldStandardMissed.contains(key)) {
-				tp++;
-				mapping.setCorrect(true);
-				goldStandardMissed.remove(key);
-			} else {
-				fp++;
+			Set<String> goldStandardMissed = new HashSet<String>(context.getGoldStandard().keySet());
+			
+			String key;
+			int tp = 0, fp = 0, fn = 0;
+			
+			for(AtomicMapping mapping : resultMappings) {
+				key = mapping.getSourceIndividual().toString()+" : "+mapping.getTargetIndividual().toString();
+	
+				if(goldStandardMissed.contains(key)) {
+					tp++;
+					mapping.setCorrect(true);
+					goldStandardMissed.remove(key);
+				} else {
+					fp++;
+				}
 			}
+			
+			fn = goldStandardMissed.size();
+			
+			double precision, recall, f1;
+			
+			if (tp==0) {
+				precision = 0.0;
+				recall = 0.0;
+				f1 = 0.0;
+			} else {
+				precision = ((double)tp)/(tp+fp);
+				recall = ((double)tp)/(tp+fn);
+				f1 = (2*precision*recall)/(precision+recall);
+			}
+			
+			log.info("F1: "+f1+", precision: "+precision+", recall: "+recall);
 		}
-		
-		fn = goldStandardMissed.size();
-		
-		double precision, recall, f1;
-		
-		if (tp==0) {
-			precision = 0.0;
-			recall = 0.0;
-			f1 = 0.0;
-		} else {
-			precision = ((double)tp)/(tp+fp);
-			recall = ((double)tp)/(tp+fn);
-			f1 = (2*precision*recall)/(precision+recall);
-		}
-		
-		log.info("F1: "+f1+", precision: "+precision+", recall: "+recall);
 		
 	}
 	

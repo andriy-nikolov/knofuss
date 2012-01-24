@@ -36,6 +36,7 @@ public abstract class LuceneIndexer extends FusionConfigurationObject implements
 	protected ILuceneStore storeStrategy;
 	
 	protected double threshold = 0.5;
+	protected double fuzzyThreshold = 0.6;
 	protected int cutOff = 5;
 	
 	int propertyPathDepth = 1;
@@ -92,6 +93,10 @@ public abstract class LuceneIndexer extends FusionConfigurationObject implements
 		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.CUT_OFF)) {
 			if(statement.getObject() instanceof Literal) {
 				this.cutOff = ((Literal)statement.getObject()).intValue();
+			}
+		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.FUZZY_THRESHOLD)) {
+			if(statement.getObject() instanceof Literal) {
+				this.fuzzyThreshold = ((Literal)statement.getObject()).doubleValue();
 			}
 		}
 	}
