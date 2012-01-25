@@ -32,8 +32,8 @@
   </SesameDataSource>
   
   <FileDump rdf:ID="EventsSource">
-	<!-- <dataFile>d:/work/dataset/events/eventful/events-subset.nt</dataFile> -->
-        <dataFile>d:/work/dataset/events/eventful.nt</dataFile>
+	<dataFile>d:/work/dataset/events/eventful/events-subset.nt</dataFile>
+        <!-- <dataFile>d:/work/dataset/events/eventful.nt</dataFile> -->
   </FileDump>
     
   <SesameDataSource rdf:ID="TargetOWLIMRepository">
@@ -46,17 +46,17 @@
   </SesameDataSource>
 
   <FileDump rdf:ID="EventsTarget">
-	<!-- <dataFile>d:/work/dataset/events/eventful/events-subset.nt</dataFile> -->
+	<dataFile>d:/work/dataset/events/eventful/events-subset.nt</dataFile>
 	<!-- <dataFile>d:/work/dataset/events/lastfm/events.nt</dataFile> -->
-	<dataFile>d:/work/dataset/events/upcoming.nt</dataFile>
+	<!-- <dataFile>d:/work/dataset/events/upcoming.nt</dataFile> -->
   </FileDump>
 
   <LuceneDiskBlocker rdf:ID="LuceneIndexAllFields">
     <path>data/lucene</path>
-    <searchStrategy>fuzzy</searchStrategy>
+    <searchStrategy>all</searchStrategy>
     <refresh>true</refresh>
     <threshold>0.0</threshold>
-    <fuzzyThreshold>0.0</fuzzyThreshold>
+    <!-- <fuzzyThreshold>0.0</fuzzyThreshold> -->
     <depth>2</depth>
     <cutOff>30</cutOff>
   </LuceneDiskBlocker>
@@ -144,7 +144,19 @@
 		     <sourcePath>?uri dc:title ?name .</sourcePath>
 		     <targetPath>?uri dc:title ?name .</targetPath>
 		     <metric>jaro</metric>
-                     <weight>1</weight>
+                     <weight>0.5</weight>
+		   </VariableComparisonSpec>
+		</variableComparison>
+		<variableComparison>
+		   <VariableComparisonSpec>
+		     <variable>long</variable>
+		     <variable>lat</variable>
+		     <sourcePath>?uri lode:inSpace ?x . ?x wgs84:long ?long .</sourcePath>
+		     <sourcePath>?uri lode:inSpace ?x . ?x wgs84:lat ?lat .</sourcePath>
+		     <targetPath>?uri lode:inSpace ?x . ?x wgs84:long ?long .</targetPath>
+		     <targetPath>?uri lode:inSpace ?x . ?x wgs84:lat ?lat .</targetPath>
+		     <metric>event</metric>
+                     <weight>0.5</weight>
 		   </VariableComparisonSpec>
 		</variableComparison>
 	      </ObjectContextModel> 
@@ -179,6 +191,10 @@
     <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >uk.ac.open.kmi.fusion.objectidentification.standard.StandardObjectIdentificationMethod</hasImplementingClass>
   </FusionMethod>
+  
+  <ValueMatchingFunction rdf:ID="EventComparisonFunction">
+    <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string">uk.ac.open.kmi.fusion.api.impl.valuematching.TestEventValueMatchingFunction</hasImplementingClass>
+  </ValueMatchingFunction>
   
 </rdf:RDF> 
 
