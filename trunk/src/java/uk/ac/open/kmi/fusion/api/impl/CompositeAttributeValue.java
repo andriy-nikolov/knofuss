@@ -69,6 +69,18 @@ public class CompositeAttributeValue {
 		return "("+str.toString().trim()+")";
 	}
 
+	public CompositeAttribute getAttribute() {
+		return attribute;
+	}
+
+	public void setAttribute(CompositeAttribute attribute) {
+		this.attribute = attribute;
+	}
+
+	public Map<IAttribute, List<? extends Object>> getAttributeValues() {
+		return attributeValues;
+	}
+
 	
 	
 }
