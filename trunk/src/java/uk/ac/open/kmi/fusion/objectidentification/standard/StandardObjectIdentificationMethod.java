@@ -115,7 +115,7 @@ public class StandardObjectIdentificationMethod implements IObjectIdentification
 	}
 
 	private void compareWithGoldStandard(ApplicationContext context, List<AtomicMapping> resultMappings) {
-		
+
 		if(context.getGoldStandard()!=null) {
 		
 			Set<String> goldStandardMissed = new HashSet<String>(context.getGoldStandard().keySet());

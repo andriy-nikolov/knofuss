@@ -6,10 +6,11 @@ import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.ICustomValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.AttributeType;
+import uk.ac.open.kmi.fusion.api.impl.CompositeAttributeValue;
 import uk.ac.open.kmi.fusion.api.impl.ValueMatchingFunctionWrapper;
 import uk.ac.open.kmi.fusion.objectidentification.standard.SimMetricsObjectIdentificationUtils;
 
-public class TestEventValueMatchingFunction implements ICustomValueMatchingFunction<String> {
+public class TestEventValueMatchingFunction implements ICustomValueMatchingFunction<CompositeAttributeValue> {
 
 	private static final TestEventValueMatchingFunction INSTANCE = new TestEventValueMatchingFunction(); 
 	private static final MongeElkan matcher = new MongeElkan();
@@ -25,8 +26,9 @@ public class TestEventValueMatchingFunction implements ICustomValueMatchingFunct
 	}
 
 	@Override
-	public double getSimilarity(IAttribute attr1, IAttribute attr2, String value1, String value2) {
-		return matcher.score(value1.toLowerCase(), value2.toLowerCase());
+	public double getSimilarity(IAttribute attr1, IAttribute attr2, CompositeAttributeValue value1, CompositeAttributeValue value2) {
+		// return matcher.score(value1.toLowerCase(), value2.toLowerCase());
+		return 0;
 	}
 
 	static TestEventValueMatchingFunction getInstance() {
