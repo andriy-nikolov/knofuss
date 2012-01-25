@@ -201,6 +201,8 @@ public class FusionEnvironment {
 					this.linkSessions.add((LinkSession)obj);
 				} else if(obj instanceof ValueMatchingFunctionWrapper) {
 					this.valueMatchingFunctionWrappers.add((ValueMatchingFunctionWrapper)obj);
+					obj.readFromRDFIndividual(connection);
+					ValueMatchingFunctionFactory.addToPool(((ValueMatchingFunctionWrapper) obj).getImplementation());
 				}
 			} catch(FusionException e) {
 				e.printStackTrace();
@@ -210,11 +212,14 @@ public class FusionEnvironment {
 		
 		for(Resource res : this.configObjectRegistry.keySet()) {
 			obj = this.configObjectRegistry.get(res);
+			if(obj instanceof ValueMatchingFunctionWrapper) continue;
 			obj.readFromRDFIndividual(connection);
-			
-			if(obj instanceof ValueMatchingFunctionWrapper) {
-				ValueMatchingFunctionFactory.addToPool(((ValueMatchingFunctionWrapper) obj).getImplementation());
+			if(obj.getRDFIndividual().toString().endsWith("EventComparisonFunction")) {
+				System.out.println("here");
 			}
+			/*if(obj instanceof ValueMatchingFunctionWrapper) {
+				ValueMatchingFunctionFactory.addToPool(((ValueMatchingFunctionWrapper) obj).getImplementation());
+			}*/
 		}
 		
 	}

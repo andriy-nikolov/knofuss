@@ -50,6 +50,7 @@ public class CompositeAttribute implements IAttribute {
 		for(String var : propertyPathsByVariables.keySet()) {
 			path = propertyPathsByVariables.get(var);
 			tmp = new AtomicAttribute(path);
+			tmp.setVariableName(var);
 			res.addAttribute(tmp);
 		}
 		
