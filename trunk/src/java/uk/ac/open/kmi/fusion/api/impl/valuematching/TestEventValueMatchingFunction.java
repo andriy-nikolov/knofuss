@@ -19,9 +19,8 @@ public class TestEventValueMatchingFunction implements ICustomValueMatchingFunct
 	private static final MongeElkan matcher = new MongeElkan();
 	
 	private static AttributeType[][] supportedTypes = {
-		{ AttributeType.NOMINAL, AttributeType.NOMINAL },
-		{ AttributeType.NOMINAL, AttributeType.NOMINAL_MULTI_TOKEN },
-		{ AttributeType.NOMINAL_MULTI_TOKEN, AttributeType.NOMINAL_MULTI_TOKEN }
+		{ AttributeType.COMPOSITE, AttributeType.COMPOSITE }
+		
 	};
 	
 	public TestEventValueMatchingFunction() {
@@ -75,12 +74,11 @@ public class TestEventValueMatchingFunction implements ICustomValueMatchingFunct
 	
 	@Override
 	public boolean isSuitableForAttributes(IAttribute attribute1, IAttribute attribute2) {
-		for(AttributeType[] types : supportedTypes) {
-			if(types[0].equals(attribute1.getType())&&types[1].equals(attribute2.getType())
-					||types[1].equals(attribute1.getType())&&types[0].equals(attribute2.getType())) {
-				return true;
-			}
+		
+		if((attribute1 instanceof CompositeAttribute)&&(attribute2 instanceof CompositeAttribute)) {
+			return true;
 		}
+		
 		return false;
 	}
 
