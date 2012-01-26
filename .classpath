@@ -48,6 +48,7 @@
 	<classpathentry kind="lib" path="lib/xercesImpl-2.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/jena-2.6.4.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/an-utils"/>
+	<classpathentry kind="lib" path="lib/an-utils.jar"/>
+	<classpathentry kind="lib" path="lib/mappingapilite.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
