@@ -53,10 +53,10 @@
 
   <LuceneDiskBlocker rdf:ID="LuceneIndexAllFields">
     <path>data/lucene</path>
-    <searchStrategy>all</searchStrategy>
+    <searchStrategy>fuzzy</searchStrategy>
     <refresh>true</refresh>
     <threshold>0.0</threshold>
-    <!-- <fuzzyThreshold>0.0</fuzzyThreshold> -->
+    <fuzzyThreshold>0.0</fuzzyThreshold>
     <depth>2</depth>
     <cutOff>30</cutOff>
   </LuceneDiskBlocker>
@@ -137,7 +137,7 @@
 	<hasObjectModel>
 	      <ObjectContextModel>
 		<aggregationFunction>average</aggregationFunction>
-		<threshold>1.0</threshold>
+		<threshold>0.0</threshold>
 		<variableComparison>
 		   <VariableComparisonSpec>
 		     <variable>name</variable>
