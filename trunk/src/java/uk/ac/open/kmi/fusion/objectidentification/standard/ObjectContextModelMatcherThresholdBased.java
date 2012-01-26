@@ -157,7 +157,7 @@ public class ObjectContextModelMatcherThresholdBased {
 			
 			for(LuceneBackedObjectContextWrapper resSource : sourceResources) {
 
-				j++;
+				// j++;
 				
 				log.info(i + " out of "+size);
 			
@@ -208,10 +208,13 @@ public class ObjectContextModelMatcherThresholdBased {
 						
 						targetTypes.clear();
 						
-						
+						j++;
 						List<String> types = this.getTypesFromLuceneDocument(doc);
 						
-						if(!types.contains(type)) continue;
+						if(!types.contains(type)) {
+							// log.info("not comparable: !types.contains(type): "+doc.toString());
+							continue;
+						}
 						
 						
 						resTarget = getTargetFromLuceneDocument(tmp, doc);
@@ -223,26 +226,31 @@ public class ObjectContextModelMatcherThresholdBased {
 						}
 						
 						if(resTarget==null) {
+							
+							// log.info("not comparable: resTarget=null: "+doc.toString());
+							
 							continue;
 						}
 						
 						
-						j++;
-						if(resTarget.getIndividual().toString().equals(resSource.getIndividual().toString())) continue;
+						
+						if(resTarget.getIndividual().toString().equals(resSource.getIndividual().toString())) {
+							continue;
+						}
 						
 						pair = new ComparisonPair(resSource, resTarget);
 						
-						if(resTarget.getIndividual().toString().equals("http://dbpedia.org/resource/Mike_Figgis")&&
+						/*if(resTarget.getIndividual().toString().equals("http://dbpedia.org/resource/Mike_Figgis")&&
 								resSource.getIndividual().toString().equals("http://data.linkedmdb.org/music_contributor/3282")
 								) {
 							log.info("here");
-						}
+						}*/
 						
 						currentTime = System.currentTimeMillis();
 						similarity = instanceModel.getSimilarity(pair);
 						pair.setSimilarity(similarity);
 						totalTimeComparison+=(System.currentTimeMillis()-currentTime);
-
+						
 						/*if(FusionEnvironment.debug) {
 							
 							this.writeComparison(writerTest, resSource, resTarget, similarity);
@@ -286,6 +294,8 @@ public class ObjectContextModelMatcherThresholdBased {
 					minmax = top;
 				}
 			}
+			
+			log.info("Actually compared: "+j);
 			
 			log.info("Minimal reasonable threshold: "+minmax);
 			log.info("Total time: "+(System.currentTimeMillis()-initTime));
