@@ -32,8 +32,8 @@
   </SesameDataSource>
   
   <FileDump rdf:ID="EventsSource">
-	<dataFile>d:/work/dataset/events/eventful/events-subset.nt</dataFile>
-        <!-- <dataFile>d:/work/dataset/events/eventful.nt</dataFile> -->
+	<!-- <dataFile>d:/work/dataset/events/eventful/events-subset.nt</dataFile> -->
+        <dataFile>d:/work/dataset/events/smalltest/eventful.nt</dataFile>
   </FileDump>
     
   <SesameDataSource rdf:ID="TargetOWLIMRepository">
@@ -46,9 +46,9 @@
   </SesameDataSource>
 
   <FileDump rdf:ID="EventsTarget">
-	<dataFile>d:/work/dataset/events/eventful/events-subset.nt</dataFile>
+	<!-- <dataFile>d:/work/dataset/events/eventful/events-subset.nt</dataFile> -->
 	<!-- <dataFile>d:/work/dataset/events/lastfm/events.nt</dataFile> -->
-	<!-- <dataFile>d:/work/dataset/events/upcoming.nt</dataFile> -->
+	<dataFile>d:/work/dataset/events/smalltest/upcoming.nt</dataFile>
   </FileDump>
 
   <LuceneDiskBlocker rdf:ID="LuceneIndexAllFields">
@@ -144,10 +144,10 @@
 		     <sourcePath>?uri dc:title ?name .</sourcePath>
 		     <targetPath>?uri dc:title ?name .</targetPath>
 		     <metric>jaro</metric>
-                     <weight>0.5</weight>
+                     <weight>1.0</weight>
 		   </VariableComparisonSpec>
 		</variableComparison>
-		<variableComparison>
+		<!-- <variableComparison>
 		   <VariableComparisonSpec>
 		     <variable>long</variable>
 		     <variable>lat</variable>
@@ -158,7 +158,7 @@
 		     <metric>event</metric>
                      <weight>0.5</weight>
 		   </VariableComparisonSpec>
-		</variableComparison>
+		</variableComparison> -->
 	      </ObjectContextModel> 
 	</hasObjectModel>
   </ApplicationContext>

@@ -145,10 +145,13 @@ public class LuceneAllFieldsSearchStrategyFuzzy extends AbstractLuceneSearchStra
 	    	String queryString = "";
 	    	
 	    	StringTokenizer tokenizer = new StringTokenizer(queryStringTmp, " ");
-	    	
+	    	String token;
 	    	while(tokenizer.hasMoreTokens()) {
-	    		queryString+=tokenizer.nextToken();
-	    		queryString+="~"+Double.toString(this.fuzzyThreshold)+" ";
+	    		token = tokenizer.nextToken();
+	    		if(!(token.toLowerCase().equals("and")||token.toLowerCase().equals("or"))) {
+		    		queryString+=token;
+		    		queryString+="~"+Double.toString(this.fuzzyThreshold)+" ";
+	    		}
 	    	}
 	    	
 	    	Query query = null;
