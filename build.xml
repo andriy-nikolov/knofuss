@@ -104,7 +104,7 @@
 	                <attribute name="Main-Class" value="${mainclass}"/>
 	                <attribute name="Class-Path" value="${Class-Path}" />
 	            </manifest>
-			</jar>
+		</jar>
 	    </target>
 
 	<target name="compile" depends="compile-classes" description="Compile all source files for this module.">
