@@ -55,7 +55,7 @@
     <path>data/lucene</path>
     <searchStrategy>fuzzy</searchStrategy>
     <refresh>true</refresh>
-    <threshold>0.0</threshold>
+    <threshold>-0.1</threshold>
     <fuzzyThreshold>0.0</fuzzyThreshold>
     <depth>2</depth>
     <cutOff>30</cutOff>
