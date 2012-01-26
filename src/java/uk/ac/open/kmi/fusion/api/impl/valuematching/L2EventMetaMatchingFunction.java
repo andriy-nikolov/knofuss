@@ -18,7 +18,7 @@ import uk.ac.shef.wit.simmetrics.similaritymetrics.AbstractStringMetric;
 public class L2EventMetaMatchingFunction extends TokenBasedSimilarityValueMatchingFunction {
 
 	private Set<String> stopWords;
-	private double stopWordWeight = 1.0;
+	// private double stopWordWeight = 1.0;
 	
 	private static AttributeType[][] supportedTypes = {
 		{ AttributeType.NOMINAL, AttributeType.NOMINAL_MULTI_TOKEN },

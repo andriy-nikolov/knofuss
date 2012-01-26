@@ -32,7 +32,7 @@
 
 	<target name="compile-classes" depends="clean">
 		<mkdir dir="${build.path}" />
-		<javac destdir="${build.path}" depend="${javac.depend}" includeAntRuntime="${javac.include.ant.runtime}" includeJavaRuntime="${javac.include.java.runtime}" failonerror="true">
+		<javac destdir="${build.path}" target="1.6" depend="${javac.depend}" includeAntRuntime="${javac.include.ant.runtime}" includeJavaRuntime="${javac.include.java.runtime}" failonerror="true">
 			<src path="${source.java}" />
 			<classpath refid="javac.classpath" />
 		</javac>
