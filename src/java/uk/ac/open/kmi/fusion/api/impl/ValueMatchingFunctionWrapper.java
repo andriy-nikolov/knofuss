@@ -93,5 +93,11 @@ public class ValueMatchingFunctionWrapper extends FusionConfigurationObject {
 			return null;
 		}
 	}
+
+	public Map<String, String> getProperties() {
+		return properties;
+	}
+	
+	
 	
 }
