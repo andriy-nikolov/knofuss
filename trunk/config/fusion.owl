@@ -335,6 +335,7 @@
             <owl:Class>
                 <owl:unionOf rdf:parseType="Collection">
                     <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#FusionMethod"/>
+                    <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#TransformationFunction"/>
                     <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#ValueMatchingFunction"/>
                 </owl:unionOf>
             </owl:Class>
@@ -746,6 +747,14 @@
 
     <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#SesameNativeDataSource">
         <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#DataSource"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#TransformationFunction -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#TransformationFunction">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionConfigurationObject"/>
     </owl:Class>
     
 
