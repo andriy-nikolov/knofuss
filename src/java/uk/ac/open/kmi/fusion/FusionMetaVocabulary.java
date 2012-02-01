@@ -40,6 +40,7 @@ public interface FusionMetaVocabulary {
 	public static final String FEATURE_SELECTION = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"FeatureSelection";
 	public static final String FUSION_METHOD = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"FusionMethod";
 	public static final String VALUE_MATCHING_FUNCTION = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"ValueMatchingFunction";
+	public static final String TRANSFORMATION_FUNCTION = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"TransformationFunction";
 	
 	public static final String OBJECT_CONTEXT_MODEL = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"ObjectContextModel";
 	public static final String OBJECT_IDENTIFICATION = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"ObjectIdentification";
