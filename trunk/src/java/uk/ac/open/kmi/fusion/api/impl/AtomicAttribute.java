@@ -35,7 +35,6 @@ public class AtomicAttribute implements IAttribute {
 	}
 	
 	
-
 	@Override
 	public List<String> getPropertyPaths() {
 		List<String> propertyPaths = new ArrayList<String>(1);

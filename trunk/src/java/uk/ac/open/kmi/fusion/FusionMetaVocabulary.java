@@ -94,4 +94,9 @@ public interface FusionMetaVocabulary {
 	public static final String PROXY_PORT = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"proxyPort";
 	public static final String RDFS_REASONING = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"rdfsReasoning";
 	public static final String ABBREVIATIONS_FILE = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"abbreviationsFile";
+	
+	public static final String ATOMIC_ATTRIBUTE = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"AtomicAttribute";
+	public static final String COMPOSITE_ATTRIBUTE = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"CompositeAttribute";
+	public static final String TRANSFORMATION_ATTRIBUTE = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"TransformationAttribute";
+	
 }
