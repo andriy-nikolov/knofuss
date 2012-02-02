@@ -6,4 +6,6 @@ public interface ITransformationFunction<T> {
 	
 	public T getTransformationResult(List<? extends Object> operands);
 
+	public boolean isSuitableForAttributes(List<IAttribute> attributes);
+	
 }

@@ -11,6 +11,7 @@ import java.util.Set;
 import uk.ac.open.kmi.common.utils.Utils;
 import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
 import uk.ac.open.kmi.fusion.api.IAttribute;
+import uk.ac.open.kmi.fusion.api.ICustomTransformationFunction;
 import uk.ac.open.kmi.fusion.api.ITransformationFunction;
 import uk.ac.open.kmi.fusion.api.impl.AttributeType;
 
@@ -24,7 +25,7 @@ public final class TransformationFunctionFactory {
 	private static Map<String, ITransformationFunction<? extends Object>> pool = new HashMap<String, ITransformationFunction<? extends Object>>();
 	
 	static {
-				
+		
 		
 	}
 	
@@ -36,7 +37,7 @@ public final class TransformationFunctionFactory {
 		}
 	}
 	
-	public static void addToPool(ICustomValueMatchingFunction<? extends Object> function) {
+	public static void addToPool(ICustomTransformationFunction<? extends Object> function) {
 		pool.put(function.toString(), function);
 	}
 	
@@ -50,10 +51,10 @@ public final class TransformationFunctionFactory {
 		return res;
 	}*/
 	
-	public static List<IValueMatchingFunction<? extends Object>> getApplicableFunctionsForAttributes(IAttribute attr1, IAttribute attr2) {
+	/*public static List<ITransformationFunction<? extends Object>> getApplicableFunctionsForAttributes(IAttribute attr1, IAttribute attr2) {
 		
-		Set<IValueMatchingFunction<? extends Object>> applicableFunctions = new HashSet<IValueMatchingFunction<? extends Object>>();
-		IValueMatchingFunction<? extends Object> tmp;
+		Set<ITransformationFunction<? extends Object>> applicableFunctions = new HashSet<IValueMatchingFunction<? extends Object>>();
+		ITransformationFunction<? extends Object> tmp;
 		
 		for(String key : pool.keySet()) {
 			tmp = pool.get(key);
@@ -67,9 +68,9 @@ public final class TransformationFunctionFactory {
 		
 		return new ArrayList<IValueMatchingFunction<? extends Object>>(applicableFunctions);
 		
-	}
+	}*/
 	
-	public static IValueMatchingFunction<? extends Object> getRandomInstanceForAttributes(IAttribute attr1, IAttribute attr2) {
+	/*public static IValueMatchingFunction<? extends Object> getRandomInstanceForAttributes(IAttribute attr1, IAttribute attr2) {
 		
 		IValueMatchingFunction<? extends Object> res = null;
 		
@@ -81,6 +82,6 @@ public final class TransformationFunctionFactory {
 			return res;
 		} 
 		return null;
-	}
+	}*/
 	
 }
