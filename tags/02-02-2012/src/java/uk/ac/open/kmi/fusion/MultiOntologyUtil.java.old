@@ -1,0 +1,1040 @@
+package uk.ac.open.kmi.fusion;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Enumeration;
+import java.util.Collection;
+
+import org.apache.log4j.Logger;
+import org.openrdf.model.Literal;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.vocabulary.OWL;
+import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.RDFS;
+import org.semanticweb.owl.align.Alignment;
+import org.semanticweb.owl.align.Cell;
+import org.semanticweb.owl.align.AlignmentException;
+
+import com.hp.hpl.jena.graph.Node;
+import com.hp.hpl.jena.graph.Node_URI;
+import com.hp.hpl.jena.graph.Node_Variable;
+import com.hp.hpl.jena.graph.Triple;
+import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QueryFactory;
+import com.hp.hpl.jena.sparql.syntax.Element;
+//import com.hp.hpl.jena.query.core.Element;
+//import com.hp.hpl.jena.query.core.ElementBasicGraphPattern;
+//import com.hp.hpl.jena.query.core.ElementGroup;
+//import com.hp.hpl.jena.query.core.ElementTriplePattern;
+//import com.hp.hpl.jena.query.core.ElementUnion;
+//import com.hp.hpl.jena.query.core.Var;
+
+
+
+import fr.inrialpes.exmo.align.impl.BasicAlignment;
+import fr.inrialpes.exmo.align.impl.BasicCell;
+import fr.inrialpes.exmo.align.impl.BasicRelation;
+import fr.inrialpes.exmo.align.impl.rel.IncompatRelation;
+import fr.inrialpes.exmo.align.impl.rel.EquivRelation;
+import fr.inrialpes.exmo.align.impl.rel.SubsumedRelation;
+import fr.inrialpes.exmo.align.impl.rel.SubsumeRelation;
+
+import uk.ac.open.kmi.fusion.api.ILinkSession;
+import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
+import uk.ac.open.kmi.fusion.sparql.ElementTranslatorVisitor;
+import uk.ac.open.kmi.fusion.sparql.TriplePatternChain;
+import uk.ac.open.kmi.fusion.sparql.TriplePatternChainElement;
+import uk.ac.open.kmi.fusion.util.FusionException;
+import uk.ac.open.kmi.fusion.util.SesameUtils;
+
+public class MultiOntologyUtil {
+
+	Set<URI> representedConcepts = null;
+	Map<URI, Set<URI>> disjointTargetConcepts = null;
+	Map<URI, Set<URI>> availablePropertiesByClass = null;
+	ILinkSession dispatcher;
+	Alignment alignment;
+	List<Triple> allInitTriplePatterns;
+	ElementTranslatorVisitor visitor;
+
+	Alignment disjointAlignment = null;
+	
+
+	private Logger log = Logger.getLogger(MultiOntologyUtil.class);
+	
+	public MultiOntologyUtil(ILinkSession dispatcher) {
+		this.dispatcher = dispatcher;
+		this.alignment = dispatcher.getSchemaAlignment();
+		this.disjointTargetConcepts = new HashMap<URI, Set<URI>>();
+		visitor = new ElementTranslatorVisitor(this, alignment);
+		this.disjointAlignment = new BasicAlignment();
+		init();
+	}
+	
+	public void init() {
+		this.extractRepresentedConcepts(FusionEnvironment.getInstance().getContentIndividualUris());
+	}
+	
+	private boolean getPathTo(List<ElementTriplePattern> triplePatterns, String varFrom, String varTo, List<ElementTriplePattern> tmpPath) {
+		String tmp;
+		for(ElementTriplePattern triplePattern : triplePatterns) {
+			if(tmpPath.contains(triplePattern))
+				continue;
+			if(triplePattern.varNamesMentioned().contains(varFrom)) {
+				tmpPath.add(triplePattern);
+				if(triplePattern.varNamesMentioned().contains(varTo)) {
+					// The path found
+					return true;
+				}  else {
+					// ...
+					// PROFIT!!!
+					if(triplePattern.varNamesMentioned().size()==2) {
+						if(triplePattern.getTriple().getSubject().getName().equals(varFrom)) {
+							tmp = triplePattern.getTriple().getObject().getName();
+							if(getPathTo(triplePatterns, tmp, varTo, tmpPath)) {
+								return true; 
+							}
+						} else {
+							tmp = triplePattern.getTriple().getSubject().getName();
+							if(getPathTo(triplePatterns, tmp, varTo, tmpPath)) {
+								return true; 
+							}
+						}
+					}
+				}
+				tmpPath.remove(triplePattern);
+			}
+		}
+		return false;
+	}
+	
+	private TriplePatternChain getChain(List<ElementTriplePattern> triplePatterns,  String varTo) {
+		
+		TriplePatternChain answer = null;
+		TriplePatternChainElement element;
+		String varFrom;
+		List<ElementTriplePattern> path = new ArrayList<ElementTriplePattern>();
+		if(getPathTo(triplePatterns, "uri", varTo, path)) {
+			answer = new TriplePatternChain();
+			answer.setVarFromName("uri");
+			answer.setVarToName(varTo);
+			varFrom = "uri";
+			for(ElementTriplePattern pattern : path) {
+				element = new TriplePatternChainElement(pattern.getTriple());
+				if(pattern.getTriple().getSubject().getName().equals(varFrom)) {
+					varFrom = pattern.getTriple().getObject().getName();
+					element.setForwardDirection(true);
+				} else {
+					varFrom = pattern.getTriple().getSubject().getName();
+					element.setForwardDirection(false);
+				}
+				answer.addElement(element);
+			}
+			
+		}
+		return answer;
+	}
+	
+	
+	public String translateSPARQLQuery(String sQueryFrom) {
+		
+		return translateSPARQLQueryUsingAlignment(sQueryFrom);
+		
+	}
+	
+	public Query translateSPARQLQuery(Query queryFrom) {
+		return translateSPARQLQueryUsingAlignment(queryFrom);
+	}
+	
+	
+	private Query translateSPARQLQueryUsingAlignment(Query queryFrom) {
+		
+		Element root = (Element)queryFrom.getQueryPattern();
+		Set<String> restrictedTypes = new HashSet<String>();
+		
+		visitor.reset();
+		root.visit(visitor);
+		
+		Map<String, Set<URI>> translatedTypesByVar = new HashMap<String, Set<URI>>();
+		
+		Map<String, TriplePatternChain> pathsToVars = new HashMap<String, TriplePatternChain>();
+		Map<String, List<TriplePatternChain>> translatedPathsToVars = new HashMap<String, List<TriplePatternChain>>();
+		
+		Set<URI> translatedTypes = new HashSet<URI>();
+		
+		List<String> resultVars = queryFrom.getResultVars();
+		for(String var : resultVars) {
+			restrictedTypes = visitor.getVariableTypeRestrictions().get(var);
+			if(restrictedTypes!=null) {
+				translatedTypes = translateRestrictedTypes(restrictedTypes);
+				translatedTypesByVar.put(var, translatedTypes);
+			}
+			
+			if(!var.equals("uri")) {
+				TriplePatternChain path = getChain(visitor.getTriplePatterns(), var);
+				if(path==null) {
+					System.err.println("Could not trace a path to the variable "+var+". Ignoring the variable");
+					continue;
+				}
+				pathsToVars.put(var, path);
+			}
+			
+		}
+		
+		translatedTypes = translatedTypesByVar.get("uri");
+		
+		List<List<Triple>> clauses = new ArrayList<List<Triple>>();
+		
+		if(translatedTypes==null) {
+			return queryFrom;
+		}
+		
+		for(URI translatedType : translatedTypes) {
+			Set<URI> acceptableProperties = new HashSet<URI>();
+			if(this.availablePropertiesByClass.containsKey(translatedType)) {
+				acceptableProperties = this.availablePropertiesByClass.get(translatedType);
+			}
+			
+			int[] c = new int[resultVars.size()-1];
+			int num = 1;
+			translatedPathsToVars.clear();
+			for(int i=0;i<resultVars.size()-1;i++) {
+				String var = resultVars.get(i+1);
+				if(var.equals("uri")) continue;
+				TriplePatternChain chain = pathsToVars.get(var);
+				List<TriplePatternChain> translatedChains = this.translateTriplePatternChain(chain, acceptableProperties);
+				translatedPathsToVars.put(var, translatedChains);
+				num*=translatedChains.size();
+			}
+			
+			for(int i=0;i<resultVars.size()-1;i++) {
+				String var = resultVars.get(i+1);
+				if(var.equals("uri")) continue;
+				c[i]=1;
+				for(int k=i+1;k<resultVars.size()-1;k++) {
+					String var2 = resultVars.get(k+1); 
+					c[i]*=translatedPathsToVars.get(var2).size();
+				}
+			}
+			
+			List<Triple> curClauseList;
+			int mod = 0;
+			int index = 0;
+			for(int i=0;i<num;i++) {
+				mod = i;
+				curClauseList = new ArrayList<Triple>();
+				curClauseList.add(Triple.create(
+						Node.createVariable("uri"), 
+						Node.createURI(RDF.TYPE.toString()), 
+						Node.createURI(translatedType.toString())));
+				boolean hasRepeatingPaths = false;
+				for(int j=0;j<resultVars.size()-1;j++) {
+					String var = resultVars.get(j+1);
+					index = mod/c[j];
+					mod = mod-(index*c[j]);
+					List<TriplePatternChain> translatedChains = translatedPathsToVars.get(var);
+					TriplePatternChain chain = translatedChains.get(index);
+					for(TriplePatternChainElement element : chain.getElements()) {
+						for(Triple tr : curClauseList) {
+							if(element.getTriple().getSubject().isVariable()) {
+								if(element.getTriple().getSubject().getName().equals("uri")) {
+									if(element.getTriple().getSubject().equals(tr.getSubject())
+											&&element.getTriple().getPredicate().equals(tr.getPredicate())) {
+										hasRepeatingPaths = true;
+										break;
+									}
+								}
+							}
+						}
+						if(!hasRepeatingPaths) {
+							curClauseList.add(element.getTriple());
+						} else {
+							break;
+						}
+					}
+					
+				}
+				if(!hasRepeatingPaths) { 
+					clauses.add(curClauseList);
+				}
+			}
+			
+			
+		}
+		
+		Query queryTo = QueryFactory.make();
+		queryTo.setQueryType(Query.QueryTypeSelect);
+		queryTo.setDistinct(true);
+		Var uriVar = new Var("uri");
+		for(String var : resultVars) {
+			queryTo.addResultVar(var);
+		}
+
+		Element pattern;
+		if(clauses.size()>1) {
+			pattern = new ElementUnion();
+			for(List<Triple> triples : clauses) {
+				ElementBasicGraphPattern altGraph = new ElementBasicGraphPattern();
+				for(Triple triple : triples) {
+					altGraph.addElement(new ElementTriplePattern(triple));
+				}
+				((ElementUnion)pattern).addElement(altGraph);
+			}
+		} else {
+			pattern = new ElementBasicGraphPattern();
+			for(List<Triple> triples : clauses) {
+				for(Triple triple : triples) {
+					((ElementBasicGraphPattern)pattern).addElement(new ElementTriplePattern(triple));
+				}
+			}
+		}
+		
+		queryTo.setQueryPattern(pattern);
+		queryTo.addOrderBy("uri", Query.ORDER_DEFAULT);
+		
+		return queryTo;
+	}
+	
+	private String translateSPARQLQueryUsingAlignment(String sQueryFrom) {
+		String shortcut = null;
+
+		String sQueryTo = sQueryFrom;
+		Query queryFrom = QueryFactory.create(sQueryFrom);
+		
+		Query queryTo = translateSPARQLQueryUsingAlignment(queryFrom);
+		
+		sQueryTo = queryTo.serialize();
+		
+		return sQueryTo;
+	}
+	
+	private Set<URI> translateRestrictedTypes(Set<String> restrictedTypes) {
+		Set<URI> translatedTypes = new HashSet<URI>();
+		Map<URI, Double> weights = new HashMap<URI, Double>(); 
+		List<Resource> queue = new ArrayList<Resource>();
+		Map<String, Double> alignedUriMap;
+		URI tmpConcept;
+		for(String sUriFrom : restrictedTypes) {
+			try {
+				if(sUriFrom.startsWith(RDF.NAMESPACE)||
+						sUriFrom.startsWith(RDFS.NAMESPACE)||
+						sUriFrom.startsWith(OWL.NAMESPACE)) {
+					continue;
+				}
+				alignedUriMap = getAlignedUrisFromSourceOntology(sUriFrom);
+				for(String alignedUri : alignedUriMap.keySet()) {
+					//if(this.getScarletDisjointness(alignedUri, sUriFrom)) continue;
+					
+					tmpConcept = FusionEnvironment.getInstance().getFusionKbValueFactory().createURI(alignedUri);
+					translatedTypes.add(tmpConcept);
+					weights.put(tmpConcept, alignedUriMap.get(alignedUri));
+				}
+				
+				if(translatedTypes.size()==0) {
+					// try to find hypernym alignments
+					queue.add(FusionEnvironment.getInstance().getMainKbValueFactory().createURI(sUriFrom));
+					alignedUriMap = getMostSpecificHypernymAlignments(queue, alignment);
+					for(String alignedUri : alignedUriMap.keySet()) {
+						tmpConcept = FusionEnvironment.getInstance().getFusionKbValueFactory().createURI(alignedUri);
+						translatedTypes.add(tmpConcept);
+						weights.put(tmpConcept, alignedUriMap.get(alignedUri));
+					}
+				}
+				if(translatedTypes.size()==0) {
+					// try to find hyponym alignments
+					alignedUriMap = getMostGenericHyponymAlignments(sUriFrom, alignment);
+					for(String alignedUri : alignedUriMap.keySet()) {
+						translatedTypes.add(FusionEnvironment.getInstance().getFusionKbValueFactory().createURI(alignedUri));
+					}
+				}
+				
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		translatedTypes = refineConceptList(weights);
+		
+		return translatedTypes;
+	}
+	
+	private List<TriplePatternChain> translateTriplePatternChain(TriplePatternChain chain, Set<URI> allowedProperties) {
+		
+		List<TriplePatternChain> answer = new ArrayList<TriplePatternChain>();
+		TriplePatternChain possibleTranslationChain;
+		
+		String propertyUri;
+		int maxPermutations = 1;
+		Set<String> possiblyAlignedPropertyUris;
+		List<TriplePatternChainElement> altElements;
+		Map<TriplePatternChainElement, List<TriplePatternChainElement>> possibleTranslations = new HashMap<TriplePatternChainElement, List<TriplePatternChainElement>>();
+		
+		for(TriplePatternChainElement chainElement : chain.getElements()) {
+			propertyUri = chainElement.getTriple().getPredicate().getURI();
+			possiblyAlignedPropertyUris = getAlignedProperties(propertyUri, allowedProperties);
+			if(possiblyAlignedPropertyUris.isEmpty()) {
+				for(URI allowedProperty : allowedProperties) {
+					if(allowedProperty.equals(RDF.TYPE)) continue;
+					possiblyAlignedPropertyUris.add(allowedProperty.toString());
+				}
+			}
+			
+			altElements = new ArrayList<TriplePatternChainElement>();
+			
+			for(String uri : possiblyAlignedPropertyUris) {
+				Triple transTriple = Triple.create(
+						chainElement.getTriple().getSubject(), 
+						Node.createURI(uri),
+						chainElement.getTriple().getObject());
+				TriplePatternChainElement alignedElement = new TriplePatternChainElement(transTriple, chainElement.isForwardDirection());
+				altElements.add(alignedElement);
+				possibleTranslations.put(chainElement, altElements);
+			}
+			maxPermutations = maxPermutations*altElements.size();
+		}
+		
+		int c[] = new int[chain.getElements().size()];
+		for(int j=0;j<chain.getElements().size();j++) {
+			c[j] = 1;
+			for(int k=j+1;k<chain.getElements().size();k++) {
+				c[j]*=possibleTranslations.get(chain.getElements().get(k)).size();
+			}
+		}
+		
+		int mod = 0;
+		int index = 0;
+		for(int i=0;i<maxPermutations;i++) {
+			possibleTranslationChain = new TriplePatternChain();
+			mod = i;
+			for(int j=0;j<chain.getElements().size();j++) {
+				TriplePatternChainElement chainElement = chain.getElements().get(j);
+				index = mod/c[j];
+				mod = mod-(index*c[j]); 
+				possibleTranslationChain.addElement(possibleTranslations.get(chainElement).get(index));
+			}
+			answer.add(possibleTranslationChain);
+		}
+		
+		return answer;
+	}
+	
+	private Set<String> getAlignedProperties(String uri, Set<URI> allowedProperties) {
+		Set<String> filteredAlignedUris = new HashSet<String>();
+		if(isUriInEntitySet(uri, allowedProperties)) {
+			filteredAlignedUris.add(uri);
+			return filteredAlignedUris;
+		}
+		
+		Set<String> directAlignedUris = getAlignedUrisFromSourceOntology(uri, 0.1).keySet();
+		
+		if(!directAlignedUris.isEmpty()) {
+			for(String alUri : directAlignedUris) {
+				if(isUriInEntitySet(alUri, allowedProperties)) {
+					filteredAlignedUris.add(alUri);
+				}
+			}
+			if(!filteredAlignedUris.isEmpty()) {
+				return filteredAlignedUris;
+			}
+		}
+		
+		// Try with wordnet
+		try {
+			URI oUri = FusionEnvironment.getInstance().getMainKbValueFactory().createURI(uri);
+			URI oUriAllowed;
+			for(URI allowedProperty : allowedProperties) {
+				try {
+					if(allowedProperty.equals(RDF.TYPE)) continue;
+					oUriAllowed = FusionEnvironment.getInstance().getFusionKbValueFactory().createURI(allowedProperty.toString());
+
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+			
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		return filteredAlignedUris;
+	}
+	
+	private boolean isUriInEntitySet(String uri, Collection<? extends URI> entities) {
+		for(URI entity : entities) {
+			if(entity.toString().equals(uri))
+				return true;
+		}
+		return false;
+	}
+	
+	
+	private Map<String, Double> getAlignedUrisFromSourceOntology(String uri) {
+		
+		return getAlignedUrisFromSourceOntology(uri, 0.0);
+	}
+	
+	private Map<String, Double> getAlignedUrisFromSourceOntology(String uri, double threshold) {
+		Map<String, Double> res = new HashMap<String, Double>();
+		try {
+			
+			Set<Cell> cells = alignment.getAlignCells2(new java.net.URI(uri));
+			if(cells!=null) {
+				for(Cell cell : cells) {
+					if(cell.getStrength()<threshold) continue;
+					boolean beaten = false;
+					Set<Cell> disjointCells = this.disjointAlignment.getAlignCells2(new java.net.URI(uri));
+					if(disjointCells!=null) {
+						for(Cell disjointCell : disjointCells) {
+							try {
+								if(disjointCell.getObject1AsURI().toString().equals(cell.getObject1AsURI().toString())) {
+									beaten = true;
+									break;
+								}
+							} catch(AlignmentException e) {
+								e.printStackTrace();
+							}
+						}
+					}
+					if(!beaten) {
+						res.put(cell.getObject1AsURI().toString(), cell.getStrength());
+					} else {
+						log.info(cell.getObject1AsURI().toString()
+								+" was excluded because of disjointness");
+					}
+				}
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		return res;
+	}
+	
+	private Map<String, Double> getMostSpecificHypernymAlignments(List<Resource> concepts, Alignment alignment) {
+		Map<String, Double> res = new HashMap<String, Double>();
+		try {
+			for(Resource concept : concepts) {
+				if(concept instanceof URI) {
+					if(((URI)concept).toString().startsWith(RDFS.NAMESPACE)||
+							((URI)concept).toString().startsWith(RDF.NAMESPACE)||
+							((URI)concept).toString().startsWith(OWL.NAMESPACE)) {
+						continue;
+					}
+					res.putAll(getAlignedUrisFromSourceOntology(((URI)concept).toString()));					
+				}
+			}
+			
+			if(res.isEmpty()) {
+				// Get one level up
+				List<Resource> queue = new ArrayList<Resource>();
+				for(Resource concept : concepts) {
+					if(concept instanceof URI) {
+						Set<URI> hypernyms = SesameUtils.getNamedSuperconcepts(concept, FusionEnvironment.getInstance().getMainKbRepositoryConnection());
+						for(URI hypernym : hypernyms) {
+							
+								if(((URI)hypernym).toString().startsWith(RDFS.NAMESPACE)||
+										((URI)hypernym).toString().startsWith(RDF.NAMESPACE)||
+										((URI)hypernym).toString().startsWith(OWL.NAMESPACE)) {
+									continue;
+								}
+								if(!queue.contains(((URI)hypernym).toString())) {
+									queue.add(hypernym);
+								}
+							
+						}
+					}
+				}
+				if(!queue.isEmpty()) {
+					res = getMostSpecificHypernymAlignments(queue, alignment);
+				}
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		return res;
+	}
+	
+	private Map<String, Double> getMostGenericHyponymAlignments(String sUri, Alignment alignment) {
+		Map<String, Double> res = new HashMap<String, Double>();
+		try {
+			Set<URI> concepts = SesameUtils.getNamedSubconcepts(FusionEnvironment.getInstance().getMainKbValueFactory().createURI(sUri), FusionEnvironment.getInstance().getMainKbRepositoryConnection());
+			
+			Map<String, Double> tmpAligns;
+			for(URI concept : concepts) {
+				
+					if(concept.toString().startsWith(RDFS.NAMESPACE)||
+							concept.toString().startsWith(RDF.NAMESPACE)||
+							concept.toString().startsWith(OWL.NAMESPACE)) {
+						continue;
+					}
+					tmpAligns = getAlignedUrisFromSourceOntology(concept.toString());
+					if(tmpAligns.isEmpty()) {
+						tmpAligns = getMostGenericHyponymAlignments(concept.toString(), alignment);
+					} 
+					res.putAll(tmpAligns);
+				
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		return res;
+	}
+	
+	
+	
+	/**
+	 * Leaves only concepts which are represented in the source KB. For those not represented 
+	 * tries to find adequate superclasses
+	 *  
+	 * @param concepts
+	 * @return
+	 */
+	private Set<URI> refineConceptList(Map<URI, Double> weights) {
+		Set<URI> answer = new HashSet<URI>();
+		Set<URI> excludeSet = new HashSet<URI>(); 
+		
+		Map<String, URI> uri2ConceptMap = new HashMap<String, URI>();
+		Map<URI, Set<URI>> concept2SuperconceptMap = new HashMap<URI, Set<URI>>();
+		for(URI concept : weights.keySet()) {
+			uri2ConceptMap.put(concept.toString(), concept);
+			try {
+				Set<URI> superConceptSet = SesameUtils.findAllSuperconcepts(concept, FusionEnvironment.getInstance().getFusionRepositoryConnection()); 
+					
+				concept2SuperconceptMap.put(concept, superConceptSet);
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		// Count concepts, which only have a single superconcept in the list of candidate concepts
+		// Should eliminate such cases as sweto:City vs both tap:City and tap:Territory
+		Set<URI> tmpConceptSet;
+		int count = 0;
+		Map<URI, Set<URI>> superClassesInSet = new HashMap<URI, Set<URI>>(); 
+		for(URI concept : weights.keySet()) {
+			if(concept.toString().endsWith("#City")) {
+				log.info("here");
+			}
+			tmpConceptSet = new HashSet<URI>();
+			tmpConceptSet.addAll(concept2SuperconceptMap.get(concept));
+			if(concept.toString().endsWith("#City")) {
+				for(URI tmp : tmpConceptSet) {
+					log.info(tmp.toString());
+				}
+			}
+			tmpConceptSet.retainAll(weights.keySet());
+			superClassesInSet.put(concept, tmpConceptSet);
+			if(tmpConceptSet.size()==1) {
+				count++;
+			}
+		}
+		
+		if(count==1) {
+			for(URI concept : superClassesInSet.keySet()) {
+				tmpConceptSet = superClassesInSet.get(concept);
+				if(tmpConceptSet.size()==1) {
+					for(URI superConcept : tmpConceptSet) {
+						if(weights.get(superConcept)<weights.get(concept)) {
+							excludeSet.add(superConcept);
+						}
+					}
+				}
+			}
+		}
+		
+		for(URI concept : weights.keySet()) {
+			if(!excludeSet.contains(concept)) {
+				answer.add(concept);
+			}
+		}
+		
+		return answer;
+	}
+	
+	private void extractRepresentedConcepts(Set<URI> indUris) {
+		
+		Set<URI> answer = new HashSet<URI>();
+		
+		this.availablePropertiesByClass = new HashMap<URI, Set<URI>>();
+		
+		Set<URI> indProperties;
+		List<Statement> tmpProperties;
+		log.info("In: MultiOntologyUtil.extractRepresentedConcepts()");
+		for(URI ind : indUris) {
+			try {
+				tmpProperties = SesameUtils.getStatements(ind, null, null, FusionEnvironment.getInstance().getFusionRepositoryConnection());
+				indProperties = new HashSet<URI>();
+				for(Statement tmp : tmpProperties) {
+
+					if(tmp.getPredicate().toString().equals(RDFS.SUBCLASSOF)) continue;
+					indProperties.add(tmp.getPredicate());
+				}
+			
+			
+				Set<URI> indTypes = SesameUtils.getNamedTypes(ind, FusionEnvironment.getInstance().getFusionRepositoryConnection()); 
+	
+				Set<URI> allSuperconcepts;
+				for(URI indType : indTypes) {
+					if(indType instanceof URI) {
+						answer.add((URI)indType);
+						addAvailablePropertiesByClass((URI)indType, indProperties);
+						try {
+							allSuperconcepts = 
+								SesameUtils.findAllSuperconcepts(indType, FusionEnvironment.getInstance().getFusionRepositoryConnection()); 
+							answer.addAll(allSuperconcepts);
+							for(URI superConcept : allSuperconcepts) {
+								addAvailablePropertiesByClass(superConcept, indProperties);
+							}
+						} catch(Exception e) {
+							e.printStackTrace();
+						}
+	
+					}
+				}
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		log.info("Out: MultiOntologyUtil.extractRepresentedConcepts()");
+		
+		this.representedConcepts = answer;
+	}
+	
+	
+	private void addAvailablePropertiesByClass(URI concept, Set<URI> properties ) {
+		Set<URI> storedProperties;
+		if(this.availablePropertiesByClass.containsKey(concept)) {
+			storedProperties = this.availablePropertiesByClass.get(concept);
+		} else {
+			storedProperties = new HashSet<URI>();
+			this.availablePropertiesByClass.put(concept, storedProperties);
+		}
+		storedProperties.addAll(properties);
+	}
+	
+	public void createDisjointAlignments() {
+		try {
+			extractDisjointConceptsFromTargetOntology();
+			
+			Set<URI> disjointTargets;
+			Set<Cell> alignedCells;
+			Cell counterCell;
+			Map<String, Cell> equalAlignmentsMap = new HashMap<String, Cell>();
+			for(URI concept : this.disjointTargetConcepts.keySet()) {
+				disjointTargets = this.disjointTargetConcepts.get(concept);
+				alignedCells = this.alignment.getAlignCells2(new java.net.URI(concept.toString()));
+				if(alignedCells!=null) {
+					for(Cell cell : alignedCells) {
+						equalAlignmentsMap.put(cell.getObject1AsURI().toString()+";"+cell.getObject2AsURI().toString(), cell);
+					}
+				}
+				for(URI disjointConcept : disjointTargets) {
+					alignedCells = this.alignment.getAlignCells2(new java.net.URI(disjointConcept.toString()));
+					if(alignedCells!=null) {
+						for(Cell cell : alignedCells) {
+							this.disjointAlignment.addAlignCell(
+									cell.getObject1AsURI(), 
+									new java.net.URI(concept.toString()), 
+									"%", 
+									cell.getStrength());
+							
+							if(equalAlignmentsMap.containsKey(cell.getObject1AsURI().toString()+";"+concept.toString())) {
+								counterCell = equalAlignmentsMap.get(cell.getObject1AsURI().toString()+";"+concept.toString());
+								if(counterCell.getStrength()>=cell.getStrength()) {
+								//	log.info("Is beaten by : "+counterCell.getStrength());
+								} else {
+								//	log.info("Beats : "+counterCell.getStrength());
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			log.info("All disjointness found");
+			filterDisjointConcepts();
+			log.info("Disjointness filtered");
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void filterDisjointConcepts() {
+				
+		// First select all cases when a concept participating in a disjointness relation is equal to 
+		// another concept. Then find all rdfs:subclass_of relations inferred for such concepts. 
+		// Then check if the disjointness contradicts with a subclass_of relation.		
+		
+		Set<Cell> relevantEquivCells, relevantEquivCells2;
+		Set<Cell> inferredDisjointness;
+		Set<Cell> cells2Add = new HashSet<Cell>();
+		Set<Cell> overriddenDisjointness = new HashSet<Cell>();
+		Alignment overriddenDisjointAlignment = new BasicAlignment();
+		Set<String> superclassUris = new HashSet<String>();
+		Enumeration<Cell> enumCells = this.disjointAlignment.getElements();
+		while(enumCells.hasMoreElements()) {
+			Cell cell = enumCells.nextElement();
+			try {
+				superclassUris.clear();
+				URI targetConcept = 
+					FusionEnvironment.getInstance().getMainKbValueFactory().createURI(
+						cell.getObject2AsURI().toString());
+				Set<URI> targetSuperconcepts = 
+					SesameUtils.findAllSuperconcepts(
+							targetConcept, FusionEnvironment.getInstance().getFusionRepositoryConnection());
+				
+				for(URI concept : targetSuperconcepts) {
+					superclassUris.add(concept.toString());
+				}
+				superclassUris.add(targetConcept.toString());
+				relevantEquivCells = this.alignment.getAlignCells1(cell.getObject1());
+				if(relevantEquivCells!=null) {
+					for(Cell relCell : relevantEquivCells) {
+						try {
+							String tmpUri = relCell.getObject2AsURI().toString();
+							if(superclassUris.contains(tmpUri)) {
+								// CONTRADICTION!
+								if(cell.getStrength()<=relCell.getStrength()) {
+									
+									overriddenDisjointAlignment.addAlignCell(
+											cell.getObject1(),
+											cell.getObject2(),
+											"%",
+											cell.getStrength());
+									log.info("Disjointness between "
+											+cell.getObject1AsURI().toString()+" and "
+											+cell.getObject2AsURI().toString() +" ("+cell.getStrength()+")"
+											+"\n was overridden because of equivalence between "+
+											relCell.getObject1AsURI().toString() 
+											+" and "
+											+relCell.getObject2AsURI().toString()
+											+" ("+relCell.getStrength()+")");
+									break;
+								}
+							}
+						} catch(AlignmentException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			} catch(Exception e) {
+				log.error("Could not get alignment cells", e);
+			}
+			
+			try {
+				superclassUris.clear();
+				URI sourceConcept = 
+					FusionEnvironment.getInstance().getFusionKbValueFactory().createURI(
+						cell.getObject1AsURI().toString());
+				Set<URI> sourceSuperconcepts = 
+					SesameUtils.findAllSuperconcepts(
+							sourceConcept, FusionEnvironment.getInstance().getFusionRepositoryConnection());
+				
+				for(URI concept : sourceSuperconcepts) {
+					superclassUris.add(concept.toString());
+				}
+				superclassUris.add(sourceConcept.toString());
+				relevantEquivCells = this.alignment.getAlignCells2(cell.getObject2());
+				if(relevantEquivCells!=null) {
+					for(Cell relCell : relevantEquivCells) {
+						try {
+							String tmpUri = relCell.getObject1AsURI().toString();
+							if(superclassUris.contains(tmpUri)) {
+								// CONTRADICTION!
+								if(cell.getStrength()<=relCell.getStrength()) {
+									overriddenDisjointAlignment.addAlignCell(
+											cell.getObject1(),
+											cell.getObject2(),
+											"%",
+											cell.getStrength());
+									log.info("Disjointness between "
+											+cell.getObject1AsURI().toString()+" and "
+											+cell.getObject2AsURI().toString()+" ("+cell.getStrength()+")"
+											+"\n was overridden because of equivalence between "+
+											relCell.getObject1AsURI().toString() 
+											+" and "
+											+relCell.getObject2AsURI().toString()
+											+" ("+relCell.getStrength()+")");
+									break;
+								}
+								
+							}
+						} catch(AlignmentException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			} catch(Exception e) {
+				log.error("Could not get alignment cells", e);
+			}
+			
+			inferredDisjointness = this.getInferredDisjointnessRelations(cell);
+			boolean overridden = false;
+			try {
+				if(cell.getObject2AsURI().toString().endsWith("#Place")) {
+					log.info("Here "+cell.getObject1AsURI().toString());
+				}
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+			for(Cell infCell : inferredDisjointness) {
+				try {
+					
+					relevantEquivCells = this.alignment.getAlignCells2(infCell.getObject2());
+					if(relevantEquivCells!=null) {
+						for(Cell relCell : relevantEquivCells) {
+							if(!relCell.getObject1AsURI().toString().equals(infCell.getObject1AsURI().toString())) continue;
+							// CONTRADICTION!
+							if(cell.getStrength()<=relCell.getStrength()) {
+								overridden = true;
+								overriddenDisjointAlignment.addAlignCell(
+										cell.getObject1(),
+										cell.getObject2(),
+										"%",
+										cell.getStrength());
+								if(cell.getObject2AsURI().toString().endsWith("#Company"))
+								log.info("Disjointness between "
+										+cell.getObject1AsURI().toString()+" and "
+										+cell.getObject2AsURI().toString()+" ("+cell.getStrength()+")"
+										+"\n was overridden because of equivalence between "+
+										relCell.getObject1AsURI().toString() 
+										+" and "
+										+relCell.getObject2AsURI().toString()
+										+" ("+relCell.getStrength()+")");
+								break;
+							}
+						}
+					} 
+				} catch(AlignmentException e) {
+					e.printStackTrace();
+				}
+			}
+			if(!overridden) {
+				for(Cell infCell : inferredDisjointness) {
+					cells2Add.add(infCell);
+				}
+			}
+		}
+		try {
+			for(Cell infCell : cells2Add) {
+				try {
+					this.disjointAlignment.addAlignCell(
+							infCell.getObject1(),
+							infCell.getObject2(),
+							"%",
+							infCell.getStrength());
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+			this.disjointAlignment = this.disjointAlignment.diff(overriddenDisjointAlignment);
+			Enumeration<Cell> enumDisjoint = this.disjointAlignment.getElements();
+			while(enumDisjoint.hasMoreElements()) {
+				Cell cell = enumDisjoint.nextElement();
+				log.info(cell.getObject1AsURI().toString()+" vs "+cell.getObject2AsURI().toString()+" ("+cell.getStrength()+")");
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	private Set<Cell> getInferredDisjointnessRelations(Cell cell) {
+		Set<Cell> answer = new HashSet<Cell>();
+		if(!(cell.getRelation() instanceof IncompatRelation)) {
+			return answer;
+		}
+		String sourceUri = null;
+		String targetUri = null;
+		try {
+			sourceUri = cell.getObject1AsURI().toString();
+			targetUri = cell.getObject2AsURI().toString();
+		} catch(AlignmentException e) {
+			log.error("Could not get the URI from the alignment cell", e);
+			return answer;
+		}
+		if((sourceUri==null)||(targetUri==null)) {
+			return answer;
+		}
+		
+		URI sourceConcept = FusionEnvironment.getInstance().getFusionKbValueFactory().createURI(sourceUri);
+		URI targetConcept = FusionEnvironment.getInstance().getMainKbValueFactory().createURI(targetUri);
+		Set<URI> sourceSubconcepts = new HashSet<URI>();
+		Set<URI> targetSubconcepts = new HashSet<URI>();
+		try {
+			sourceSubconcepts = SesameUtils.findAllSubconcepts(sourceConcept, FusionEnvironment.getInstance().getFusionRepositoryConnection());
+			sourceSubconcepts.add(sourceConcept);
+			targetSubconcepts = SesameUtils.findAllSubconcepts(targetConcept, FusionEnvironment.getInstance().getMainKbRepositoryConnection());
+			targetSubconcepts.add(targetConcept);
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+
+		Cell subsumCell;
+		for(URI sourceconcept : sourceSubconcepts) {
+			for(URI targetconcept : targetSubconcepts) {
+				try {
+					
+					subsumCell = new BasicCell(
+							(String)null, 
+							new java.net.URI(sourceconcept.toString()),
+							new java.net.URI(targetconcept.toString()),
+							BasicRelation.createRelation("%"),
+							cell.getStrength());
+					answer.add(subsumCell);
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return answer;
+	}
+	
+	
+	private void extractDisjointConceptsFromTargetOntology() {
+		try {
+			Set<URI> concepts = SesameUtils.findAllNamedConcepts(FusionEnvironment.getInstance().getMainKbRepositoryConnection());
+			concepts.add(FusionEnvironment.getInstance().getMainKbValueFactory().createURI(OWL.NAMESPACE+"Thing"));
+			URI concept;
+			URI subconcept;
+			Set<URI> subconcepts;
+			
+			for(URI tmp : concepts) {
+				if(!(tmp instanceof URI)) continue;
+				concept = (URI) tmp;
+				
+				subconcepts = SesameUtils.getNamedSubconcepts(concept, FusionEnvironment.getInstance().getMainKbRepositoryConnection());
+				for(URI tmp2 : subconcepts) {
+					if(!(tmp2 instanceof URI)) continue;
+					subconcept = (URI)tmp2;
+			
+					Set<URI> disjoints = new HashSet<URI>();
+					for(URI tmp3 : subconcepts) {
+						if(!(tmp3 instanceof URI)) continue;
+						if(tmp2==tmp3) continue;
+						
+						disjoints.add((URI)tmp3);
+					}
+					this.disjointTargetConcepts.put(subconcept, disjoints);
+				}
+				
+			}
+			
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+
+	public Alignment getDisjointAlignment() {
+		return disjointAlignment;
+	}
+	
+}

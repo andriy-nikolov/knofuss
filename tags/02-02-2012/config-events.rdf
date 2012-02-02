@@ -1,0 +1,201 @@
+<?xml version="1.0"?>
+<rdf:RDF
+    xmlns:gen-framework="http://kmi.open.ac.uk/task-method#"
+    xmlns="http://kmi.open.ac.uk/fusion/fusion#"
+    xmlns:foaf="http://xmlns.com/foaf/0.1/"
+    xmlns:protege="http://protege.stanford.edu/plugins/owl/protege#"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:mo="http://purl.org/ontology/mo/"
+    xmlns:linkedmdb="http://data.linkedmdb.org/movie/"
+    xmlns:dbp-ont="http://dbpedia.org/ontology/"
+    xmlns:person1="http://www.okkam.org/ontology_person1.owl#"
+    xmlns:person2="http://www.okkam.org/ontology_person2.owl#"
+    xmlns:bio="http://purl.org/vocab/bio/0.1/" 
+    xmlns:oaei="http://oaei.ontologymatching.org/2010/IIMBTBOX/"
+    xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+    xmlns:dul="http://www.loa-cnr.it/ontologies/DUL.owl#"
+    xmlns:lode="http://linkedevents.org/ontology/"
+    xmlns:w3ctime="http://www.w3.org/2006/time#"
+    xmlns:wgs84="http://www.w3.org/2003/01/geo/wgs84_pos#"
+  xml:base="http://kmi.open.ac.uk/fusion/fusion">
+
+  <SesameDataSource rdf:ID="SourceOWLIMRepository">
+    <configurationFile>source-owlim.ttl</configurationFile>
+    <path>data/sesame</path>
+    <name>source-default</name>
+    <refresh>true</refresh>
+    <loadFrom rdf:resource="#EventsSource"/>
+  </SesameDataSource>
+  
+  <FileDump rdf:ID="EventsSource">
+	<!-- <dataFile>d:/work/dataset/events/eventful/events-subset.nt</dataFile> -->
+        <dataFile>d:/work/dataset/events/smalltest/eventful.nt</dataFile>
+  </FileDump>
+    
+  <SesameDataSource rdf:ID="TargetOWLIMRepository">
+    <configurationFile>target-owlim.ttl</configurationFile>
+    <path>data/sesame</path>
+    <name>target-default</name>
+    <refresh>true</refresh>
+    <loadFrom rdf:resource="#EventsTarget"/>
+    <intermediateStore rdf:resource="#LuceneIndexAllFields"/>
+  </SesameDataSource>
+
+  <FileDump rdf:ID="EventsTarget">
+	<!-- <dataFile>d:/work/dataset/events/eventful/events-subset.nt</dataFile> -->
+	<!-- <dataFile>d:/work/dataset/events/lastfm/events.nt</dataFile> -->
+	<dataFile>d:/work/dataset/events/smalltest/upcoming.nt</dataFile>
+  </FileDump>
+
+  <LuceneDiskBlocker rdf:ID="LuceneIndexAllFields">
+    <path>data/lucene</path>
+    <searchStrategy>fuzzy</searchStrategy>
+    <refresh>true</refresh>
+    <threshold>-0.1</threshold>
+    <fuzzyThreshold>0.0</fuzzyThreshold>
+    <depth>2</depth>
+    <cutOff>30</cutOff>
+  </LuceneDiskBlocker>
+
+  <!-- <LuceneMemoryBlockerAllFields rdf:ID="LuceneMemory"/> -->
+    
+  <LinkSession rdf:ID="MainLinkSession">
+    <sourceDataset rdf:resource="#SourceOWLIMRepository"/>
+    <targetDataset rdf:resource="#TargetOWLIMRepository"/>
+    <!-- <instanceMatchingSpec rdf:resource="#EventGeneticApplicationContext"/> -->
+    <instanceMatchingSpec rdf:resource="#EventPredefinedApplicationContext"/>
+    <!-- <datasetMatchingSpec rdf:resource="#PostFilterApplicationContext"/> -->
+    <!-- <datasetMatchingSpec rdf:resource="#FunctionalApplicationContext"/> -->
+    <!-- <goldStandard>C:/Dataset/oaei2011/goldstandards/nyt-dbpedia-organizations-mappings.rdf</goldStandard> -->
+    <resultsFile>logs/results.xml</resultsFile>
+    <resultsFormat>custom</resultsFormat>
+  </LinkSession>
+
+  <ApplicationContext rdf:ID="EventGeneticApplicationContext">
+
+        <sourceRestriction>
+          ?uri rdf:type lode:Event .
+        </sourceRestriction>
+        <targetRestriction>
+          ?uri rdf:type lode:Event .
+        </targetRestriction>
+    
+        <!-- <hasBlocker rdf:resource="#LuceneMemory"/> -->
+	<hasBlocker rdf:resource="#LuceneIndexAllFields"/>
+
+        <hasMethod rdf:resource="#UnsupervisedGeneticAlgorithmMethod"/>
+
+  </ApplicationContext>
+
+  
+  
+  <ApplicationContext rdf:ID="PostFilterApplicationContext">
+  
+          <sourceRestriction>
+            ?uri rdf:type rdf:Resource .
+          </sourceRestriction>
+          <targetRestriction>
+            ?uri rdf:type rdf:Resource .
+          </targetRestriction>
+      
+  	
+          <hasMethod rdf:resource="#OneToOneMappingFilter"/>
+  
+  </ApplicationContext>
+  
+  <ApplicationContext rdf:ID="FunctionalApplicationContext">
+    
+            <sourceRestriction>
+              ?uri rdf:type rdf:Resource .
+            </sourceRestriction>
+            <targetRestriction>
+              ?uri rdf:type rdf:Resource .
+            </targetRestriction>
+        
+    	
+            <hasMethod rdf:resource="#FunctionalPropertyMapper"/>
+    
+  </ApplicationContext>
+
+  <ApplicationContext rdf:ID="EventPredefinedApplicationContext">
+
+        <sourceRestriction>
+          ?uri rdf:type lode:Event .
+        </sourceRestriction>
+        <targetRestriction>
+          ?uri rdf:type lode:Event .
+        </targetRestriction>
+    
+        <hasBlocker rdf:resource="#LuceneIndexAllFields"/>
+
+	<hasMethod rdf:resource="#SimMetricsAverageDistanceMatcher"/>
+
+	<hasObjectModel>
+	      <ObjectContextModel>
+		<aggregationFunction>average</aggregationFunction>
+		<threshold>0.0</threshold>
+		<variableComparison>
+		   <VariableComparisonSpec>
+		     <variable>name</variable>
+		     <sourcePath>?uri dc:title ?name .</sourcePath>
+		     <targetPath>?uri dc:title ?name .</targetPath>
+		     <metric>jaro</metric>
+                     <weight>1.0</weight>
+		   </VariableComparisonSpec>
+		</variableComparison>
+		<!-- <variableComparison>
+		   <VariableComparisonSpec>
+		     <variable>long</variable>
+		     <variable>lat</variable>
+		     <sourcePath>?uri lode:inSpace ?x . ?x wgs84:long ?long .</sourcePath>
+		     <sourcePath>?uri lode:inSpace ?x . ?x wgs84:lat ?lat .</sourcePath>
+		     <targetPath>?uri lode:inSpace ?x . ?x wgs84:long ?long .</targetPath>
+		     <targetPath>?uri lode:inSpace ?x . ?x wgs84:lat ?lat .</targetPath>
+		     <metric>event</metric>
+                     <weight>0.5</weight>
+		   </VariableComparisonSpec>
+		</variableComparison> -->
+	      </ObjectContextModel> 
+	</hasObjectModel>
+  </ApplicationContext>
+
+  <FusionMethod rdf:ID="UnsupervisedGeneticAlgorithmMethod">
+    <hasCapability rdf:resource="#ObjectIdentification"/>
+    <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string">uk.ac.open.kmi.fusion.learning.GeneticAlgorithmObjectIdentificationMethod</hasImplementingClass>
+    <!-- <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string">uk.ac.open.kmi.fusion.learning.DummyBlockerOnlyObjectIdentificationMethod</hasImplementingClass> -->
+    <populationSize>100</populationSize>
+    <useUnsupervisedFitness>true</useUnsupervisedFitness>
+    <sampleSize>500</sampleSize>
+    <maxIterations>50</maxIterations>
+  </FusionMethod>
+
+  <FusionMethod rdf:ID="FunctionalPropertyMapper">
+    <hasCapability rdf:resource="#DatasetMatching"/>
+    <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string">uk.ac.open.kmi.fusion.filter.FunctionalPropertyFilter</hasImplementingClass>
+    <populationSize>100</populationSize>
+  </FusionMethod>
+  
+  <FusionMethod rdf:ID="OneToOneMappingFilter">
+      <hasCapability rdf:resource="#DatasetMatching"/>
+      <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string">uk.ac.open.kmi.fusion.filter.OneToOneFilter</hasImplementingClass>
+  </FusionMethod>
+
+  <FusionMethod rdf:ID="SimMetricsAverageDistanceMatcher">
+    <hasReliability rdf:datatype="http://www.w3.org/2001/XMLSchema#float"
+    >0.8</hasReliability>
+    <hasCapability rdf:resource="#ObjectIdentification"/>
+    <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >uk.ac.open.kmi.fusion.objectidentification.standard.StandardObjectIdentificationMethod</hasImplementingClass>
+  </FusionMethod>
+  
+  <ValueMatchingFunction rdf:ID="EventComparisonFunction">
+    <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string">uk.ac.open.kmi.fusion.api.impl.valuematching.TestEventValueMatchingFunction</hasImplementingClass>
+  </ValueMatchingFunction>
+  
+</rdf:RDF> 
+
+<!-- Created with Protege (with OWL Plugin 2.1, Build 284)  http://protege.stanford.edu -->

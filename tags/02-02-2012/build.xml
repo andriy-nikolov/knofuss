@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="KnoFussStandalone" default="" basedir=".">
+	<target name="init-constants">
+		<property name="source.java" value="${basedir}/src/java" />
+		<property name="src" location="src" />
+		<property name="build" location="build" />
+		<property name="dist" location="dist" />
+
+		<patternset id="thirdparty.patternset">
+			<include name="*.jar" />
+		</patternset>
+
+		<property name="build.path" value="${basedir}/bin" />
+		<property name="mainclass" value="uk.ac.open.kmi.fusion.Main" />
+
+		<path id="thirdparty.classpath">
+			<pathelement location="${build.path}"/>
+			<fileset dir="${basedir}/lib">
+				<patternset refid="thirdparty.patternset" />
+			</fileset>
+		</path>
+
+		<path id="javac.classpath">
+			<path refid="thirdparty.classpath" />
+		</path>
+
+	</target>
+
+	<target name="clean" depends="init-constants">
+		<delete dir="${basedir}/bin/*.*" />
+	</target>
+
+	<target name="compile-classes" depends="clean">
+		<mkdir dir="${build.path}" />
+		<javac destdir="${build.path}" target="1.6" depend="${javac.depend}" includeAntRuntime="${javac.include.ant.runtime}" includeJavaRuntime="${javac.include.java.runtime}" failonerror="true">
+			<src path="${source.java}" />
+			<classpath refid="javac.classpath" />
+		</javac>
+	</target>
+
+	<target name="distfiles">
+	       <mkdir dir="${dist}" />
+	       
+	       <!-- Copy in lib files -->
+	        <mkdir dir="${dist}/lib" />
+
+	        <!-- <copy todir="${dist}/src">
+	            <fileset dir="${src}">
+	                <include name="**/*.java" />
+	            </fileset>
+	        </copy> -->
+
+	        <copy todir="${dist}">
+	            <fileset dir=".">
+	            	<include name="source-owlim.ttl"/>
+	            	<include name="target-owlim.ttl"/>
+			<include name="config.rdf"/>
+                        <include name="build.xml"/>
+                        <include name=".classpath"/>
+                        <include name=".project"/>
+	            	<include name="log4j.properties"/>
+	            </fileset>
+	        </copy>
+
+	        <copy todir="${dist}/lib">
+	            <fileset dir="lib">
+	                <include name="**/*.jar" />
+	                <exclude name="**/${project.name}*.jar"/>
+	            </fileset>
+	        </copy>
+		
+		   <mkdir dir="${dist}/config"/>
+		
+		   <copy todir="${dist}/config" file="config/fusion.owl"/>
+		   
+		<mkdir dir="${dist}/logs" />
+
+		    <mkdir dir="${dist}/data" />
+			<mkdir dir="${dist}/data/lucene" />
+			<mkdir dir="${dist}/data/sesame" />
+		
+	    </target>
+
+	    <target name="dist" depends="compile-classes,distfiles"
+	            description="Generate a distribution" >
+	        <!-- Generate relative classpath for jar file -->
+	        <property name="rlib" location="${basedir}/lib/"/>
+	        <pathconvert dirsep="/" pathsep=" " property="Class-Path">
+	            <map from="${rlib}/" to="lib/"/>
+	            <!-- <map from="${rlib}\" to=""/> -->
+	            <path>
+	                <fileset dir="${rlib}">
+	                    <include name="**/*.jar" />
+	                </fileset>
+	            </path>
+	        </pathconvert>
+
+	        <echo>${Class-Path}</echo>
+
+	        <!-- Make Jar file. -->
+	        <jar jarfile="${dist}/knofuss-standalone.jar"
+	             basedir="${build.path}">
+	            <manifest>
+	                <attribute name="Main-Class" value="${mainclass}"/>
+	                <attribute name="Class-Path" value="${Class-Path}" />
+	            </manifest>
+		</jar>
+	    </target>
+
+	<target name="compile" depends="compile-classes" description="Compile all source files for this module.">
+
+	</target>
+
+	<!-- <target name="jar" depends="dist" description="Builds jars for this module.">
+		<delete file="${basedir}/knofuss-standalone.jar" />
+		<jar jarfile="${basedir}/knofuss-standalone.jar">
+			<manifest>
+				<attribute name="Built-Date" value="${TODAY}"/>
+		        <attribute name="Main-Class" value="uk.ac.open.kmi.fusion.Main"/>
+				
+			</manifest>
+			<fileset dir="${build.path}" includes="**" />
+		</jar>
+		<copy todir="${dist}">
+			<fileset dir=".">
+				<include name="**/knofuss-standalone.jar" />
+		    </fileset>
+		</copy>
+	</target> -->
+
+	<target name="run" depends="init-constants" description="Runs the program">
+		<java classpath="${build.path}" classname="uk.ac.open.kmi.fusion.Main" fork="true">
+			<classpath refid="thirdparty.classpath" />
+			<jvmarg value="-Xmx2000m"/>
+		</java>
+	</target>
+
+	<target name="zip" depends="dist" description="Creates ZIP archive">
+		<delete file="knofuss-standalone.zip" />
+		<zip destfile="knofuss-standalone.zip">
+			<fileset dir="${basedir}" >
+				<include name="**/*" />
+				<exclude name="src/**"/>
+			</fileset>
+		</zip>
+	</target>
+</project>

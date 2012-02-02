@@ -1,0 +1,252 @@
+package uk.ac.open.kmi.fusion.index;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+
+import org.apache.log4j.Logger;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Fieldable;
+import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TermsFilter;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.util.Version;
+import org.openrdf.model.Literal;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.vocabulary.RDF;
+import org.openrdf.model.vocabulary.RDFS;
+import org.openrdf.repository.RepositoryConnection;
+import org.openrdf.repository.RepositoryException;
+
+import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
+import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
+import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
+import uk.ac.open.kmi.fusion.util.FusionException;
+import uk.ac.open.kmi.fusion.util.SesameUtils;
+
+public class LuceneMemoryIndexerOld extends AbstractLuceneIndexer {
+
+	public static final String TYPE_URI = FusionMetaVocabulary.LUCENE_MEMORY_BLOCKER;
+	
+	private Logger log = Logger.getLogger(LuceneMemoryIndexer.class);
+	
+	private boolean refresh = true;
+	
+	public LuceneMemoryIndexerOld() throws FusionException {
+		super();
+		this.createIndex();
+	}
+
+	public LuceneMemoryIndexerOld(Resource rdfIndividual,
+			FusionEnvironment environment) throws FusionException {
+		super(rdfIndividual, environment);
+		this.createIndex();
+	}
+
+
+
+	@Override
+	public void readFromRDFIndividual(RepositoryConnection connection)
+			throws RepositoryException {
+		
+		super.readFromRDFIndividual(connection);
+	}
+
+	@Override
+	protected void readFromPropertyMember(Statement statement)
+			throws RepositoryException {
+		
+		super.readFromPropertyMember(statement);
+	}
+	
+	
+	
+
+	@Override
+	public Map<String, Document> findClosestDocuments(
+			Map<String, List<String>> searchFieldValues, String[] searchFields,
+			double threshold, String type) throws IOException {
+		
+		return this.findClosestDocuments(searchFieldValues, threshold, type);
+	}
+
+	@Override
+	public Map<String, Document> findClosestDocuments(
+			Map<String, List<String>> fields, double threshold, 
+			String type) throws IOException {
+		
+		Map<String, Document> docs = new HashMap<String, Document>();
+	    Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_30);
+    
+	    
+	    
+	    try {
+	    	for(String key : fields.keySet()) {
+
+	    		if(fields.get(key).isEmpty()) continue;
+	    		String queryString = getTransducedQuery(AbstractLuceneIndexer.getConcatenatedString(fields.get(key)));
+	    		Query query = null;
+
+	    		QueryParser queryParser = new QueryParser(Version.LUCENE_30, key, analyzer);
+
+	    		query = queryParser.parse(queryString);
+			    
+	    		TopDocs hits;
+	    		
+	    		if(type==null) {
+	    			hits = indexSearcher.search(query, this.getCutOff());
+	    		} else {
+	    			TermsFilter filter = new TermsFilter();
+	    			filter.addTerm(new Term(RDF.TYPE.toString(), type));
+
+	    			hits = indexSearcher.search(query, filter, this.getCutOff());
+	    		}
+			    
+	    		
+	    			    		
+	    		if(hits.totalHits==0) {
+	    			continue;
+	    		}
+      
+	    		Document doc;
+	    		
+	    		for(int i=0;i<hits.scoreDocs.length;i++) {
+	    			if((hits.scoreDocs[i].score>=threshold)) {
+	    				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
+	    				docs.put(doc.get("uri"), doc);
+
+	    			} else {
+	    				break;
+	    			}
+	    		}
+	    	}
+
+	    	
+	    } catch(ParseException e) {
+	    	e.printStackTrace();
+	    }
+			
+		return docs;
+		
+
+	}
+	
+	@Override
+	public void closeIndex() throws FusionException {
+		try {
+			this.indexWriter.optimize();
+			this.indexWriter.close();
+		} catch(IOException e) {
+			throw new FusionException(e);
+		}
+
+	}
+
+	@Override
+	public void openIndex() throws FusionException {
+		if(this.indexWriter==null) {
+			createIndex();
+		} 
+	}
+
+	@Override
+	public void createIndex() throws FusionException {
+		try {
+			this.directory = new RAMDirectory();
+			this.indexWriter = new IndexWriter(directory, new StandardAnalyzer(Version.LUCENE_30), IndexWriter.MaxFieldLength.UNLIMITED);
+		} catch(IOException e ) {
+			String message = "I/O error when creating the Indexer.";
+			log.error(message);
+			throw new FusionException(message, e);
+		}
+
+	}
+	
+	@Override
+	public void refreshSearcher() throws FusionException {
+		
+		if(directory==null) {
+			createIndex();
+			
+		}
+		try {
+			this.indexSearcher = new IndexSearcher(directory);
+		} catch(IOException e) {
+			throw new FusionException(e);
+		}
+		
+	}
+
+	@Override
+	public void addIndividual(URI ind, RepositoryConnection con) throws RepositoryException {
+		
+		Document doc = indexIndividual(ind, con);
+		
+		List<Statement> stmts = SesameUtils.getStatements(ind, null, null, con);
+		URI obj;
+		for(Statement stmt : stmts) {
+			if(!stmt.getPredicate().equals(RDF.TYPE)) {
+				if(stmt.getObject() instanceof Literal) {
+					doc.add(new Field(stmt.getPredicate().toString(), ((Literal)stmt.getObject()).stringValue(), Field.Store.YES, Field.Index.ANALYZED));
+					// log.debug("Indexed field: "+stmt.getPredicate().toString()+" = "+((Literal)stmt.getObject()).stringValue());
+					// skos patch - very clumsy, to be fixed
+					if(stmt.getPredicate().toString().equals("http://www.w3.org/2004/02/skos/core#altLabel")||
+							stmt.getPredicate().toString().equals("http://www.w3.org/2004/02/skos/core#prefLabel")||
+							stmt.getPredicate().toString().equals("http://www.w3.org/2004/02/skos/core#hiddenLabel")) {
+						doc.add(new Field(RDFS.LABEL.toString(), ((Literal)stmt.getObject()).stringValue(), Field.Store.YES, Field.Index.ANALYZED));
+					}
+				} 
+			}
+		}
+		
+		try {
+			this.indexWriter.addDocument(doc);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/*Set<String> getNGramSet(String str) {
+		Set<String> res = new HashSet<String>();
+
+		StringTokenizer tokenizer;
+		String token;
+		
+		tokenizer = new StringTokenizer(str, " :-.,;()");
+		while(tokenizer.hasMoreTokens()) {
+			token = tokenizer.nextToken().trim();
+			if(token.toLowerCase().equals("music")) continue;
+			if(token.toLowerCase().equals("contributor")) continue;
+			token = (token.length()>n)?(token.substring(0, n)):(token);
+			if(token.length()>2) {
+				res.add(token);
+			}
+		}
+		
+		return res;
+	}*/
+	
+	
+	
+	
+
+}

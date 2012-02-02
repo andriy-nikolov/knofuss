@@ -1,0 +1,244 @@
+<?xml version="1.0"?>
+<rdf:RDF
+    xmlns:gen-framework="http://kmi.open.ac.uk/task-method#"
+    xmlns="http://kmi.open.ac.uk/fusion/fusion#"
+    xmlns:foaf="http://xmlns.com/foaf/0.1/"
+    xmlns:protege="http://protege.stanford.edu/plugins/owl/protege#"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:mo="http://purl.org/ontology/mo/"
+    xmlns:linkedmdb="http://data.linkedmdb.org/movie/"
+    xmlns:dbp-ont="http://dbpedia.org/ontology/"
+    xmlns:person1="http://www.okkam.org/ontology_person1.owl#"
+    xmlns:person2="http://www.okkam.org/ontology_person2.owl#"
+    xmlns:restaurant1="http://www.okkam.org/ontology_restaurant1.owl#"
+    xmlns:restaurant2="http://www.okkam.org/ontology_restaurant2.owl#"
+  xml:base="http://kmi.open.ac.uk/fusion/fusion">
+
+
+  <!-- Source data repository spec. Since the configuration is in the Sesame configuration file,
+       both standard Sesame and OWLIM repositories are supported -->
+  <SesameDataSource rdf:ID="SourceOWLIMRepository">
+    <!-- Sesame SAIL configuration file -->
+    <configurationFile>source-owlim.ttl</configurationFile>
+    <!-- Path to the data storage -->
+    <path>data/sesame</path>
+    <!-- Repository name: should match the one in the Sesame SAIL configuration file. 
+         The sub-directory in which data is stored then takes the same name. -->
+    <name>source-default</name>
+    <!-- Specifies, whether data should be reloaded into the working repository from a dump. -->
+    <refresh>true</refresh>
+    <!-- If data is to be reloaded, specifies the set of dump files. -->
+    <loadFrom>
+	<FileDump rdf:ID="Restaurant1">
+	    <dataFile>example/restaurants/restaurant1.rdf</dataFile>
+	    <schemaFile>example/restaurants/ontology_restaurant1-rdfxml.owl</schemaFile>
+	</FileDump>
+    </loadFrom>
+  </SesameDataSource>
+  
+  <!-- Target data repository spec. Since the configuration is in the Sesame configuration file,
+       both standard Sesame and OWLIM repositories are supported -->
+  <SesameDataSource rdf:ID="TargetOWLIMRepository">
+    <configurationFile>target-owlim.ttl</configurationFile>
+    <path>data/sesame</path>
+    <name>target-default</name>
+    <refresh>true</refresh>
+    <loadFrom>
+      <FileDump rdf:ID="Restaurant2">
+	<dataFile>example/restaurants/restaurant2_mod.rdf</dataFile>
+	<schemaFile>example/restaurants/ontology_restaurant2-rdfxml.owl</schemaFile>
+      </FileDump>
+    </loadFrom>
+    <intermediateStore rdf:resource="#LuceneIndex"/>
+  </SesameDataSource>
+  
+  
+  <!-- Specification of the blocker, which selects candidate instances for comparison. 
+       Blocking is implemented on top of a lucene index searcher. 
+       The target dataset is indexed. Pairs of candidate instances for comparison are formed by 
+       searching the index using datatype fields of instances from the source dataset. -->
+  <LuceneDiskBlocker rdf:ID="LuceneIndex">
+    <!-- Path to the index storage -->
+    <path>data/lucene</path>
+    <!-- Specifies, whether the target repository has to be reindexed. -->
+    <refresh>true</refresh>
+    <!-- The search strategy: one of:
+         - "all" - searches in all datatype properties of target instances. 
+         - "aligned" - searches only in the values of the same properties as are present in the source individuals (mainly used when the datasets use the same ontology)
+         - "fuzzy" - same as "all", but uses fuzzy search -->
+    <searchStrategy>all</searchStrategy>
+    <!-- Target instances are indexed with values of direct datatype properties with the length of the path depth=n. Only depth=1 (direct datatype properties) and depth=2 are supported. -->
+    <depth>1</depth>
+    <!-- Maximum number of potential matching candidates for one source instance. -->
+    <cutOff>50</cutOff>
+    <!-- Lucene threshold: minimal searcher score for an instance to be returned as a matching candidate. -->
+    <threshold>0.05</threshold>
+  </LuceneDiskBlocker>
+
+  <!-- Specification of the main link session. -->
+  <LinkSession>
+    <!-- Reference to the source dataset specification. -->
+    <sourceDataset rdf:resource="#SourceOWLIMRepository"/>
+    <!-- Reference to the target dataset specification. -->
+    <targetDataset rdf:resource="#TargetOWLIMRepository"/>
+    <!-- Reference to the instance matching linker parameters. -->
+    <instanceMatchingSpec rdf:resource="#RestaurantUnsupervisedApplicationContext"/>
+    <!-- Alternative option: pre-defined matching specification (settings defined in #RestaurantPredefinedApplicationContext). -->
+    <!-- <instanceMatchingSpec rdf:resource="#RestaurantPredefinedApplicationContext"/> -->
+    <!-- Post-processing step: enforcing of the one-to-one mapping restriction (settings defined in #PostFilterApplicationContext). -->
+    <datasetMatchingSpec rdf:resource="#PostFilterApplicationContext"/>
+    <!-- Reference to the file containing the gold standard links (optional) - for the experimental setup. -->
+    <goldStandard>example/restaurants/restaurant1_restaurant2_goldstandard.rdf</goldStandard> 
+    <!-- Path to the file where resulting links are to be stored. -->
+    <resultsFile>logs/results.rdf</resultsFile>
+    <!-- Format of the output links: one of:
+         - "sameas": owl:sameAs.
+         - "oaei": the OAEI evaluation format.
+         - "custom": custom XML-based format. -->
+    <resultsFormat>sameas</resultsFormat>
+  </LinkSession>
+
+  <!-- Application context: parameters of the particular method. -->
+  <ApplicationContext rdf:ID="RestaurantUnsupervisedApplicationContext">
+     <!-- Restriction to select instances from the source dataset. -->
+     <sourceRestriction>
+       ?uri rdf:type restaurant1:Restaurant .
+     </sourceRestriction>
+     <!-- Restriction to select instances from the target dataset. -->
+     <targetRestriction>
+       ?uri rdf:type restaurant2:Restaurant .
+     </targetRestriction>
+    
+     <!-- Reference to the blocker specification. -->
+     <hasBlocker rdf:resource="#LuceneIndex"/>
+
+     <!-- Reference to the descriptor of the actual matching algorithm.
+          In this case, the unsupervised self-adaptive algorithm, 
+          which tries to derive the optimal configuration of the matcher. 
+          An experimental algorithm - normally works if a sufficiently large proportion of instances in two datasets are actually identical. -->
+     <hasMethod rdf:resource="#UnsupervisedGeneticAlgorithmMethod"/>
+    
+  </ApplicationContext>
+
+  <!-- Descriptor of the matching algorithm. 
+    	In this case, the standard attribute-based similarity matcher, 
+    	which takes a weighted average of the . -->
+  <FusionMethod rdf:ID="SimMetricsAverageDistanceMatcher">
+    <hasCapability rdf:resource="#ObjectIdentification"/>
+    <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >uk.ac.open.kmi.fusion.objectidentification.standard.StandardObjectIdentificationMethod</hasImplementingClass>
+  </FusionMethod>
+
+  <ValueMatchingFunction rdf:ID="TestEventValueMatchingFunction">
+    <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+    >uk.ac.open.kmi.fusion.api.impl.valuematching.TestEventValueMatchingFunction</hasImplementingClass>
+  </ValueMatchingFunction>
+
+  <!-- Descriptor of the matching algorithm. 
+  	   In this case, the unsupervised self-adaptive algorithm, 
+  	   which tries to derive the optimal configuration of the matcher. 
+           An experimental algorithm - was found to work 
+           if the mappings are one-to-one (URIs are unique within a single dataset )
+           if a sufficiently large proportion of instances in two datasets are actually matching. -->
+  <FusionMethod rdf:ID="UnsupervisedGeneticAlgorithmMethod">
+    <!-- Capability of the method. One of 
+         "#ObjectIdentification" (deciding whether a pair of individuals are identical) 
+          and "#DatasetMatching" (performed as post-processing of object identification, can consider both datasets as a whole as well as the results of object identification methods) -->
+    <hasCapability rdf:resource="#ObjectIdentification"/>
+    <!-- Java class implementing the method (depending on the capability, must implement one of the IAbstractFusionMethod sub-interfaces). -->
+    <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string">uk.ac.open.kmi.fusion.learning.GeneticAlgorithmObjectIdentificationMethod</hasImplementingClass>
+    <!-- Genetic algorithm parameter: population size -->
+    <populationSize>100</populationSize>
+    <!-- Genetic algorithm parameter: training sample size (not labeled - taken from the input data) -->
+    <sampleSize>100</sampleSize>
+    <!-- Genetic algorithm parameter: maximum number of iterations -->
+    <maxIterations>20</maxIterations>
+  </FusionMethod>
+     
+  
+  <!-- Descriptor of a post-processing method. 
+       	Reinforces the one-to-one mapping restriction, removes the "extra" mappings which violate it. 
+       	-->
+  <FusionMethod rdf:ID="OneToOneMappingFilter">
+        <hasCapability rdf:resource="#DatasetMatching"/>
+        <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string">uk.ac.open.kmi.fusion.filter.OneToOneFilter</hasImplementingClass>
+  </FusionMethod>
+  
+  
+  <!-- For illustration purposes: specification of a predefined linkage rule -->
+  <ApplicationContext rdf:ID="RestaurantPredefinedApplicationContext">
+    
+     <!-- Restriction to select instances from the source dataset. -->
+     <sourceRestriction>
+       ?uri rdf:type restaurant1:Restaurant .
+     </sourceRestriction>
+     <!-- Restriction to select instances from the target dataset. -->
+     <targetRestriction>
+       ?uri rdf:type restaurant2:Restaurant .
+     </targetRestriction>
+        
+        <hasBlocker rdf:resource="#LuceneIndex"/>
+    
+    	<hasMethod rdf:resource="#SimMetricsAverageDistanceMatcher"/>
+    
+    	<hasObjectModel>
+    	      <!-- Specification of the instance matching rule, which calculates a weighted average of different similarity functions applied to the specified properties of two instances.  -->
+    	      <ObjectContextModel>
+    	        <!-- Aggregation function: average or max.  -->
+    		<aggregationFunction>average</aggregationFunction>
+    		<!-- Cut-off threshold.  -->
+    		<threshold>0.0</threshold>
+    		<!-- Compared property pairs.  -->
+    		<variableComparison>
+    		   <VariableComparisonSpec>
+    		     <!-- Variable name.  -->
+    		     <variable>name</variable>
+    		     <!-- Path to the specified property value in the source dataset. ?uri corresponds to the actual individual being compared. -->
+    		     <sourcePath>?uri restaurant1:name ?name .</sourcePath>
+    		     <!-- Path to the specified property value in the target dataset. ?uri corresponds to the actual individual being compared. -->
+    		     <targetPath>?uri restaurant1:name ?name .</targetPath>
+    		     <!-- String similarity metric (e.g., levenshtein, jaro, jaro-winkler, monge-elkan, jaccard, overlap, smith-waterman, etc.). 
+    		          l2 corresponds to the tokenised distance: first, both values are tokenised, then 
+    		          the best-matching tokens are found using the specified similarity, and an average 
+    		          is calculated over pairs of such tokens. -->
+    		     <metric>l2 smith-waterman</metric>
+    		     <!-- weight of this similarity value within the aggregated function. -->
+    		     <weight>0.65</weight>
+    		   </VariableComparisonSpec>
+    		</variableComparison>
+    		<variableComparison>
+    		   <VariableComparisonSpec>
+    		     <variable>phone</variable>
+    		     <sourcePath>?uri restaurant1:phone_number ?phone .</sourcePath>
+    		     <targetPath>?uri restaurant2:phone_number ?phone .</targetPath>
+    		     <metric>l2 monge-elkan</metric>
+    		     <weight>0.35</weight>
+    		   </VariableComparisonSpec>
+    		</variableComparison>
+    	      </ObjectContextModel> 
+    	</hasObjectModel>
+  </ApplicationContext>
+  
+  
+  <!-- For illustration purposes: inclusion of a one-to-one mapping filter -->
+  <ApplicationContext rdf:ID="PostFilterApplicationContext">
+    
+            <sourceRestriction>
+              ?uri rdf:type rdf:Resource .
+            </sourceRestriction>
+            <targetRestriction>
+              ?uri rdf:type rdf:Resource .
+            </targetRestriction>
+        
+    	
+            <hasMethod rdf:resource="#OneToOneMappingFilter"/>
+    
+  </ApplicationContext>
+  
+</rdf:RDF> 
+
+<!-- Created with Protege (with OWL Plugin 2.1, Build 284)  http://protege.stanford.edu -->

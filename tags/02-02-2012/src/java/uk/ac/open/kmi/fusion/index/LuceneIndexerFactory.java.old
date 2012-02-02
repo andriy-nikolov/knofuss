@@ -1,0 +1,54 @@
+package uk.ac.open.kmi.fusion.index;
+
+import java.io.File;
+
+import org.apache.lucene.store.Directory;
+
+import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
+import uk.ac.open.kmi.fusion.index.search.ILuceneSearchStrategy;
+import uk.ac.open.kmi.fusion.index.search.LuceneAlignedFieldsSearchStrategy;
+import uk.ac.open.kmi.fusion.index.search.LuceneAllFieldsSearchStrategy;
+import uk.ac.open.kmi.fusion.index.store.ILuceneStore;
+import uk.ac.open.kmi.fusion.index.store.LuceneDiskStoreStrategy;
+import uk.ac.open.kmi.fusion.index.store.LuceneMemoryStoreStrategy;
+import uk.ac.open.kmi.fusion.util.FusionException;
+
+public class LuceneIndexerFactory {
+
+	/*public static enum LuceneSearchPolicy {
+		ALIGNED_FIELDS, ALL_FIELDS
+	}
+	
+	public static enum LuceneStorePolicy {
+		DISK, MEMORY
+	}*/
+	
+	private LuceneIndexerFactory() {
+		
+	}
+
+	public static ILuceneBlocker createDiskIndexer(LuceneSearchPolicy policy, String indexDir) throws FusionException {
+		ILuceneStore store = new LuceneDiskStoreStrategy(new File(indexDir));
+		store.init();
+		ILuceneSearchStrategy searchStrategy = createLuceneSearchStrategy(store, policy);
+		return new LuceneIndexer(store, searchStrategy);
+	}
+	
+	public static ILuceneBlocker createMemoryIndexer(LuceneSearchPolicy policy) throws FusionException {
+		ILuceneStore store = new LuceneMemoryStoreStrategy();
+		store.init();
+		ILuceneSearchStrategy searchStrategy = createLuceneSearchStrategy(store, policy);
+		return new LuceneIndexer(store, searchStrategy);
+	}
+	
+	private static ILuceneSearchStrategy createLuceneSearchStrategy(ILuceneStore store, LuceneSearchPolicy policy) {
+		switch(policy) {
+		case ALIGNED_FIELDS:
+			return new LuceneAlignedFieldsSearchStrategy(store.getDirectory());
+		case ALL_FIELDS:
+		default:
+			return new LuceneAllFieldsSearchStrategy(store.getDirectory());
+		}
+	}
+	
+}

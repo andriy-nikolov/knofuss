@@ -1,0 +1,901 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE rdf:RDF [
+    <!ENTITY foaf "http://xmlns.com/foaf/0.1/" >
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY dc "http://purl.org/dc/elements/1.1/" >
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY gen-framework "http://kmi.open.ac.uk/task-method#" >
+    <!ENTITY daml "http://www.daml.org/2001/03/daml+oil#" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY simmetrics "http://kmi.open.ac.uk/fusion/simmetrics#" >
+    <!ENTITY provenance "http://kmi.open.ac.uk/fusion/provenance#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+    <!ENTITY opus "http://lsdis.cs.uga.edu/projects/semdis/opus#" >
+    <!ENTITY protege "http://protege.stanford.edu/plugins/owl/protege#" >
+]>
+
+
+<rdf:RDF xmlns="http://kmi.open.ac.uk/fusion/fusion#"
+     xml:base="http://kmi.open.ac.uk/fusion/fusion"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
+     xmlns:protege="http://protege.stanford.edu/plugins/owl/protege#"
+     xmlns:foaf="http://xmlns.com/foaf/0.1/"
+     xmlns:daml="http://www.daml.org/2001/03/daml+oil#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:provenance="http://kmi.open.ac.uk/fusion/provenance#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:simmetrics="http://kmi.open.ac.uk/fusion/simmetrics#"
+     xmlns:gen-framework="http://kmi.open.ac.uk/task-method#"
+     xmlns:opus="http://lsdis.cs.uga.edu/projects/semdis/opus#">
+    <owl:Ontology rdf:about="http://kmi.open.ac.uk/fusion/fusion"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    <owl:AnnotationProperty rdf:about="&rdfs;comment"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Datatypes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#appearsInSet -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#appearsInSet">
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#ConflictDescription"/>
+        <rdfs:range rdf:resource="http://kmi.open.ac.uk/fusion/fusion#ConflictSet"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#conflictsWith -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#conflictsWith"/>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#containsConflictingStatements -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#containsConflictingStatements">
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#ConflictSet"/>
+        <rdfs:range rdf:resource="http://kmi.open.ac.uk/fusion/fusion#ConflictStatementCluster"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#containsInstance -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#containsInstance">
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionSet"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#datasetMatchingSpec -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#datasetMatchingSpec"/>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#describes -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#describes">
+        <rdf:type rdf:resource="&owl;FunctionalProperty"/>
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#DataInstance"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasApplicationContext -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasApplicationContext">
+        <rdfs:range rdf:resource="http://kmi.open.ac.uk/fusion/fusion#ApplicationContext"/>
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionMethod"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasCapability -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasCapability">
+        <rdf:type rdf:resource="&owl;FunctionalProperty"/>
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionMethod"/>
+        <rdfs:range rdf:resource="http://kmi.open.ac.uk/fusion/fusion#MethodCapability"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasConflictDescription -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasConflictDescription">
+        <rdfs:range rdf:resource="http://kmi.open.ac.uk/fusion/fusion#ConflictDescription"/>
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#ConflictSet"/>
+        <owl:inverseOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#appearsInSet"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasConflictType -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasConflictType">
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#ConflictDescription"/>
+        <rdfs:range rdf:resource="http://kmi.open.ac.uk/fusion/fusion#ConflictType"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasConnectedObject -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasConnectedObject">
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#ApplicationContext"/>
+        <rdfs:range rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionObject"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasInputParameter -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasInputParameter">
+        <rdfs:subPropertyOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#hasParameter"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasInstanceModel -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasInstanceModel">
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#ObjectContext"/>
+        <rdfs:range rdf:resource="http://kmi.open.ac.uk/fusion/fusion#ObjectContextModel"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasInstanceModelSet -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasInstanceModelSet"/>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasInstanceResourceSet -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasInstanceResourceSet"/>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasModelSet -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasModelSet"/>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasObject -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasObject"/>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasOutputParameter -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasOutputParameter">
+        <rdfs:subPropertyOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#hasParameter"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasParameter -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasParameter"/>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasSourceDescriptor -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasSourceDescriptor"/>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasType -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasType"/>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasVariableWeight -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasVariableWeight">
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#ObjectContextModel"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#instanceMatchingSpec -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#instanceMatchingSpec"/>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#involvesProperty -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#involvesProperty"/>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#isObjectOf -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#isObjectOf">
+        <owl:inverseOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#hasObject"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#isSubjectOf -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#isSubjectOf"/>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#producedBy -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#producedBy">
+        <rdfs:range rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionMethod"/>
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionObject"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#usesMethod -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#usesMethod">
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#ApplicationContext"/>
+        <rdfs:range rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionMethod"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#variableComparison -->
+
+    <owl:ObjectProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#variableComparison">
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#ObjectContextModel"/>
+        <rdfs:range rdf:resource="http://kmi.open.ac.uk/fusion/fusion#VariableComparisonSpec"/>
+        <rdfs:subPropertyOf rdf:resource="&owl;topObjectProperty"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.w3.org/2002/07/owl#topObjectProperty -->
+
+    <owl:ObjectProperty rdf:about="&owl;topObjectProperty"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#aggregationFunction -->
+
+    <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#aggregationFunction">
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#ObjectContextModel"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasConfidence -->
+
+    <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasConfidence">
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionSet"/>
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasImplementingClass -->
+
+    <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasImplementingClass">
+        <rdf:type rdf:resource="&owl;FunctionalProperty"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#FusionMethod"/>
+                    <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#TransformationFunction"/>
+                    <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#ValueMatchingFunction"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasReliability -->
+
+    <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasReliability">
+        <rdf:type rdf:resource="&owl;FunctionalProperty"/>
+        <rdfs:range rdf:resource="&xsd;float"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#ApplicationContext"/>
+                    <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#FusionMethod"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasSPARQLQuery -->
+
+    <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasSPARQLQuery">
+        <rdfs:range rdf:resource="&xsd;string"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#ApplicationContext"/>
+                    <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#FusionMethod"/>
+                    <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#ObjectContextModel"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasSelectQuery -->
+
+    <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasSelectQuery">
+        <rdf:type rdf:resource="&owl;FunctionalProperty"/>
+        <rdfs:subPropertyOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#hasSPARQLQuery"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasURL -->
+
+    <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasURL">
+        <rdfs:range rdf:resource="&xsd;anyURI"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#hasWeight -->
+
+    <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasWeight">
+        <rdfs:range rdf:resource="&xsd;double"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#sourcePath -->
+
+    <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#sourcePath">
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#VariableComparisonSpec"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#sourceRestriction -->
+
+    <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#sourceRestriction">
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#ApplicationContext"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#targetPath -->
+
+    <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#targetPath">
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#VariableComparisonSpec"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#targetRestriction -->
+
+    <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#targetRestriction">
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#ApplicationContext"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#variable -->
+
+    <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#variable">
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#VariableComparisonSpec"/>
+        <rdfs:range rdf:resource="&xsd;string"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/provenance#hasTimestamp -->
+
+    <owl:DatatypeProperty rdf:about="&provenance;hasTimestamp">
+        <rdfs:range rdf:resource="&xsd;dateTime"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#ApplicationContext -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#ApplicationContext">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionConfigurationObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#AtomicMapping -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#AtomicMapping">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#Mapping"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://kmi.open.ac.uk/fusion/fusion#containsInstance"/>
+                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#Blocker -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#Blocker">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionConfigurationObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#ConflictDescription -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#ConflictDescription">
+        <rdfs:subClassOf rdf:resource="&owl;Thing"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://kmi.open.ac.uk/fusion/fusion#hasConflictType"/>
+                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#ConflictSet -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#ConflictSet">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionSet"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#ConflictStatementCluster -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#ConflictStatementCluster">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionSet"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#ConflictType -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#ConflictType"/>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#DataInstance -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#DataInstance">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#DataSource -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#DataSource">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionConfigurationObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#Dump -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#Dump">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionConfigurationObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#FileDump -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#FileDump">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#Dump"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#FusionConfigurationObject -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#FusionConfigurationObject"/>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#FusionMethod -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#FusionMethod">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionConfigurationObject"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://kmi.open.ac.uk/fusion/fusion#hasSelectQuery"/>
+                <owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#FusionObject -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#FusionObject">
+        <rdfs:subClassOf rdf:resource="&owl;Thing"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://kmi.open.ac.uk/fusion/fusion#producedBy"/>
+                <owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#FusionSet -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#FusionSet">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionObject"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://kmi.open.ac.uk/fusion/fusion#hasReliability"/>
+                <owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#LinkSession -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#LinkSession">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionConfigurationObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#LuceneBlockedDiskBlocker -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#LuceneBlockedDiskBlocker">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#LuceneBlocker"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#LuceneBlocker -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#LuceneBlocker">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#Blocker"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#LuceneDiskBlocker -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#LuceneDiskBlocker">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#LuceneBlocker"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#LuceneDiskBlockerAllFields -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#LuceneDiskBlockerAllFields">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#LuceneBlocker"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#LuceneEnhancedDiskBlocker -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#LuceneEnhancedDiskBlocker">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#LuceneBlocker"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#LuceneMemoryBlocker -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#LuceneMemoryBlocker">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#LuceneBlocker"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#LuceneMemoryBlockerAllFields -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#LuceneMemoryBlockerAllFields">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#LuceneBlocker"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#Mapping -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#Mapping">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionSet"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#MergeSet -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#MergeSet">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#Mapping"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#MethodCapability -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#MethodCapability"/>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#ObjectContext -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#ObjectContext">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#DataInstance"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#ObjectContextModel -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#ObjectContextModel">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionConfigurationObject"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://kmi.open.ac.uk/fusion/fusion#hasSelectQuery"/>
+                <owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#RemoteSPARQLDataSource -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#RemoteSPARQLDataSource">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#DataSource"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#SesameDataSource -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#SesameDataSource">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#DataSource"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#SesameMemoryDataSource -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#SesameMemoryDataSource">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#DataSource"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#SesameNativeDataSource -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#SesameNativeDataSource">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#DataSource"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#TransformationFunction -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#TransformationFunction">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionConfigurationObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#ValueMatchingFunction -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#ValueMatchingFunction">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionConfigurationObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#VariableComparisonSpec -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#VariableComparisonSpec">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionConfigurationObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.w3.org/2002/07/owl#Thing -->
+
+    <owl:Class rdf:about="&owl;Thing"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Individuals
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#AtomicConflict -->
+
+    <owl:NamedIndividual rdf:about="http://kmi.open.ac.uk/fusion/fusion#AtomicConflict">
+        <rdf:type rdf:resource="http://kmi.open.ac.uk/fusion/fusion#ConflictType"/>
+        <rdfs:comment rdf:datatype="&xsd;string">A conflict occurring when an individual belongs to a class and its complement simultaneously</rdfs:comment>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#CardinalityConflict -->
+
+    <owl:NamedIndividual rdf:about="http://kmi.open.ac.uk/fusion/fusion#CardinalityConflict">
+        <rdf:type rdf:resource="http://kmi.open.ac.uk/fusion/fusion#ConflictType"/>
+        <rdfs:comment rdf:datatype="&xsd;string">A conflict occurring when an individual&#39;s property values violate cardinality restrictions imposed by the ontology</rdfs:comment>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#ConflictDetection -->
+
+    <owl:NamedIndividual rdf:about="http://kmi.open.ac.uk/fusion/fusion#ConflictDetection">
+        <rdf:type rdf:resource="http://kmi.open.ac.uk/fusion/fusion#MethodCapability"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#DatasetMatching -->
+
+    <owl:NamedIndividual rdf:about="http://kmi.open.ac.uk/fusion/fusion#DatasetMatching">
+        <rdf:type rdf:resource="http://kmi.open.ac.uk/fusion/fusion#MethodCapability"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#FeatureSelection -->
+
+    <owl:NamedIndividual rdf:about="http://kmi.open.ac.uk/fusion/fusion#FeatureSelection">
+        <rdf:type rdf:resource="http://kmi.open.ac.uk/fusion/fusion#MethodCapability"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#FunctionalCardinalityConflict -->
+
+    <owl:NamedIndividual rdf:about="http://kmi.open.ac.uk/fusion/fusion#FunctionalCardinalityConflict">
+        <rdf:type rdf:resource="http://kmi.open.ac.uk/fusion/fusion#ConflictType"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#InconsistencyResolution -->
+
+    <owl:NamedIndividual rdf:about="http://kmi.open.ac.uk/fusion/fusion#InconsistencyResolution">
+        <rdf:type rdf:resource="http://kmi.open.ac.uk/fusion/fusion#MethodCapability"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#ObjectIdentification -->
+
+    <owl:NamedIndividual rdf:about="http://kmi.open.ac.uk/fusion/fusion#ObjectIdentification">
+        <rdf:type rdf:resource="http://kmi.open.ac.uk/fusion/fusion#MethodCapability"/>
+    </owl:NamedIndividual>
+    
+
+
+    <!-- http://xmlns.com/foaf/0.1/Person -->
+
+    <owl:Thing rdf:about="&foaf;Person">
+        <rdf:type rdf:resource="&owl;NamedIndividual"/>
+    </owl:Thing>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // General axioms
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    <rdf:Description>
+        <rdf:type rdf:resource="&owl;AllDifferent"/>
+        <owl:distinctMembers rdf:parseType="Collection">
+            <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#ConflictDetection"/>
+            <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#DatasetMatching"/>
+            <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#FeatureSelection"/>
+            <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#InconsistencyResolution"/>
+            <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#ObjectIdentification"/>
+        </owl:distinctMembers>
+    </rdf:Description>
+    <rdf:Description>
+        <rdf:type rdf:resource="&owl;AllDifferent"/>
+        <owl:distinctMembers rdf:parseType="Collection">
+            <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#ConflictDetection"/>
+            <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#FeatureSelection"/>
+            <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#InconsistencyResolution"/>
+            <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#ObjectIdentification"/>
+        </owl:distinctMembers>
+    </rdf:Description>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 3.2.3.1824) http://owlapi.sourceforge.net -->
+
