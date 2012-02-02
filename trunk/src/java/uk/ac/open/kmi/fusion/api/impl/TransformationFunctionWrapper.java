@@ -77,10 +77,11 @@ public class TransformationFunctionWrapper extends FusionConfigurationObject {
 		this.implementingClass = implementingClass;
 	}
 	
-	public ICustomValueMatchingFunction<? extends Object> getImplementation() {
+	@SuppressWarnings("unchecked")
+	public ICustomTransformationFunction<? extends Object> getImplementation() {
 		try {
 			if(impl==null) {
-				impl = (ICustomValueMatchingFunction<? extends Object>)Class.forName(implementingClass).getConstructor().newInstance();
+				impl = (ICustomTransformationFunction<? extends Object>)Class.forName(implementingClass).getConstructor().newInstance();
 				impl.setFunctionDescriptor(this);
 			}
 			return impl;
