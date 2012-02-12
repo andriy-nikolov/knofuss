@@ -33,7 +33,8 @@
   
   <FileDump rdf:ID="EventsSource">
 	<!-- <dataFile>d:/work/dataset/events/eventful/events-subset.nt</dataFile> -->
-        <dataFile>d:/work/dataset/events/smalltest/eventful.nt</dataFile>
+    <!-- <dataFile>d:/work/dataset/events/smalltest/eventful.nt</dataFile> -->
+    <dataFile>d:/work/dataset/events/upcoming/events.nt</dataFile>
   </FileDump>
     
   <SesameDataSource rdf:ID="TargetOWLIMRepository">
@@ -46,14 +47,14 @@
   </SesameDataSource>
 
   <FileDump rdf:ID="EventsTarget">
-	<!-- <dataFile>d:/work/dataset/events/eventful/events-subset.nt</dataFile> -->
-	<!-- <dataFile>d:/work/dataset/events/lastfm/events.nt</dataFile> -->
-	<dataFile>d:/work/dataset/events/smalltest/upcoming.nt</dataFile>
+	<!-- <dataFile>d:/work/dataset/events/upcoming/events.nt</dataFile> -->
+	<dataFile>d:/work/dataset/events/lastfm/events.nt</dataFile>
+	<!-- <dataFile>d:/work/dataset/events/smalltest/upcoming.nt</dataFile> -->
   </FileDump>
 
   <LuceneDiskBlocker rdf:ID="LuceneIndexAllFields">
     <path>data/lucene</path>
-    <searchStrategy>fuzzy</searchStrategy>
+    <searchStrategy>all</searchStrategy>
     <refresh>true</refresh>
     <threshold>-0.1</threshold>
     <fuzzyThreshold>0.0</fuzzyThreshold>
@@ -66,11 +67,11 @@
   <LinkSession rdf:ID="MainLinkSession">
     <sourceDataset rdf:resource="#SourceOWLIMRepository"/>
     <targetDataset rdf:resource="#TargetOWLIMRepository"/>
-    <!-- <instanceMatchingSpec rdf:resource="#EventGeneticApplicationContext"/> -->
-    <instanceMatchingSpec rdf:resource="#EventPredefinedApplicationContext"/>
+    <instanceMatchingSpec rdf:resource="#EventGeneticApplicationContext"/>
+    <!-- <instanceMatchingSpec rdf:resource="#EventPredefinedApplicationContext"/> -->
     <!-- <datasetMatchingSpec rdf:resource="#PostFilterApplicationContext"/> -->
     <!-- <datasetMatchingSpec rdf:resource="#FunctionalApplicationContext"/> -->
-    <!-- <goldStandard>C:/Dataset/oaei2011/goldstandards/nyt-dbpedia-organizations-mappings.rdf</goldStandard> -->
+    <goldStandard>d:/work/dataset/events/mappings/mapping_upcoming_lastfm_events.nt</goldStandard>
     <resultsFile>logs/results.xml</resultsFile>
     <resultsFormat>custom</resultsFormat>
   </LinkSession>
@@ -83,9 +84,55 @@
         <targetRestriction>
           ?uri rdf:type lode:Event .
         </targetRestriction>
-    
+        
+        <sourceAttribute>
+			<TransformationAttribute>
+				<attributeType>string</attributeType>
+		   		<transformationFunction>concat</transformationFunction>
+		   	 	<hasAttribute>
+		   	 		<AtomicAttribute>
+		   	 			<optional>true</optional>
+		   	 			<variable>atTime</variable>
+		   	 			<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:inXSDDateTime ?atTime . </propertyPath>
+		   	 		</AtomicAttribute>
+		   	 	</hasAttribute>
+		   	 	<hasAttribute>
+		   	 		<CompositeAttribute>
+		   	 			<optional>true</optional>
+		   	 			<variable>startTime</variable>
+		   	 			<variable>endTime</variable>
+		   	 			<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasBeginning ?startTime . </propertyPath>
+		   	 			<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasEnd ?endTime . </propertyPath>
+		   	 		</CompositeAttribute>
+		   		</hasAttribute>
+			</TransformationAttribute>
+		</sourceAttribute>
+		   	 
+		<targetAttribute>
+		   	 <TransformationAttribute>
+		   	 	<attributeType>string</attributeType>
+		   	 	<transformationFunction>concat</transformationFunction>
+		   	 	<hasAttribute>
+		   	 		<AtomicAttribute>
+		   	 			<optional>true</optional>
+		   	 			<variable>atTime</variable>
+		   	 			<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:inXSDDateTime ?atTime . </propertyPath>
+		   	 		</AtomicAttribute>
+		   	 	</hasAttribute>
+		   	 	<hasAttribute>
+		   	 		<CompositeAttribute>
+		   	 				<optional>true</optional>
+		   	 				<variable>startTime</variable>
+		   	 				<variable>endTime</variable>
+		   	 				<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasBeginning ?startTime . </propertyPath>
+		   	 				<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasEnd ?endTime . </propertyPath>
+		   	 		</CompositeAttribute>
+		   		</hasAttribute>
+			</TransformationAttribute>
+		</targetAttribute>
+
         <!-- <hasBlocker rdf:resource="#LuceneMemory"/> -->
-	<hasBlocker rdf:resource="#LuceneIndexAllFields"/>
+		<hasBlocker rdf:resource="#LuceneIndexAllFields"/>
 
         <hasMethod rdf:resource="#UnsupervisedGeneticAlgorithmMethod"/>
 
@@ -140,11 +187,59 @@
 		<threshold>0.0</threshold>
 		<variableComparison>
 		   <VariableComparisonSpec>
+		   	 <sourceAttribute>
+		   	 	<TransformationAttribute>
+		   	 		<transformationFunction>concat</transformationFunction>
+		   	 		<hasAttribute>
+		   	 			<AtomicAttribute>
+		   	 				<optional>true</optional>
+		   	 				<variable>atTime</variable>
+		   	 				<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:inXSDDateTime ?atTime . </propertyPath>
+		   	 			</AtomicAttribute>
+		   	 		</hasAttribute>
+		   	 		<hasAttribute>
+		   	 			<CompositeAttribute>
+		   	 				<optional>true</optional>
+		   	 				<variable>startTime</variable>
+		   	 				<variable>endTime</variable>
+		   	 				<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasBeginning ?startTime . </propertyPath>
+		   	 				<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasEnd ?endTime . </propertyPath>
+		   	 			</CompositeAttribute>
+		   	 		</hasAttribute>
+		   	 	</TransformationAttribute>
+		   	 </sourceAttribute>
+		   	 <targetAttribute>
+		   	 	<TransformationAttribute>
+		   	 		<transformationFunction>concat</transformationFunction>
+		   	 		<hasAttribute>
+		   	 			<AtomicAttribute>
+		   	 				<optional>true</optional>
+		   	 				<variable>atTime</variable>
+		   	 				<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:inXSDDateTime ?atTime . </propertyPath>
+		   	 			</AtomicAttribute>
+		   	 		</hasAttribute>
+		   	 		<hasAttribute>
+		   	 			<CompositeAttribute>
+		   	 				<optional>true</optional>
+		   	 				<variable>startTime</variable>
+		   	 				<variable>endTime</variable>
+		   	 				<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasBeginning ?startTime . </propertyPath>
+		   	 				<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasEnd ?endTime . </propertyPath>
+		   	 			</CompositeAttribute>
+		   	 		</hasAttribute>
+		   	 	</TransformationAttribute>
+		   	 </targetAttribute>
+		     <metric>jaro</metric>
+             <weight>0.5</weight>
+		   </VariableComparisonSpec>
+		</variableComparison>
+		<variableComparison>
+		   <VariableComparisonSpec>
 		     <variable>name</variable>
 		     <sourcePath>?uri dc:title ?name .</sourcePath>
 		     <targetPath>?uri dc:title ?name .</targetPath>
 		     <metric>jaro</metric>
-                     <weight>1.0</weight>
+             <weight>0.5</weight>
 		   </VariableComparisonSpec>
 		</variableComparison>
 		<!-- <variableComparison>
@@ -168,9 +263,11 @@
     <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string">uk.ac.open.kmi.fusion.learning.GeneticAlgorithmObjectIdentificationMethod</hasImplementingClass>
     <!-- <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string">uk.ac.open.kmi.fusion.learning.DummyBlockerOnlyObjectIdentificationMethod</hasImplementingClass> -->
     <populationSize>100</populationSize>
-    <useUnsupervisedFitness>true</useUnsupervisedFitness>
-    <sampleSize>500</sampleSize>
-    <maxIterations>50</maxIterations>
+    <useUnsupervisedFitness>false</useUnsupervisedFitness>
+    <sampleSize>200</sampleSize>
+    <depth>2</depth>
+    <aligned>true</aligned>
+    <maxIterations>20</maxIterations>
   </FusionMethod>
 
   <FusionMethod rdf:ID="FunctionalPropertyMapper">
