@@ -102,14 +102,8 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 	ObjectIdentificationHandler objectIdentificationHandler;
 	ConflictDetectionHandler conflictDetectionHandler;
 	InconsistencyResolutionHandler inconsistencyResolutionHandler;
-	
-//	private Repository sourceKB;
-	
+
 	private Alignment schemaAlignment;
-	//private MultiOntologyUtil multiOntologyUtil;
-	//private Set<org.openrdf.model.URI> contentIndividualUris;
-	//private Alignment dataAlignment;
-	
 	protected Repository targetKB;
 	
 	private List<ApplicationContext> instanceMatchingTasks;

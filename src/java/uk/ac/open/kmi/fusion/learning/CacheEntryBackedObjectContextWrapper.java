@@ -54,23 +54,14 @@ public class CacheEntryBackedObjectContextWrapper implements
 
 	@Override
 	public void addValue(IAttribute attribute, Object value) {
-		//if(variablePropertyMap.containsKey(varName)) {
 		if(attribute instanceof AtomicAttribute) {
 			entry.addValue(((AtomicAttribute) attribute).getPropertyPath(), value);
 		}
-		//}
-		
 	}
 
 	@Override
 	public List<? extends Object> getValuesByAttribute(IAttribute attribute) {
-		if(attribute instanceof AtomicAttribute) {
-			return entry.getValueTable().get(((AtomicAttribute) attribute).getPropertyPath());
-		} else {
-			List<CompositeAttributeValue> tmpList = new ArrayList<CompositeAttributeValue>(1);
-			tmpList.add(CompositeAttributeValue.createCompositeAttributeValueHavingPropertyPaths((CompositeAttribute)attribute, this.entry.getValueTable()));
-			return tmpList;
-		}
+		return attribute.getValuesHavingPropertyPaths(entry.getValueTable()); 
 	}
 
 }

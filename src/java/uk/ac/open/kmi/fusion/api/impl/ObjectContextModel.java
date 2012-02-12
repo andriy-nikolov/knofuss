@@ -28,6 +28,7 @@ import uk.ac.open.kmi.fusion.api.IDump;
 import uk.ac.open.kmi.fusion.api.IObjectContextWrapper;
 import uk.ac.open.kmi.fusion.api.impl.aggregation.AggregationFunctionFactory;
 import uk.ac.open.kmi.fusion.util.FusionException;
+import uk.ac.open.kmi.fusion.util.KnoFussUtils;
 import uk.ac.open.kmi.fusion.util.SesameUtils;
 
 public class ObjectContextModel extends FusionConfigurationObject {
@@ -154,8 +155,11 @@ public class ObjectContextModel extends FusionConfigurationObject {
 			if(attr instanceof AtomicAttribute) {
 				this.sourceAttributesByVarName.put(((AtomicAttribute) attr).getVariableName(), attr);
 				// this.sourceAttributesByPath.put(((AtomicAttribute) attr).getPropertyPath(), attr);
-			} else {
+			} else if(attr instanceof CompositeAttribute) {
 				this.sourceAttributesByVarName.putAll(((CompositeAttribute)attr).getAtomicAttributesByVariable());
+				// this.sourceAttributesByPath.putAll(((CompositeAttribute)attr).getAtomicAttributesByPropertyPath());
+			} else if(attr instanceof TransformationAttribute){
+				this.sourceAttributesByVarName.putAll(((TransformationAttribute)attr).getAtomicAttributesByVariable());
 				// this.sourceAttributesByPath.putAll(((CompositeAttribute)attr).getAtomicAttributesByPropertyPath());
 			}
 			
@@ -163,9 +167,12 @@ public class ObjectContextModel extends FusionConfigurationObject {
 			if(attr instanceof AtomicAttribute) {
 				this.targetAttributesByVarName.put(((AtomicAttribute) attr).getVariableName(), attr);
 			//	this.targetAttributesByPath.put(((AtomicAttribute) attr).getPropertyPath(), attr);
-			} else {
+			} else if(attr instanceof CompositeAttribute) {
 				this.targetAttributesByVarName.putAll(((CompositeAttribute)attr).getAtomicAttributesByVariable());
 			//	this.targetAttributesByPath.putAll(((CompositeAttribute)attr).getAtomicAttributesByPropertyPath());
+			} else if(attr instanceof TransformationAttribute){
+				this.targetAttributesByVarName.putAll(((TransformationAttribute)attr).getAtomicAttributesByVariable());
+				// this.sourceAttributesByPath.putAll(((CompositeAttribute)attr).getAtomicAttributesByPropertyPath());
 			}
 		}
 		
@@ -191,9 +198,7 @@ public class ObjectContextModel extends FusionConfigurationObject {
 			AtomicAttribute attribute;
 			for(String var : variablePathMapTarget.keySet()) {
 				attribute = (AtomicAttribute)this.getTargetAttributeByVarName(var);
-				
 				attribute.setPropertyPath(variablePathMapTarget.get(var));
-				
 			}
 		}
 	}
@@ -276,30 +281,29 @@ public class ObjectContextModel extends FusionConfigurationObject {
 	}
 	
 	private Query generateQuery(boolean isTarget) {
-		List<String> variables = new ArrayList<String>();
+		// List<String> variables = new ArrayList<String>();
 		List<String> restrictions = new ArrayList<String>();
 		
-		variables.add("uri");
+		
 		if(isTarget) {
 			restrictions.add(this.applicationContext.getRestrictionTarget());
 		} else {
 			restrictions.add(this.applicationContext.getRestrictionSource());
 		}
 		
-		List<String> propertyPaths;
+		List<IAttribute> attributes = new ArrayList<IAttribute>();
 		
 		for(VariableComparisonSpecification varSpec : variableComparisonSpecifications) {
 			if(isTarget) {
-				variables.addAll(varSpec.getTargetAttribute().getVariableNames());
-				restrictions.addAll(varSpec.getTargetAttribute().getPropertyPathsAsQueryTriples());
+				attributes.add(varSpec.getTargetAttribute());
 				// restrictions.add(varSpec.getTargetPath());
 			} else {
-				variables.addAll(varSpec.getSourceAttribute().getVariableNames());
-				restrictions.addAll(varSpec.getSourceAttribute().getPropertyPathsAsQueryTriples());
+				attributes.add(varSpec.getSourceAttribute());
 				// restrictions.add(varSpec.getSourcePath());
 			}
 		}
-		String sQuery = SPARQLUtils.generateQuery(variables, restrictions, FusionEnvironment.getInstance().getNamespaceURITable());
+		
+		String sQuery = KnoFussUtils.generateQuery(restrictions, attributes, FusionEnvironment.getInstance().getNamespaceURITable());
 		
 		Query result = QueryFactory.create(sQuery);
 		return result;

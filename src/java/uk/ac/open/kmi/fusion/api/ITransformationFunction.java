@@ -4,7 +4,9 @@ import java.util.List;
 
 public interface ITransformationFunction<T> {
 	
-	public T getTransformationResult(List<? extends Object> operands);
+	public static final String CONCATENATE = "concat";
+	
+	public List<T> getTransformationResult(List<List<? extends Object>> operands);
 
 	public boolean isSuitableForAttributes(List<IAttribute> attributes);
 	

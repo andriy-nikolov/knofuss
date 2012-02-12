@@ -135,53 +135,59 @@ public class LuceneAllFieldsSearchStrategyFuzzy extends AbstractLuceneSearchStra
 		Map<String, Document> docs = new HashMap<String, Document>();
 	    Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_30);
     
-	    try {
-	    	List<String> allFieldValues = new LinkedList<String>();
-	    	for(String key : searchFieldValues.keySet()) {
-	    		allFieldValues.addAll(searchFieldValues.get(key));
-	    	}
-	    	
-	    	String queryStringTmp = LuceneUtils.getTransducedQuery(getConcatenatedString(allFieldValues));
-	    	String queryString = "";
-	    	
-	    	StringTokenizer tokenizer = new StringTokenizer(queryStringTmp, " ");
-	    	String token;
-	    	while(tokenizer.hasMoreTokens()) {
-	    		token = tokenizer.nextToken();
-	    		if(!(token.toLowerCase().equals("and")||token.toLowerCase().equals("or"))) {
-		    		queryString+=token;
-		    		queryString+="~"+Double.toString(this.fuzzyThreshold)+" ";
-	    		}
-	    	}
-	    	
-	    	Query query = null;
-    		QueryParser queryParser = new MultiFieldQueryParser(Version.LUCENE_30, searchFields, analyzer);
-    		query = queryParser.parse(queryString);
-    				    
-    		TopDocs hits;
-    		
-    		if(type==null) {
-    			hits = indexSearcher.search(query, this.getCutOff());
-    		} else {
-    			TermsFilter filter = new TermsFilter();
-    			filter.addTerm(new Term(RDF.TYPE.toString(), type));
-    			hits = indexSearcher.search(query, filter, this.getCutOff());
-    		}
-	    			    		
-    		if(hits.totalHits>0) {
-	    		Document doc;
+	    
+	    List<String> allFieldValues = new LinkedList<String>();
+	    for(String key : searchFieldValues.keySet()) {
+	    	allFieldValues.addAll(searchFieldValues.get(key));
+	    }
+	    
+	    String queryStringTmp = LuceneUtils.getTransducedQuery(getConcatenatedString(allFieldValues));
+	    
+	    if(!queryStringTmp.isEmpty()) {
+	    
+		    String queryString = "";
+		    
+		    StringTokenizer tokenizer = new StringTokenizer(queryStringTmp, " ");
+		    String token;
+		    while(tokenizer.hasMoreTokens()) {
+		    	token = tokenizer.nextToken();
+		    	if(!(token.toLowerCase().equals("and")||token.toLowerCase().equals("or"))) {
+			   		queryString+=token;
+			   		queryString+="~"+Double.toString(this.fuzzyThreshold)+" ";
+		    	}
+		    }
+		    	
+		    Query query = null;
+	    	QueryParser queryParser = new MultiFieldQueryParser(Version.LUCENE_30, searchFields, analyzer);
+	    	try {
+	    		if(!queryString.isEmpty()) {
+	    			query = queryParser.parse(queryString);
+		    		TopDocs hits;
 		    		
-	    		for(int i=0;i<hits.scoreDocs.length;i++) {
-	    			if((hits.scoreDocs[i].score>=threshold)) {
-	    				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
-	    				docs.put(doc.get("uri"), doc);
-	    			} else {
-	    				break;
-	    			}
+		    		if(type==null) {
+		    			hits = indexSearcher.search(query, this.getCutOff());
+		    		} else {
+		    			TermsFilter filter = new TermsFilter();
+		    			filter.addTerm(new Term(RDF.TYPE.toString(), type));
+		    			hits = indexSearcher.search(query, filter, this.getCutOff());
+		    		}
+			    			    		
+		    		if(hits.totalHits>0) {
+			    		Document doc;
+				    		
+			    		for(int i=0;i<hits.scoreDocs.length;i++) {
+			    			if((hits.scoreDocs[i].score>=threshold)) {
+			    				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
+			    				docs.put(doc.get("uri"), doc);
+			    			} else {
+			    				break;
+			    			}
+			    		}
+		    		}
 	    		}
-    		}
-	    } catch(ParseException e) {
-	    	e.printStackTrace();
+		    } catch(ParseException e) {
+		    	e.printStackTrace();
+		    }
 	    }
 			
 		return docs;

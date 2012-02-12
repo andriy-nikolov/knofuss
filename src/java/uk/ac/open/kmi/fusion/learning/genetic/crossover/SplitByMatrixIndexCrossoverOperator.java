@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
 import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
@@ -26,8 +27,8 @@ public class SplitByMatrixIndexCrossoverOperator implements ICrossoverOperator {
 	
 	
 	@Override
-	public Set<CandidateSolution> crossover(CandidateSolution[] parents, List<AtomicAttribute> sourceProperties, List<AtomicAttribute> targetProperties) {
-		
+	public Set<CandidateSolution> crossover(CandidateSolution[] parents,
+			List<IAttribute> sourceProperties, List<IAttribute> targetProperties) {
 		if(parents.length!=2) throw new IllegalArgumentException("Number of parents: "+parents.length);
 		Genotype[] parentGenotypes = new Genotype[2];
 		Genotype[] childGenotypes;
@@ -70,8 +71,8 @@ public class SplitByMatrixIndexCrossoverOperator implements ICrossoverOperator {
 		}
 		
 		return children;
-		
 	}
+
 	
 	private static Genotype[] splitXOverGenotypeByRows(Genotype[] parentGenotypes) {
 		Genotype[] childGenotypes = new Genotype[2];

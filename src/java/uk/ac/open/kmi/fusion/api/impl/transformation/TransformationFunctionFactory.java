@@ -18,15 +18,24 @@ import uk.ac.open.kmi.fusion.api.impl.AttributeType;
 public final class TransformationFunctionFactory {
 
 	
+	
 	private static String[] availableFunctionTypes = new String[]{
-		
+		ITransformationFunction.CONCATENATE
 	};
 	
 	private static Map<String, ITransformationFunction<? extends Object>> pool = new HashMap<String, ITransformationFunction<? extends Object>>();
 	
 	static {
 		
-		
+		pool.put(ITransformationFunction.CONCATENATE, ConcatenateAttributesTransformationFunction.getInstance());
+	}
+	
+	public static boolean hasInstance(String name) {
+		if(pool.containsKey(name)) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	public static ITransformationFunction<? extends Object> getInstance(String name) {

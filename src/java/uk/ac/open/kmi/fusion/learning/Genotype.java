@@ -4,7 +4,7 @@ import java.util.List;
 
 import uk.ac.open.kmi.fusion.api.IAggregationFunction;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
-import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
+import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.impl.valuematching.ValueMatchingFunctionFactory;
 
 public class Genotype {
@@ -83,7 +83,7 @@ public class Genotype {
 		}
 	}
 	
-	public void addRandomComponent(List<AtomicAttribute> sourceAttributes, List<AtomicAttribute> targetAttributes) {
+	public void addRandomComponent(List<IAttribute> sourceAttributes, List<IAttribute> targetAttributes) {
 		int k = (int)(Math.random()*getRows());
 		int l = (int)(Math.random()*getColumns());
 		genotypeWeights[k][l] = Math.random();

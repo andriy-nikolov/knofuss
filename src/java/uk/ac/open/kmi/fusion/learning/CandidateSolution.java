@@ -14,11 +14,13 @@ import org.openjena.atlas.logging.Log;
 
 import uk.ac.open.kmi.common.utils.Utils;
 import uk.ac.open.kmi.common.utils.sparql.SPARQLUtils;
+import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
-import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
+// import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
 import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
 import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
+import uk.ac.open.kmi.fusion.api.impl.TransformationAttribute;
 import uk.ac.open.kmi.fusion.api.impl.VariableComparisonSpecification;
 import uk.ac.open.kmi.fusion.api.impl.aggregation.AggregationFunctionFactory;
 import uk.ac.open.kmi.fusion.api.impl.valuematching.ValueMatchingFunctionFactory;
@@ -46,7 +48,7 @@ public class CandidateSolution {
 		this.genotype = genotype;
 	}
 	
-	public CandidateSolution(ApplicationContext context, Genotype genotype, List<AtomicAttribute> sourceProperties, List<AtomicAttribute> targetProperties) {
+	public CandidateSolution(ApplicationContext context, Genotype genotype, List<IAttribute> sourceProperties, List<IAttribute> targetProperties) {
 		String currentSourceVarName, currentTargetVarName;
 		int currentSourceVarIndex = 0, currentTargetVarIndex = 0;
 		
@@ -72,7 +74,7 @@ public class CandidateSolution {
 		
 		setModelSpec(modelSpec);
 		VariableComparisonSpecification specification;
-		AtomicAttribute sourceProperty, targetProperty;
+		IAttribute sourceProperty, targetProperty;
 		
 		Map<Integer, String> sourceVariableByProperty = new HashMap<Integer, String>();
 		Map<Integer, String> targetVariableByProperty = new HashMap<Integer, String>();
@@ -85,36 +87,11 @@ public class CandidateSolution {
 				targetProperty = targetProperties.get(j);
 				if(genotypeFunctions[i][j]!=null) {
 					specification = new VariableComparisonSpecification(modelSpec);
-					//if(!sourceVariableByProperty.containsKey(i)) {
-					//	currentSourceVarName = "var"+currentSourceVarIndex;
-					//	currentSourceVarIndex++;
-						// str = SPARQLUtils.expandPath("uri", sourceProperty.getPropertyPath(), currentSourceVarName, tmpIndex);
-					//	tmpIndex+=2;
-						//specification.setSourcePath(str);
-						specification.setSourceAttribute(sourceProperty);
-					//	sourceVariableByProperty.put(i, currentSourceVarName);
-					//} else {
-					//	currentSourceVarName = sourceVariableByProperty.get(i);
-					//}
-					//if(!targetVariableByProperty.containsKey(j)) {
-					//	currentTargetVarName = "var"+currentTargetVarIndex;
-					//	currentTargetVarIndex++;
-						// str = SPARQLUtils.expandPath("uri", targetProperty.getPropertyPath(), currentTargetVarName, tmpIndex);
-					//	tmpIndex+=2;
-						// specification.setTargetPath(str);
-						specification.setTargetAttribute(targetProperty);
-					//	targetVariableByProperty.put(j, currentTargetVarName);
-					//} else {
-					//	currentTargetVarName = targetVariableByProperty.get(j);
-					//}
-					//specification.setSourceVariableName(currentSourceVarName);
-					//specification.setVariableName(currentTargetVarName);
+
+					specification.setSourceAttribute(sourceProperty);
+					specification.setTargetAttribute(targetProperty);
 					specification.setValueMatchingFunction(genotypeFunctions[i][j]);
 					specification.setWeight(genotypeWeights[i][j]);
-					
-					if(specification.getSourceAttribute()==null) {
-						System.out.println();
-					}
 					
 					modelSpec.addVariableComparisonSpecification(specification);
 					
@@ -159,24 +136,21 @@ public class CandidateSolution {
 		this.genotype.setGenotypeFunctions(genotypeFunctions);
 	}
 
-	public static CandidateSolution createRandom(ApplicationContext applicationContext, List<AtomicAttribute> sourceProperties, List<AtomicAttribute> targetProperties, Map<AtomicAttribute, Map<AtomicAttribute, List<IValueMatchingFunction<? extends Object>>>> mapApplicableFunctions, boolean aligned) {
-		int currentVarIndex = 0;
-		String currentVarName;
-		VariableComparisonSpecification specification;
-		
-		List<AtomicAttribute> sourcePropertiesShuffled = new ArrayList<AtomicAttribute>(sourceProperties);
-		List<AtomicAttribute> targetPropertiesShuffled = new ArrayList<AtomicAttribute>(targetProperties);
+	public static CandidateSolution createRandom(ApplicationContext applicationContext, List<IAttribute> sourceProperties, List<IAttribute> targetProperties, Map<IAttribute, Map<IAttribute, List<IValueMatchingFunction<? extends Object>>>> mapApplicableFunctions, boolean aligned) {
+				
+		List<IAttribute> sourcePropertiesShuffled = new ArrayList<IAttribute>(sourceProperties);
+		List<IAttribute> targetPropertiesShuffled = new ArrayList<IAttribute>(targetProperties);
 		
 		Collections.shuffle(sourcePropertiesShuffled);
 		Collections.shuffle(targetPropertiesShuffled);
-		AtomicAttribute sourceProperty, targetProperty;
+		IAttribute sourceProperty, targetProperty;
 		Set<Integer> alreadyUsedSourceProperties = new HashSet<Integer>();
 		Set<Integer> alreadyUsedTargetProperties = new HashSet<Integer>();
 		
 		Double[][] genotypeWeightsCurrent = new Double[sourceProperties.size()][targetProperties.size()];
 		IValueMatchingFunction[][] genotypeFunctionsCurrent = new IValueMatchingFunction[sourceProperties.size()][targetProperties.size()];
 		
-		Map<AtomicAttribute, List<IValueMatchingFunction>> validFunctionsMap;
+		Map<IAttribute, List<IValueMatchingFunction>> validFunctionsMap;
 		
 		int k, l;
 		for(int i = 0; i < sourceProperties.size(); i++) {
@@ -188,11 +162,12 @@ public class CandidateSolution {
 				genotypeWeightsCurrent[k][l]=0.0;
 				genotypeFunctionsCurrent[k][l]=null;
 				
-				if((aligned)
-						&&(!sourceProperty.getPropertyPath().equals(targetProperty.getPropertyPath()))) {
-					continue;
+				if(aligned) {
+					if(!sourceProperty.samePropertyPathAs(targetProperty)) {
+						continue;
+					}
 				}
-				
+			
 				if(mapApplicableFunctions.get(sourceProperty).get(targetProperty).isEmpty()) continue;
 				
 				if(alreadyUsedSourceProperties.contains(k)) continue;
@@ -200,9 +175,7 @@ public class CandidateSolution {
 				
 				if((Math.random()<=pPropertyPairCompare)&&(alreadyUsedSourceProperties.size()<initialLimit)) {
 					genotypeWeightsCurrent[k][l] = Math.random();
-					//genotypeWeightsCurrent[k][l] = 1;
 					genotypeFunctionsCurrent[k][l] = ValueMatchingFunctionFactory.getRandomInstanceForAttributes(sourceProperty, targetProperty);
-					//genotypeFunctionsCurrent[k][l] = ValueMatchingFunctionFactory.getInstance(IValueMatchingFunction.JARO_WINKLER);
 					alreadyUsedSourceProperties.add(k);
 					alreadyUsedTargetProperties.add(l);
 				} 
@@ -213,8 +186,6 @@ public class CandidateSolution {
 			k = (int)(Math.random()*sourceProperties.size());
 			l = (int)(Math.random()*targetProperties.size());
 			genotypeWeightsCurrent[k][l] = Math.random();
-			//genotypeWeightsCurrent[k][l] = 1;
-			//genotypeFunctionsCurrent[k][l] = ValueMatchingFunctionFactory.getInstance(IValueMatchingFunction.JARO_WINKLER);
 			genotypeFunctionsCurrent[k][l] = ValueMatchingFunctionFactory.getRandomInstanceForAttributes(sourceProperties.get(k), targetProperties.get(l));
 		}
 		
@@ -232,12 +203,6 @@ public class CandidateSolution {
 		
 	}
 		
-	/*public Map<Integer, Double> applySolution(MemoryInstanceCache cache) {
-		
-		
-		return applySolution(cache, false);
-	}*/
-	
 
 	public Map<Integer, Double> applySolution(MemoryInstanceCache cache, boolean useSampling, boolean isFinal) {
 		if(!isFinal) {

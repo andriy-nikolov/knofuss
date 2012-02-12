@@ -17,56 +17,24 @@ public class CompositeAttributeValue {
 		attributeValues = new HashMap<IAttribute, List<? extends Object>>();
 	}
 	
-	public static CompositeAttributeValue createCompositeAttributeValueHavingAttributes(CompositeAttribute attribute, Map<IAttribute, List<? extends Object>> valueTable) {
-		
-		CompositeAttributeValue value = new CompositeAttributeValue(attribute);
-		
-		List<IAttribute> subAttributes = attribute.getAttributes();
-		
-		for(IAttribute attr : subAttributes) {
-			if(attr instanceof AtomicAttribute) {
-				value.attributeValues.put(attr, valueTable.get(attr));
-			} else {
-				List<CompositeAttributeValue> tmpList = new ArrayList<CompositeAttributeValue>(1);
-				CompositeAttributeValue tmpVal = createCompositeAttributeValueHavingAttributes((CompositeAttribute)attr, valueTable);
-				tmpList.add(tmpVal);
-				value.attributeValues.put(attr, tmpList);
-			}
-		}
-		
-		return value;
-	}
-	
-	public static CompositeAttributeValue createCompositeAttributeValueHavingPropertyPaths(CompositeAttribute attribute, Map<String, List<? extends Object>> valueTable) {
-		
-		CompositeAttributeValue value = new CompositeAttributeValue(attribute);
-		
-		List<IAttribute> subAttributes = attribute.getAttributes();
-		
-		for(IAttribute attr : subAttributes) {
-			if(attr instanceof AtomicAttribute) {
-				value.attributeValues.put(attr, valueTable.get(((AtomicAttribute) attr).getPropertyPath()));
-			} else {
-				List<CompositeAttributeValue> tmpList = new ArrayList<CompositeAttributeValue>(1);
-				CompositeAttributeValue tmpVal = createCompositeAttributeValueHavingPropertyPaths((CompositeAttribute)attr, valueTable);
-				tmpList.add(tmpVal);
-				value.attributeValues.put(attr, tmpList);
-			}
-		}
-		
-		return value;
-	}
-
 	@Override
 	public String toString() {
 		StringBuffer str = new StringBuffer();
-		
+		List<? extends Object> valueList;
+		// Object obj;
 		for(IAttribute attr : attribute.getAttributes()) {
-			str.append(attributeValues.get(attr));
-			str.append(" ");
+			if(attributeValues.containsKey(attr)) {
+				valueList = attributeValues.get(attr);
+				if(valueList!=null) {
+					for(Object obj : valueList) {
+						str.append(obj.toString());
+						str.append(" ");
+					}
+				}
+			}
 		}
 		
-		return "("+str.toString().trim()+")";
+		return str.toString().trim();
 	}
 
 	public CompositeAttribute getAttribute() {

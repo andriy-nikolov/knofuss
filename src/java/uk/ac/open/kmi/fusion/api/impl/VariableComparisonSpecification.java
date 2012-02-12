@@ -13,6 +13,7 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 
 
+import uk.ac.open.kmi.common.utils.sparql.SPARQLUtils;
 import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
@@ -40,9 +41,6 @@ public class VariableComparisonSpecification extends FusionConfigurationObject {
 	List<String> sourceVariables = new ArrayList<String>();
 	List<String> variables = new ArrayList<String>();
 	
-	Map<String, String> targetPathsByVariables = new HashMap<String, String>();
-	Map<String, String> sourcePathsByVariables = new HashMap<String, String>();
-	
 	IValueMatchingFunction valueMatchingFunction;
 	
 	double weight = 1.0;
@@ -60,6 +58,9 @@ public class VariableComparisonSpecification extends FusionConfigurationObject {
 	public void readFromRDFIndividual(RepositoryConnection connection)
 			throws FusionException {
 		super.readFromRDFIndividual(connection);
+		
+		Map<String, String> targetPathsByVariables = new HashMap<String, String>();
+		Map<String, String> sourcePathsByVariables = new HashMap<String, String>();
 		/*List<Statement> statements = SesameUtils.getStatements(
 				this.rdfIndividual, 
 				null, 
@@ -68,35 +69,44 @@ public class VariableComparisonSpecification extends FusionConfigurationObject {
 			readFromPropertyMember(statement);
 		}*/
 		
-		for(String var : variables) {
-			for(String path : targetPaths) {
-				if(path.contains("?"+var)) {
-					targetPathsByVariables.put(var, path);
+		if(sourceAttribute==null) {
+			for(String var : variables) {
+				for(String path : sourcePaths) {
+					if(path.contains("?"+var)) {
+						sourcePathsByVariables.put(var, SPARQLUtils.presentExpandedTriplesAsPath(path, "uri", var, FusionEnvironment.getInstance().getNamespaceURITable()));
+					}
 				}
 			}
-			for(String path : sourcePaths) {
-				if(path.contains("?"+var)) {
-					sourcePathsByVariables.put(var, path);
-				}
+			if(sourcePaths.size()>=2) {
+				sourceAttribute = CompositeAttribute.createFromPropertyPaths(sourcePathsByVariables);
+			} else {
+				sourceAttribute = new AtomicAttribute(SPARQLUtils.presentExpandedTriplesAsPath(sourcePaths.get(0), "uri", variables.get(0), FusionEnvironment.getInstance().getNamespaceURITable()));
+				((AtomicAttribute)sourceAttribute).setVariableName(variables.get(0));
 			}
-		}
+		} 
 		
-		if(targetPaths.size()>=2) {
-			AtomicAttribute tmp;
-			targetAttribute = CompositeAttribute.createFromPropertyPaths(targetPathsByVariables);
-			sourceAttribute = CompositeAttribute.createFromPropertyPaths(sourcePathsByVariables);
-		} else {
-			targetAttribute = new AtomicAttribute(targetPaths.get(0));
-			((AtomicAttribute)targetAttribute).setVariableName(variables.get(0));
-			sourceAttribute = new AtomicAttribute(sourcePaths.get(0));
-			((AtomicAttribute)sourceAttribute).setVariableName(variables.get(0));
-		}
+		if(targetAttribute==null) {
+			for(String var : variables) {
+				for(String path : targetPaths) {
+					if(path.contains("?"+var)) {
+						targetPathsByVariables.put(var, SPARQLUtils.presentExpandedTriplesAsPath(path, "uri", var, FusionEnvironment.getInstance().getNamespaceURITable()));
+					}
+				}
+			}
+			if(targetPaths.size()>=2) {
+				targetAttribute = CompositeAttribute.createFromPropertyPaths(targetPathsByVariables);
+			} else {
+				targetAttribute = new AtomicAttribute(SPARQLUtils.presentExpandedTriplesAsPath(targetPaths.get(0), "uri", variables.get(0), FusionEnvironment.getInstance().getNamespaceURITable()));
+				((AtomicAttribute)targetAttribute).setVariableName(variables.get(0));
+			}
+		} 
 	}
 
 	@Override
 	protected void readFromPropertyMember(Statement statement)
 			throws RepositoryException {
 		Literal lit;
+		Resource res;
 		super.readFromPropertyMember(statement);
 		if(statement.getPredicate().toString().equals(FusionMetaVocabulary.METRIC)) {
 			if(statement.getObject() instanceof Literal) {
@@ -125,6 +135,18 @@ public class VariableComparisonSpecification extends FusionConfigurationObject {
 				lit = (Literal)statement.getObject();
 				this.variables.add(lit.stringValue());
 				// this.variableName = lit.stringValue();
+			}
+		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.SOURCE_ATTRIBUTE)) {
+			if(statement.getObject() instanceof Resource) {
+				res = (Resource)statement.getObject();
+				IAttribute attr = (IAttribute)FusionEnvironment.getInstance().findConfigurationObjectByID(res);
+				this.sourceAttribute = attr;
+			}
+		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.TARGET_ATTRIBUTE)) {
+			if(statement.getObject() instanceof Resource) {
+				res = (Resource)statement.getObject();
+				IAttribute attr = (IAttribute)FusionEnvironment.getInstance().findConfigurationObjectByID(res);
+				this.targetAttribute = attr;
 			}
 		}
 	}
