@@ -39,6 +39,7 @@ import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
 import uk.ac.open.kmi.fusion.objectidentification.standard.StandardObjectIdentificationMethod;
 import uk.ac.open.kmi.fusion.util.FusionException;
 import uk.ac.open.kmi.fusion.util.KnoFussUtils;
+import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
 
 
@@ -52,7 +53,12 @@ public class ApplicationContext extends FusionConfigurationObject {
 	
 	double reliability;
 	FusionMethodWrapper method;
+
+	List<IAttribute> additionalSourceAttributes;
+	List<IAttribute> additionalTargetAttributes;
+	
 	Map<Resource, ObjectContextModel> objectModels;
+	
 	Map<String, String> properties;
 	List<String> affectedIndividuals;
 	
@@ -85,6 +91,8 @@ public class ApplicationContext extends FusionConfigurationObject {
 		properties = new HashMap<String, String>();
 		this.restrictedTypesSource = new ArrayList<String>(1);
 		this.restrictedTypesTarget = new ArrayList<String>(1);
+		this.additionalSourceAttributes = new ArrayList<IAttribute>();
+		this.additionalTargetAttributes = new ArrayList<IAttribute>();
 	}
 
 	public Resource addToOntology(RepositoryConnection con,
@@ -140,7 +148,19 @@ public class ApplicationContext extends FusionConfigurationObject {
 			this.blocker = (ILuceneBlocker)environment.findConfigurationObjectByID(linkIndividual);
 		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.GOLD_STANDARD)) {
 			this.goldStandardPath = ((Literal)statement.getObject()).stringValue().trim();
-		} else {
+		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.SOURCE_ATTRIBUTE)) {
+			if(statement.getObject() instanceof Resource) {
+				Resource res = (Resource)statement.getObject();
+				IAttribute attr = (IAttribute)FusionEnvironment.getInstance().findConfigurationObjectByID(res);
+				this.additionalSourceAttributes.add(attr);
+			}
+		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.TARGET_ATTRIBUTE)) {
+			if(statement.getObject() instanceof Resource) {
+				Resource res = (Resource)statement.getObject();
+				IAttribute attr = (IAttribute)FusionEnvironment.getInstance().findConfigurationObjectByID(res);
+				this.additionalTargetAttributes.add(attr);
+			}
+		}else {
 			String key = statement.getPredicate().toString();
 			if(!(key.startsWith(RDF.NAMESPACE)||key.startsWith(RDFS.NAMESPACE))) {
 				Value res = statement.getObject();
@@ -307,6 +327,18 @@ public class ApplicationContext extends FusionConfigurationObject {
 	public void setGoldStandard(Map<String, OIComparison> goldStandard) {
 		this.goldStandard = goldStandard;
 	}
-	
 
+
+	public List<IAttribute> getAdditionalSourceAttributes() {
+		return additionalSourceAttributes;
+	}
+
+
+	public List<IAttribute> getAdditionalTargetAttributes() {
+		return additionalTargetAttributes;
+	}
+	
+	
+	
+	
 }

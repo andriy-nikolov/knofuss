@@ -71,7 +71,13 @@ public class FusionConfigurationObjectFactory {
 							return new SesameNativeDataSource(resource, environment);
 						} else if(typeUri.equals(SesameMemoryDataSource.TYPE_URI)) {
 							return new SesameMemoryDataSource(resource, environment);
-						}
+						} else if(typeUri.equals(TransformationAttribute.TYPE_URI)) {
+							return new TransformationAttribute(resource, environment);
+						} if(typeUri.equals(AtomicAttribute.TYPE_URI)) {
+							return new AtomicAttribute(resource, environment);
+						} if(typeUri.equals(CompositeAttribute.TYPE_URI)) {
+							return new CompositeAttribute(resource, environment);
+						} 
 						
 					}
 					

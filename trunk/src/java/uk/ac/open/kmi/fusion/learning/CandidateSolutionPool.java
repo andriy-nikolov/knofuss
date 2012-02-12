@@ -19,6 +19,7 @@ import org.openrdf.model.vocabulary.RDFS;
 
 import uk.ac.open.kmi.common.utils.Utils;
 
+import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
 import uk.ac.open.kmi.fusion.api.impl.AtomicMapping;
@@ -32,8 +33,8 @@ import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.DefaultFitnessFunction;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.F1Fitness;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.IFitnessFunction;
-// import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitness;
-import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitnessNeighbourhoodGrowth;
+import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitness;
+// import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitnessNeighbourhoodGrowth;
 // import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitnessNeighbourhoodGrowth;
 import uk.ac.open.kmi.fusion.learning.genetic.crossover.CrossoverOperatorFactory;
 import uk.ac.open.kmi.fusion.learning.genetic.crossover.ICrossoverOperator;
@@ -63,8 +64,8 @@ public class CandidateSolutionPool {
 	private final CandidateSolutionComparator comparator = new CandidateSolutionComparator(); 
 	
 	private List<CandidateSolution> population;
-	private List<AtomicAttribute> sourcePropertiesPool;
-	private List<AtomicAttribute> targetPropertiesPool;
+	private List<IAttribute> sourcePropertiesPool;
+	private List<IAttribute> targetPropertiesPool;
 	private Set<Integer> goldStandardSet;
 	private Set<Integer> sampleGoldStandard;
 	
@@ -79,7 +80,7 @@ public class CandidateSolutionPool {
 	private List<ChartPoint2D> bestRealFitnessPoints;
 	private List<ChartPoint2D> bestRealFitnessCorrespondingToBestUnsupervisedFitnessPoints;
 	
-	Map<AtomicAttribute, Map<AtomicAttribute, List<IValueMatchingFunction<? extends Object>>>> mapApplicableFunctions;
+	Map<IAttribute, Map<IAttribute, List<IValueMatchingFunction<? extends Object>>>> mapApplicableFunctions;
 
 	private ICrossoverOperator crossoverOperator;
 	private IMutationOperator mutationOperator;
@@ -103,7 +104,7 @@ public class CandidateSolutionPool {
 	
 	// private boolean useSampling = false;
 	
-	public CandidateSolutionPool(ApplicationContext context, List<AtomicAttribute> sourcePropertiesPool, List<AtomicAttribute> targetPropertiesPool, MemoryInstanceCache cache) {
+	public CandidateSolutionPool(ApplicationContext context, List<IAttribute> sourcePropertiesPool, List<IAttribute> targetPropertiesPool, MemoryInstanceCache cache) {
 		this.context = context;
 		this.cache = cache;
 		population = new ArrayList<CandidateSolution>(populationSize);
@@ -119,7 +120,7 @@ public class CandidateSolutionPool {
 		bestUnsupervisedFitnessPoints = new LinkedList<ChartPoint2D>();
 		bestRealFitnessCorrespondingToBestUnsupervisedFitnessPoints = new LinkedList<ChartPoint2D>();
 		bestRealFitnessPoints = new LinkedList<ChartPoint2D>();
-		mapApplicableFunctions = new HashMap<AtomicAttribute, Map<AtomicAttribute, List<IValueMatchingFunction<? extends Object>>>>();
+		mapApplicableFunctions = new HashMap<IAttribute, Map<IAttribute, List<IValueMatchingFunction<? extends Object>>>>();
 		
 		this.crossoverOperator = CrossoverOperatorFactory.getInstance(ICrossoverOperator.CROSSOVER_SPLIT_BY_MATRIX_INDEX);
 		this.mutationOperator = MutationOperatorFactory.getInstance(IMutationOperator.MUTATION_DEFAULT);
@@ -133,11 +134,11 @@ public class CandidateSolutionPool {
 			sampleGoldStandard = goldStandardSet;
 		}
 		
-		Map<AtomicAttribute, List<IValueMatchingFunction<? extends Object>>> validFunctionsMap;
+		Map<IAttribute, List<IValueMatchingFunction<? extends Object>>> validFunctionsMap;
 		List<IValueMatchingFunction<? extends Object>> validFunctions;
-		for(AtomicAttribute attribute1 : this.sourcePropertiesPool) {
-			validFunctionsMap = new HashMap<AtomicAttribute, List<IValueMatchingFunction<? extends Object>>>();
-			for(AtomicAttribute attribute2 : this.targetPropertiesPool) {
+		for(IAttribute attribute1 : this.sourcePropertiesPool) {
+			validFunctionsMap = new HashMap<IAttribute, List<IValueMatchingFunction<? extends Object>>>();
+			for(IAttribute attribute2 : this.targetPropertiesPool) {
 				validFunctions = ValueMatchingFunctionFactory.getApplicableFunctionsForAttributes(attribute1, attribute2);
 				validFunctionsMap.put(attribute2, validFunctions);
 			}
@@ -156,8 +157,8 @@ public class CandidateSolutionPool {
 		double epsilon = 0.000001;
 		int numberOfIterations = 0;
 		F1Fitness realFitness;
-		// UnsupervisedFitness unsupervisedFitness;
-		UnsupervisedFitnessNeighbourhoodGrowth unsupervisedFitness;
+		UnsupervisedFitness unsupervisedFitness;
+		// UnsupervisedFitnessNeighbourhoodGrowth unsupervisedFitness;
 		// UnsupervisedFitnessNeighbourhoodGrowth unsupervisedFitness;
 	
 		int iterations = 0;
@@ -185,8 +186,8 @@ public class CandidateSolutionPool {
 				solutions ++;
 				solutionResults = solution.applySolution(cache, useSampling, false);
 				realFitness = this.evaluateFitness(solution, solutionResults.keySet(), sampleGoldStandard);
-				// unsupervisedFitness = UnsupervisedFitness.calculateUnsupervisedFitness(solution, solutionResults, cache);
-				unsupervisedFitness = UnsupervisedFitnessNeighbourhoodGrowth.calculateUnsupervisedFitness(solution, solutionResults, cache);
+				unsupervisedFitness = UnsupervisedFitness.calculateUnsupervisedFitness(solution, solutionResults, cache);
+				// unsupervisedFitness = UnsupervisedFitnessNeighbourhoodGrowth.calculateUnsupervisedFitness(solution, solutionResults, cache);
 				// unsupervisedFitness = UnsupervisedFitnessNeighbourhoodGrowth.calculateUnsupervisedFitness(solution, solutionResults, cache);
 				
 				if(solutions==10) {
@@ -305,8 +306,8 @@ public class CandidateSolutionPool {
 			this.finalSolutionResults = bestSolution.applySolution(cache, false, true);
 			
 			realFitness = this.evaluateFitness(finalSolution, finalSolutionResults.keySet(), goldStandardSet);
-			// unsupervisedFitness = UnsupervisedFitness.calculateUnsupervisedFitness(finalSolution, finalSolutionResults, cache);
-			unsupervisedFitness = UnsupervisedFitnessNeighbourhoodGrowth.calculateUnsupervisedFitness(finalSolution, finalSolutionResults, cache);
+			unsupervisedFitness = UnsupervisedFitness.calculateUnsupervisedFitness(finalSolution, finalSolutionResults, cache);
+			// unsupervisedFitness = UnsupervisedFitnessNeighbourhoodGrowth.calculateUnsupervisedFitness(finalSolution, finalSolutionResults, cache);
 			// unsupervisedFitness = UnsupervisedFitnessNeighbourhoodGrowth.calculateUnsupervisedFitness(finalSolution, finalSolutionResults, cache);
 			
 			log.info("Best unsupervised fitness after threshold cut-off: "+unsupervisedFitness.getValue()+", pseudo precision: "+unsupervisedFitness.getPrecision()+", pseudo recall: "+unsupervisedFitness.getRecall());
@@ -384,19 +385,19 @@ public class CandidateSolutionPool {
 		
 	}
 	
-	public void setTargetPropertiesPool(List<AtomicAttribute> targetPropertiesPool) {
+	public void setTargetPropertiesPool(List<IAttribute> targetPropertiesPool) {
 		this.targetPropertiesPool = targetPropertiesPool;
 	}
 
-	public List<AtomicAttribute> getTargetPropertiesPool() {
+	public List<IAttribute> getTargetPropertiesPool() {
 		return targetPropertiesPool;
 	}
 
-	public void setSourcePropertiesPool(List<AtomicAttribute> sourcePropertiesPool) {
+	public void setSourcePropertiesPool(List<IAttribute> sourcePropertiesPool) {
 		this.sourcePropertiesPool = sourcePropertiesPool;
 	}
 
-	public List<AtomicAttribute> getSourcePropertiesPool() {
+	public List<IAttribute> getSourcePropertiesPool() {
 		return sourcePropertiesPool;
 	}
 
@@ -708,6 +709,12 @@ public class CandidateSolutionPool {
 		this.sampleGoldStandard = sampleGoldStandard;
 	}
 
-	
+	public boolean isAligned() {
+		return aligned;
+	}
+
+	public void setAligned(boolean aligned) {
+		this.aligned = aligned;
+	}
 	
 }

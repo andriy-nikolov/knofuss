@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.repository.RepositoryException;
 
+import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
 import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
@@ -30,12 +31,12 @@ import uk.ac.open.kmi.fusion.learning.genetic.mutation.MutationOperatorFactory;
 
 public class CandidateSolutionTest {
 
-	List<AtomicAttribute> sourceProperties;
-	List<AtomicAttribute> targetProperties;
+	List<IAttribute> sourceProperties;
+	List<IAttribute> targetProperties;
 	
 	ApplicationContext applicationContext;
 	
-	Map<AtomicAttribute, Map<AtomicAttribute, List<IValueMatchingFunction<? extends Object>>>> mapApplicableFunctions;
+	Map<IAttribute, Map<IAttribute, List<IValueMatchingFunction<? extends Object>>>> mapApplicableFunctions;
 	
 	String[] sp = {
 			RDFS.LABEL.toString(),
@@ -51,11 +52,11 @@ public class CandidateSolutionTest {
 	@Before
 	public void setUp() throws Exception {
 		
-		mapApplicableFunctions = new HashMap<AtomicAttribute, Map<AtomicAttribute, List<IValueMatchingFunction<? extends Object>>>>();
+		mapApplicableFunctions = new HashMap<IAttribute, Map<IAttribute, List<IValueMatchingFunction<? extends Object>>>>();
 		
-		sourceProperties = new ArrayList<AtomicAttribute>(sp.length);
-		targetProperties = new ArrayList<AtomicAttribute>(tp.length);
-		AtomicAttribute attribute;
+		sourceProperties = new ArrayList<IAttribute>(sp.length);
+		targetProperties = new ArrayList<IAttribute>(tp.length);
+		IAttribute attribute;
 		for(String s : sp) {
 			attribute = new AtomicAttribute(s, AttributeType.NOMINAL_MULTI_TOKEN);
 			sourceProperties.add(attribute);
@@ -65,11 +66,11 @@ public class CandidateSolutionTest {
 			targetProperties.add(attribute);
 		}
 		
-		Map<AtomicAttribute, List<IValueMatchingFunction<? extends Object>>> validFunctionsMap;
+		Map<IAttribute, List<IValueMatchingFunction<? extends Object>>> validFunctionsMap;
 		List<IValueMatchingFunction<? extends Object>> validFunctionList;
-		for(AtomicAttribute sourceAttribute : sourceProperties) {
-			validFunctionsMap = new HashMap<AtomicAttribute, List<IValueMatchingFunction<? extends Object>>>();
-			for(AtomicAttribute targetAttribute : targetProperties) {
+		for(IAttribute sourceAttribute : sourceProperties) {
+			validFunctionsMap = new HashMap<IAttribute, List<IValueMatchingFunction<? extends Object>>>();
+			for(IAttribute targetAttribute : targetProperties) {
 				validFunctionList = ValueMatchingFunctionFactory.getApplicableFunctionsForAttributes(sourceAttribute, targetAttribute);
 				validFunctionsMap.put(targetAttribute, validFunctionList);
 			}

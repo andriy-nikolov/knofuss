@@ -28,6 +28,7 @@ import uk.ac.open.kmi.common.utils.Utils;
 import uk.ac.open.kmi.common.utils.sesame.SesameUtils;
 import uk.ac.open.kmi.common.utils.sparql.MySPARQLParser;
 import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
+import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
 import uk.ac.open.kmi.fusion.api.IObjectIdentificationMethod;
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
@@ -112,8 +113,8 @@ public class GeneticAlgorithmObjectIdentificationMethodWithoutSampling implement
 			
 			MemoryInstanceCache cache = new MemoryInstanceCache();
 			
-			List<AtomicAttribute> sourcePropertiesPool = this.initializePropertyPools(context, cache);
-			List<AtomicAttribute> targetPropertiesPool = new ArrayList<AtomicAttribute>();
+			List<IAttribute> sourcePropertiesPool = this.initializePropertyPools(context, cache);
+			List<IAttribute> targetPropertiesPool = new ArrayList<IAttribute>();
 			Map<Integer, String> goldStandardEncoded = new HashMap<Integer, String>();
 			this.doBlocking(context, cache, goldStandardEncoded, sourcePropertiesPool, targetPropertiesPool);
 			
@@ -137,20 +138,20 @@ public class GeneticAlgorithmObjectIdentificationMethodWithoutSampling implement
 		
 	}
 
-	private void doBlocking(ApplicationContext context, MemoryInstanceCache cache, Map<Integer, String> goldStandardEncoded, List<AtomicAttribute> sourcePropertiesPool, List<AtomicAttribute> targetPropertiesPool) throws FusionException {
+	private void doBlocking(ApplicationContext context, MemoryInstanceCache cache, Map<Integer, String> goldStandardEncoded, List<IAttribute> sourcePropertiesPool, List<IAttribute> targetPropertiesPool) throws FusionException {
 		
 		try {
 		ILuceneBlocker blocker = context.getBlocker();
 
 		// Set<String> targetPropertiesSet = new HashSet<String>();
 		
-		Map<AtomicAttribute, Integer> targetAttributeCounts = new HashMap<AtomicAttribute, Integer>();
+		Map<IAttribute, Integer> targetAttributeCounts = new HashMap<IAttribute, Integer>();
 		
 		Map<String, AttributeProfileInDataset> targetAttributes = new HashMap<String, AttributeProfileInDataset>();
 		
 		int size = context.getLinkSession().getTargetDataset().copyRelevantSubsetToBlocker(blocker, context, targetAttributes);
 		double val;
-		AtomicAttribute attribute;
+		IAttribute attribute;
 		for(String key : targetAttributes.keySet()) {
 			val = ((double)targetAttributes.get(key).getMentionedIn())/size;
 			attribute = targetAttributes.get(key).createAttribute();
@@ -163,7 +164,7 @@ public class GeneticAlgorithmObjectIdentificationMethodWithoutSampling implement
 			}
 		}
 		
-		CountMapKeyByValueSizeComparator<AtomicAttribute> comparator = new CountMapKeyByValueSizeComparator<AtomicAttribute>(targetAttributeCounts, true);
+		CountMapKeyByValueSizeComparator<IAttribute> comparator = new CountMapKeyByValueSizeComparator<IAttribute>(targetAttributeCounts, true);
 		Collections.sort(targetPropertiesPool, comparator);
 		
 		Map<String, Document> docs;
@@ -189,10 +190,12 @@ public class GeneticAlgorithmObjectIdentificationMethodWithoutSampling implement
 		
 		String[] targetPropertyArray = new String[targetPropertiesPool.size()];
 		// targetPropertyArray = targetPropertiesPool.toArray(targetPropertyArray);
-		AtomicAttribute attr;
+		IAttribute attr;
 		for(int j=0;j<targetPropertiesPool.size();j++) {
 			attr = targetPropertiesPool.get(j);
-			targetPropertyArray[j] = attr.getPropertyPath();
+			if(attr instanceof AtomicAttribute) {
+				targetPropertyArray[j] = ((AtomicAttribute)attr).getPropertyPath();
+			}
 		}
 		
 		//if(useBlocking) {
@@ -208,15 +211,17 @@ public class GeneticAlgorithmObjectIdentificationMethodWithoutSampling implement
 		for(CacheEntry sourceEntry : cache.getSourceCachedEntries()) {
 			searchValues.clear();
 			//searchValues.put(Utils.FOAF_NS+"name", sourceEntry.getValueTable().get(Utils.FOAF_NS+"name"));
-			for(AtomicAttribute sourceAttribute : sourcePropertiesPool) {
-				if(!sourceAttribute.getType().equals(AttributeType.LONG_TEXT)&&(sourceEntry.getValueTable().containsKey(sourceAttribute.getPropertyPath()))) {
-					
-					tmpList = new LinkedList<String>();
-					searchValues.put(sourceAttribute.getPropertyPath(), tmpList);
-					tmpObjectList = sourceEntry.getValueTable().get(sourceAttribute.getPropertyPath());
-					for(Object obj : tmpObjectList) {
-						if(obj instanceof String) {
-							tmpList.add((String)obj);
+			for(IAttribute sourceAttribute : sourcePropertiesPool) {
+				if(sourceAttribute instanceof AtomicAttribute) {
+					if(!sourceAttribute.getType().equals(AttributeType.LONG_TEXT)&&(sourceEntry.getValueTable().containsKey(((AtomicAttribute)sourceAttribute).getPropertyPath()))) {
+						
+						tmpList = new LinkedList<String>();
+						searchValues.put(((AtomicAttribute)sourceAttribute).getPropertyPath(), tmpList);
+						tmpObjectList = sourceEntry.getValueTable().get(((AtomicAttribute)sourceAttribute).getPropertyPath());
+						for(Object obj : tmpObjectList) {
+							if(obj instanceof String) {
+								tmpList.add((String)obj);
+							}
 						}
 					}
 				}
@@ -291,7 +296,7 @@ public class GeneticAlgorithmObjectIdentificationMethodWithoutSampling implement
 		}
 	}
 
-	private List<AtomicAttribute> initializePropertyPools(ApplicationContext context, MemoryInstanceCache cache) throws OpenRDFException {
+	private List<IAttribute> initializePropertyPools(ApplicationContext context, MemoryInstanceCache cache) throws OpenRDFException {
 				
 		MySPARQLParser tmpQueryParser = new MySPARQLParser(context.serializeQuerySPARQLSource());
 		tmpQueryParser.addTriplePattern(Node.createVariable("uri"), Node.createVariable("property"), Node.createVariable("obj"));
@@ -309,10 +314,10 @@ public class GeneticAlgorithmObjectIdentificationMethodWithoutSampling implement
 		log.info("Query: "+tmpQuery);
 		TupleQuery query = FusionEnvironment.getInstance().getFusionRepositoryConnection().prepareTupleQuery(QueryLanguage.SPARQL, tmpQuery);
 		TupleQueryResult res = query.evaluate();
-		Set<AtomicAttribute> sourcePropertiesSet = new HashSet<AtomicAttribute>();
+		Set<IAttribute> sourcePropertiesSet = new HashSet<IAttribute>();
 		Map<String, AttributeProfileInDataset> sourceAttributeProfiles = new HashMap<String, AttributeProfileInDataset>();
 		AttributeProfileInDataset currentAttributeProfile;
-		AtomicAttribute currentAttribute;
+		IAttribute currentAttribute;
 		BindingSet bs;
 		URI propertyURI;
 		Set<String> tmpSet = new HashSet<String>();
@@ -477,7 +482,7 @@ public class GeneticAlgorithmObjectIdentificationMethodWithoutSampling implement
 		log.info("Initialize source property pool... finished");
 		log.info("Source dataset size: "+cache.getSourceCachedEntries().size());
 		
-		return new ArrayList<AtomicAttribute>(sourcePropertiesSet);
+		return new ArrayList<IAttribute>(sourcePropertiesSet);
 
 		
 	}

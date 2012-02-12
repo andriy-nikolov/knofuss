@@ -29,6 +29,7 @@ import uk.ac.open.kmi.common.utils.Utils;
 import uk.ac.open.kmi.common.utils.sesame.SesameUtils;
 import uk.ac.open.kmi.common.utils.sparql.MySPARQLParser;
 import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
+import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
 import uk.ac.open.kmi.fusion.api.IObjectIdentificationMethod;
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
@@ -69,6 +70,8 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 
 	private boolean useSampling = false;
 	
+	private boolean aligned = false;
+	
 	private int sampleSize = 0;
 	
 	public GeneticAlgorithmObjectIdentificationMethod() {
@@ -102,6 +105,9 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 		if(descriptor.getProperties().containsKey(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"crossoverRate")) {
 			this.crossoverRate = Double.parseDouble(descriptor.getProperties().get(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"crossoverRate"));
 		}
+		if(descriptor.getProperties().containsKey(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"aligned")) {
+			this.aligned = Boolean.parseBoolean(descriptor.getProperties().get(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"aligned"));
+		}
 		if(descriptor.getProperties().containsKey(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"sampleSize")) {
 			this.sampleSize = Integer.parseInt(descriptor.getProperties().get(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"sampleSize"));
 			if(sampleSize>0) {
@@ -127,8 +133,8 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 			
 			MemoryInstanceCache cache = new MemoryInstanceCache();
 			
-			List<AtomicAttribute> sourcePropertiesPool = this.initializePropertyPools(context, cache);
-			List<AtomicAttribute> targetPropertiesPool = new ArrayList<AtomicAttribute>();
+			List<IAttribute> sourcePropertiesPool = this.initializePropertyPools(context, cache);
+			List<IAttribute> targetPropertiesPool = new ArrayList<IAttribute>();
 			Map<Integer, String> goldStandardEncoded = new HashMap<Integer, String>();
 			
 			this.doBlocking(context, cache, goldStandardEncoded, sourcePropertiesPool, targetPropertiesPool);
@@ -149,6 +155,7 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 			candidateSolutionPool.setUseUnsupervisedFitness(useUnsupervisedFitness);
 			candidateSolutionPool.setCrossoverRate(crossoverRate);
 			candidateSolutionPool.setMutationRate(mutationRate);
+			candidateSolutionPool.setAligned(aligned);
 			
 			candidateSolutionPool.setGoldStandardSet(goldStandardEncoded.keySet());
 			
@@ -169,36 +176,75 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 		
 	}
 
-	private void doBlocking(ApplicationContext context, MemoryInstanceCache cache, Map<Integer, String> goldStandardEncoded, List<AtomicAttribute> sourcePropertiesPool, List<AtomicAttribute> targetPropertiesPool) throws FusionException {
+	private void doBlocking(ApplicationContext context, MemoryInstanceCache cache, Map<Integer, String> goldStandardEncoded, List<IAttribute> sourcePropertiesPool, List<IAttribute> targetPropertiesPool) throws FusionException {
 		
 		try {
 		ILuceneBlocker blocker = context.getBlocker();
 
 		// Set<String> targetPropertiesSet = new HashSet<String>();
 		
-		Map<AtomicAttribute, Integer> targetAttributeCounts = new HashMap<AtomicAttribute, Integer>();
+		Map<IAttribute, Integer> targetAttributeCounts = new HashMap<IAttribute, Integer>();
 		
 		Map<String, AttributeProfileInDataset> targetAttributes = new HashMap<String, AttributeProfileInDataset>();
 		
 		int size = context.getLinkSession().getTargetDataset().copyRelevantSubsetToBlocker(blocker, context, targetAttributes);
 		
-		// int size = 7857409; 
+		// int size = 7857409;
+		
+		// Add predefined target attributes
+		
+		Map<String, AtomicAttribute> alreadyUsedPropertyPaths = new HashMap<String, AtomicAttribute>();		
+		
+		Set<IAttribute> dependencies = new HashSet<IAttribute>();
+		
+		for(IAttribute attr : context.getAdditionalTargetAttributes()) {
+			dependencies.addAll(attr.dependsOn());
+		}
+		
+		dependencies.addAll(context.getAdditionalTargetAttributes());
+		
+		for(IAttribute attr : dependencies) {
+		
+			if(attr instanceof AtomicAttribute) {
+				alreadyUsedPropertyPaths.put(((AtomicAttribute)attr).getPropertyPath(), (AtomicAttribute)attr);
+			}
+		}
+		
+		targetPropertiesPool.addAll(dependencies);
 		
 		double val;
-		AtomicAttribute attribute;
+		AtomicAttribute attribute, predefinedAttribute;
 		for(String key : targetAttributes.keySet()) {
 			val = ((double)targetAttributes.get(key).getMentionedIn())/size;
 			attribute = targetAttributes.get(key).createAttribute();
-			targetAttributeCounts.put(attribute, targetAttributes.get(key).getMentionedIn());
-			/*if(key.equals(RDFS.LABEL.toString())) {
-				System.out.println("here");
-				targetPropertiesPool.add(attribute);
-			}*/
-			// if(val>=0.95) {
-			if(val>=0.5) {
-				if((!key.equals(Utils.FOAF_NS+"name"))&&(!key.equals("http://oaei.ontologymatching.org/2010/IIMBTBOX/article"))) {
-					// Many thanks to the DBPedia bug which assigns the person's birth year as her name !
+			
+			if(!alreadyUsedPropertyPaths.containsKey(attribute.getPropertyPath())) {
+			
+				targetAttributeCounts.put(attribute, targetAttributes.get(key).getMentionedIn());
+				/*if(key.equals(RDFS.LABEL.toString())) {
+					System.out.println("here");
 					targetPropertiesPool.add(attribute);
+				}*/
+				// if(val>=0.95) {
+				if(val>=0.5) {
+					if((!key.equals(Utils.FOAF_NS+"name"))&&(!key.equals("http://oaei.ontologymatching.org/2010/IIMBTBOX/article"))) {
+						// Many thanks to the DBPedia bug which assigns the person's birth year as her name !
+						targetPropertiesPool.add(attribute);
+					}
+				}
+			} else {
+				predefinedAttribute = alreadyUsedPropertyPaths.get(attribute.getPropertyPath());
+				targetAttributeCounts.put(predefinedAttribute, targetAttributes.get(key).getMentionedIn());
+				if(!predefinedAttribute.isAttributeTypeKnown()) {
+					predefinedAttribute.setType(attribute.getType());
+				}
+			}
+		}
+		
+		for(IAttribute attr : targetPropertiesPool) {
+			if(attr instanceof AtomicAttribute) {
+				if(!attr.isAttributeTypeKnown()) {
+					attr.setType(AttributeType.NOMINAL);
 				}
 			}
 		}
@@ -213,7 +259,7 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 		targetPropertiesPool.add(latitude);
 		targetAttributeCounts.put(latitude, 7857409);*/
 		
-		CountMapKeyByValueSizeComparator<AtomicAttribute> comparator = new CountMapKeyByValueSizeComparator<AtomicAttribute>(targetAttributeCounts, true);
+		CountMapKeyByValueSizeComparator<IAttribute> comparator = new CountMapKeyByValueSizeComparator<IAttribute>(targetAttributeCounts, true);
 		Collections.sort(targetPropertiesPool, comparator);
 		
 		Map<String, Document> docs;
@@ -239,13 +285,16 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 		
 		
 		// targetPropertyArray = targetPropertiesPool.toArray(targetPropertyArray);
-		AtomicAttribute attr;
+		IAttribute attr;
 		List<String> chosenTargetProperties = new ArrayList<String>();
 		
 		for(int j=0;j<targetPropertiesPool.size();j++) {
 			attr = targetPropertiesPool.get(j);
-			if((attr.getType()==AttributeType.NOMINAL)||(attr.getType()==AttributeType.NOMINAL_MULTI_TOKEN))
-				chosenTargetProperties.add(attr.getPropertyPath());
+			if(attr instanceof AtomicAttribute) {
+				if((attr.getType()==AttributeType.NOMINAL)||(attr.getType()==AttributeType.NOMINAL_MULTI_TOKEN)) {
+					chosenTargetProperties.add(((AtomicAttribute)attr).getPropertyPath());
+				}
+			}
 		}
 		
 		String[] targetPropertyArray = new String[chosenTargetProperties.size()];
@@ -267,22 +316,25 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 			searchValues.clear();
 			//searchValues.put(Utils.FOAF_NS+"name", sourceEntry.getValueTable().get(Utils.FOAF_NS+"name"));
 			if(!(blocker instanceof LuceneBlockedDiskIndexer)) {
-				for(AtomicAttribute sourceAttribute : sourcePropertiesPool) {
-					if(
-							(!sourceAttribute.getType().equals(AttributeType.LONG_TEXT))&&
-							(!sourceAttribute.getType().equals(AttributeType.CONTINUOUS))&&
-							(!sourceAttribute.getType().equals(AttributeType.INTEGER))&&
-							(!sourceAttribute.getType().equals(AttributeType.DATE))&&
-							(sourceEntry.getValueTable().containsKey(sourceAttribute.getPropertyPath()))) {
-						/*if(sourceEntry.getValueTable().get(sourceAttribute.getPropertyPath()).contains("Washington")) {
-							System.out.println("here");
-						}*/
-						tmpList = new LinkedList<String>();
-						searchValues.put(sourceAttribute.getPropertyPath(), tmpList);
-						tmpObjectList = sourceEntry.getValueTable().get(sourceAttribute.getPropertyPath());
-						for(Object obj : tmpObjectList) {
-							if(obj instanceof String) {
-								tmpList.add((String)obj);
+				for(IAttribute sourceAttribute : sourcePropertiesPool) {
+					if(sourceAttribute instanceof AtomicAttribute) {
+						
+						if(
+								(!sourceAttribute.getType().equals(AttributeType.LONG_TEXT))&&
+								(!sourceAttribute.getType().equals(AttributeType.CONTINUOUS))&&
+								(!sourceAttribute.getType().equals(AttributeType.INTEGER))&&
+								(!sourceAttribute.getType().equals(AttributeType.DATE))&&
+								(sourceEntry.getValueTable().containsKey(((AtomicAttribute)sourceAttribute).getPropertyPath()))) {
+							/*if(sourceEntry.getValueTable().get(sourceAttribute.getPropertyPath()).contains("Washington")) {
+								System.out.println("here");
+							}*/
+							tmpList = new LinkedList<String>();
+							searchValues.put(((AtomicAttribute)sourceAttribute).getPropertyPath(), tmpList);
+							tmpObjectList = sourceEntry.getValueTable().get(((AtomicAttribute)sourceAttribute).getPropertyPath());
+							for(Object obj : tmpObjectList) {
+								if(obj instanceof String) {
+									tmpList.add((String)obj);
+								}
 							}
 						}
 					}
@@ -344,14 +396,14 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 							targetEntry = cache.getTargetCacheEntry(FusionEnvironment.getInstance().getMainKbValueFactory().createURI(uris[1].trim()));
 							targetEntry.readPropertiesFromLuceneDocument(doc);
 							pair = cache.addPairToCache(sourceEntry, targetEntry, true);
-							try {
-								log.info(sourceEntry.getUri().toString());
-								log.info(targetEntry.getUri().toString());
-								log.info("Missed: "+sourceEntry.getValueTable().get("http://www.w3.org/2004/02/skos/core#prefLabel").get(0));
-								log.info(" : "+targetEntry.getValueTable().get(RDFS.LABEL.toString()).get(0));
-							} catch(NullPointerException e) {
-								e.printStackTrace();
-							}
+//							try {
+//								log.info(sourceEntry.getUri().toString());
+//								log.info(targetEntry.getUri().toString());
+//								log.info("Missed: "+sourceEntry.getValueTable().get("http://www.w3.org/2004/02/skos/core#prefLabel").get(0));
+//								log.info(" : "+targetEntry.getValueTable().get(RDFS.LABEL.toString()).get(0));
+//							} catch(NullPointerException e) {
+//								e.printStackTrace();
+//							}
 							if(!addMissing) {
 								pair.setMissing(true);
 							}
@@ -372,8 +424,29 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 		}
 	}
 
-	private List<AtomicAttribute> initializePropertyPools(ApplicationContext context, MemoryInstanceCache cache) throws OpenRDFException {
-				
+	private List<IAttribute> initializePropertyPools(ApplicationContext context, MemoryInstanceCache cache) throws OpenRDFException {
+		
+		// Add predefined source attributes
+		Set<IAttribute> sourcePropertiesSet = new HashSet<IAttribute>();
+		Map<String, AtomicAttribute> alreadyUsedPropertyPaths = new HashMap<String, AtomicAttribute>();		
+		
+		Set<IAttribute> dependencies = new HashSet<IAttribute>();
+		
+		for(IAttribute attr : context.getAdditionalSourceAttributes()) {
+			dependencies.addAll(attr.dependsOn());
+		}
+		
+		dependencies.addAll(context.getAdditionalSourceAttributes());
+		
+		for(IAttribute attr : dependencies) {
+		
+			if(attr instanceof AtomicAttribute) {
+				alreadyUsedPropertyPaths.put(((AtomicAttribute)attr).getPropertyPath(), (AtomicAttribute)attr);
+			}
+		}
+		
+		sourcePropertiesSet.addAll(dependencies);
+		
 		MySPARQLParser tmpQueryParser = new MySPARQLParser(context.serializeQuerySPARQLSource());
 		tmpQueryParser.addTriplePattern(Node.createVariable("uri"), Node.createVariable("property"), Node.createVariable("obj"));
 		tmpQueryParser.addOutputVariable("property");
@@ -387,11 +460,13 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 		
 		// Retrieve all direct paths
 		String tmpQuery = tmpQueryParser.getFilteredQuery();
+		
 		log.info("Query: "+tmpQuery);
 		log.info("Size: "+FusionEnvironment.getInstance().getFusionRepositoryConnection().size());
+		
 		TupleQuery query = FusionEnvironment.getInstance().getFusionRepositoryConnection().prepareTupleQuery(QueryLanguage.SPARQL, tmpQuery);
 		TupleQueryResult res = query.evaluate();
-		Set<AtomicAttribute> sourcePropertiesSet = new HashSet<AtomicAttribute>();
+		
 		Map<String, AttributeProfileInDataset> sourceAttributeProfiles = new HashMap<String, AttributeProfileInDataset>();
 		AttributeProfileInDataset currentAttributeProfile;
 		AtomicAttribute currentAttribute;
@@ -439,7 +514,6 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 							System.out.println(val);
 						}*/
 						currentCacheEntry.addValue(propertyURI.toString(), val);
-						
 					}
 				}
 			}
@@ -507,9 +581,7 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 						currentAttributeProfile.doTypeChecking(val);
 						// sourcePropertiesSet.add(path);
 						currentCacheEntry.addValue(path, val);
-						
 						// log.info(bs.getValue("uri")+" : "+bs.getValue("property1")+" : "+bs.getValue("property2")+" : "+bs.getValue("obj"));
-						
 					}
 					
 				}
@@ -524,8 +596,6 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 			} finally {
 				res.close();
 			}
-			
-			
 		}
 		
 		double freq;
@@ -536,18 +606,27 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 			freq = ((double)currentAttributeProfile.getMentionedIn())/cache.getSourceCachedEntries().size();
 			
 			currentAttribute = currentAttributeProfile.createAttribute();
-			
-			if((currentAttribute.getType()!=AttributeType.INTEGER)&&(freq>0.6)&&(!currentAttribute.getPropertyPath().endsWith("search_api_query"))) {
-				sourcePropertiesSet.add(currentAttribute);
+			if(!alreadyUsedPropertyPaths.containsKey(currentAttribute.getPropertyPath())) {
+				if((currentAttribute.getType()!=AttributeType.INTEGER)&&(freq>0.6)&&(!currentAttribute.getPropertyPath().endsWith("search_api_query"))) {
+					sourcePropertiesSet.add(currentAttribute);
+				}
+			} else if(!alreadyUsedPropertyPaths.get(currentAttribute.getPropertyPath()).isAttributeTypeKnown()) {
+				alreadyUsedPropertyPaths.get(currentAttribute.getPropertyPath()).setType(currentAttribute.getType());
+			}
+		}
+		
+		for(IAttribute attr : sourcePropertiesSet) {
+			if(attr instanceof AtomicAttribute) {
+				if(!attr.isAttributeTypeKnown()) {
+					attr.setType(AttributeType.NOMINAL);
+				}
 			}
 		}
 		
 		log.info("Initialize source property pool... finished");
 		log.info("Source dataset size: "+cache.getSourceCachedEntries().size());
 		
-		return new ArrayList<AtomicAttribute>(sourcePropertiesSet);
-
-		
+		return new ArrayList<IAttribute>(sourcePropertiesSet);
 	}
 	
 	private List<AtomicMapping> createAtomicMappings(Map<Integer, Double> resultsEncoded, MemoryInstanceCache cache, CandidateSolution solution) {
@@ -603,25 +682,19 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 					approvedPairs.remove(id);
 				}
 			}
-			
 			F1Fitness fitness = F1Fitness.getF1Fitness(goldStandardSet, approvedPairs);
-			
 			for(Integer id : targetEntryIds.keySet()) {
 				log.info(targetEntryIds.get(id));
 			}
-			
 			log.info("Real fitness after class filtering: F1: "+fitness.getValue()+", precision: "+fitness.getPrecision()+", recall: "+fitness.getRecall());
 		} else {
 			log.info("No dominant classes found");
 		}
-		
 	}
 	
 		
 	private Map<String, IFitnessFunction> processFitnessByType(MemoryInstanceCache cache, Map<Integer, Double> solutionResults) {
-		
 		Map<String, IFitnessFunction> fitnessByType = new HashMap<String, IFitnessFunction>();
-		
 		Map<String, Set<Integer>> targetEntryIDsByType = cache.getTargetEntryIDsByType();
 		IFitnessFunction function;
 		for(String type : targetEntryIDsByType.keySet()) {
@@ -630,12 +703,10 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 				fitnessByType.put(type, function);
 			}
 		}
-		
 		return fitnessByType;
 	}
 	
 	private IFitnessFunction evaluateFitnessByType(MemoryInstanceCache cache, Map<Integer, Double> solutionResults, String type) {
-		
 		
 		Set<Integer> targetEntryIDs = cache.getTargetEntryIDsByType().get(type);
 		Set<Integer> coveredSourceIndividuals = new HashSet<Integer>();
@@ -644,7 +715,7 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 		double averageSimilarity = 0;
 		double average = 0;
 		int numberOfRelevantPairs = 0;
-		
+
 		for(Integer pairId : solutionResults.keySet()) {
 			pair = cache.getCachedPairById(pairId);
 			if(targetEntryIDs.contains(pair.getTargetInstance().getId())) {
@@ -668,7 +739,6 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 		} else {
 			return new DefaultFitnessFunction(0, 0, 0);
 		}
-		
 	}
 
 }

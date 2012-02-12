@@ -151,9 +151,7 @@ public abstract class AbstractLuceneStore implements
 			if(!stmt.getPredicate().equals(RDF.TYPE)) {
 				if(stmt.getObject() instanceof Literal) {
 					value = KnoFussUtils.removeDiacriticalMarks(((Literal)stmt.getObject()).stringValue());
-					if(value.toLowerCase().contains("las vegas")) {
-						/*System.out.println();*/
-					}
+					
 					f = new Field(stmt.getPredicate().toString(), value, Field.Store.YES, Field.Index.ANALYZED);
 					
 					doc.add(f);

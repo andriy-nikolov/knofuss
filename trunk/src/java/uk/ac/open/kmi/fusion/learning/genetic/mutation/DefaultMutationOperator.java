@@ -9,8 +9,8 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import uk.ac.open.kmi.fusion.api.IAggregationFunction;
+import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
-import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
 import uk.ac.open.kmi.fusion.api.impl.aggregation.AggregationFunctionFactory;
 import uk.ac.open.kmi.fusion.api.impl.valuematching.ValueMatchingFunctionFactory;
 import uk.ac.open.kmi.fusion.learning.CandidateSolution;
@@ -30,10 +30,16 @@ public class DefaultMutationOperator implements IMutationOperator {
 	static IMutationOperator getInstance() {
 		return INSTANCE;
 	}
+	
+	
 
 	@Override
-	public CandidateSolution mutate(CandidateSolution original, List<AtomicAttribute> sourceProperties, List<AtomicAttribute> targetProperties, Map<AtomicAttribute, Map<AtomicAttribute, List<IValueMatchingFunction<? extends Object>>>> mapApplicableFunctions, boolean aligned) {
-		
+	public CandidateSolution mutate(
+			CandidateSolution original,
+			List<IAttribute> sourceProperties,
+			List<IAttribute> targetProperties,
+			Map<IAttribute, Map<IAttribute, List<IValueMatchingFunction<? extends Object>>>> mapApplicableFunctions,
+			boolean aligned) {
 		int rows = sourceProperties.size();
 		int columns = targetProperties.size();
 		
@@ -56,7 +62,7 @@ public class DefaultMutationOperator implements IMutationOperator {
 					// not compared in the current genotype and
 					// can be compared with at least one similarity function
 					if(aligned) {
-						if(!sourceProperties.get(i).getPropertyPath().equals(targetProperties.get(j).getPropertyPath())) {
+						if(!sourceProperties.get(i).samePropertyPathAs(targetProperties.get(j))) {
 							continue;
 						}
 					}
@@ -205,7 +211,8 @@ public class DefaultMutationOperator implements IMutationOperator {
 		
 		
 		return new CandidateSolution(original.getModelSpec().getApplicationContext(), childGenotype, sourceProperties, targetProperties);
-		
 	}
+
+	
 	
 }

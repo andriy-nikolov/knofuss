@@ -107,8 +107,10 @@ public class ObjectContextModelMatcherThresholdBased {
 						resource.getPropertiesFromQueryResult(tuple);
 					} 
 				}
-			 
-				resList.add(resource);
+				
+				if(resource.getIndividual()!=null) {
+					resList.add(resource);
+				}
 				log.info("Resources: "+resources);
 			} finally {
 				rsSource.close();
@@ -489,9 +491,6 @@ public class ObjectContextModelMatcherThresholdBased {
 				
 				String label;
 				for(ObjectContextWrapper wrapper : sourceResources) {
-					
-					
-					
 					if(!candidatePairs.containsKey(wrapper)) {
 						writer.println("<comparison>");
 						

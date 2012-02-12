@@ -162,13 +162,9 @@ public class ObjectContextWrapper implements IObjectContextWrapper {
 	 */
 	@Override
 	public List<? extends Object> getValuesByAttribute(IAttribute attribute) {
-		if(attribute instanceof AtomicAttribute) {
-			return valueTable.get(attribute);
-		} else {
-			List<CompositeAttributeValue> tmpList = new ArrayList<CompositeAttributeValue>(1);
-			tmpList.add(CompositeAttributeValue.createCompositeAttributeValueHavingAttributes((CompositeAttribute)attribute, this.valueTable));
-			return tmpList;
-		}
+		
+		return attribute.getValuesHavingAttributes(valueTable);
+
 	}
 	
 	
