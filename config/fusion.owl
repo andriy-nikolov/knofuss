@@ -317,6 +317,12 @@
     
 
 
+    <!-- http://kmi.open.ac.uk/fusion/fusion#attributeType -->
+
+    <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#attributeType"/>
+    
+
+
     <!-- http://kmi.open.ac.uk/fusion/fusion#hasConfidence -->
 
     <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasConfidence">
@@ -330,16 +336,8 @@
 
     <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#hasImplementingClass">
         <rdf:type rdf:resource="&owl;FunctionalProperty"/>
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#CustomFusionObject"/>
         <rdfs:range rdf:resource="&xsd;string"/>
-        <rdfs:domain>
-            <owl:Class>
-                <owl:unionOf rdf:parseType="Collection">
-                    <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#FusionMethod"/>
-                    <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#TransformationFunction"/>
-                    <rdf:Description rdf:about="http://kmi.open.ac.uk/fusion/fusion#ValueMatchingFunction"/>
-                </owl:unionOf>
-            </owl:Class>
-        </rdfs:domain>
     </owl:DatatypeProperty>
     
 
@@ -403,10 +401,36 @@
     
 
 
+    <!-- http://kmi.open.ac.uk/fusion/fusion#loadFrom -->
+
+    <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#loadFrom">
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FileDump"/>
+        <rdfs:subPropertyOf rdf:resource="&owl;topDataProperty"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#propertyPath -->
+
+    <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#propertyPath">
+        <rdfs:subPropertyOf rdf:resource="&owl;topDataProperty"/>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#searchStrategy -->
+
+    <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#searchStrategy">
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#LuceneBlocker"/>
+    </owl:DatatypeProperty>
+    
+
+
     <!-- http://kmi.open.ac.uk/fusion/fusion#sourcePath -->
 
     <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#sourcePath">
         <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#VariableComparisonSpec"/>
+        <rdfs:subPropertyOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#propertyPath"/>
         <rdfs:range rdf:resource="&xsd;string"/>
     </owl:DatatypeProperty>
     
@@ -424,6 +448,7 @@
 
     <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#targetPath">
         <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#VariableComparisonSpec"/>
+        <rdfs:subPropertyOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#propertyPath"/>
         <rdfs:range rdf:resource="&xsd;string"/>
     </owl:DatatypeProperty>
     
@@ -473,6 +498,14 @@
     
 
 
+    <!-- http://kmi.open.ac.uk/fusion/fusion#AtomicAttribute -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#AtomicAttribute">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#Attribute"/>
+    </owl:Class>
+    
+
+
     <!-- http://kmi.open.ac.uk/fusion/fusion#AtomicMapping -->
 
     <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#AtomicMapping">
@@ -487,10 +520,26 @@
     
 
 
+    <!-- http://kmi.open.ac.uk/fusion/fusion#Attribute -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#Attribute">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionConfigurationObject"/>
+    </owl:Class>
+    
+
+
     <!-- http://kmi.open.ac.uk/fusion/fusion#Blocker -->
 
     <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#Blocker">
         <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionConfigurationObject"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#CompositeAttribute -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#CompositeAttribute">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#Attribute"/>
     </owl:Class>
     
 
@@ -528,6 +577,14 @@
     <!-- http://kmi.open.ac.uk/fusion/fusion#ConflictType -->
 
     <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#ConflictType"/>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#CustomFusionObject -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#CustomFusionObject">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionConfigurationObject"/>
+    </owl:Class>
     
 
 
@@ -572,7 +629,7 @@
     <!-- http://kmi.open.ac.uk/fusion/fusion#FusionMethod -->
 
     <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#FusionMethod">
-        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionConfigurationObject"/>
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#CustomFusionObject"/>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://kmi.open.ac.uk/fusion/fusion#hasSelectQuery"/>
@@ -738,7 +795,7 @@
     <!-- http://kmi.open.ac.uk/fusion/fusion#SesameMemoryDataSource -->
 
     <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#SesameMemoryDataSource">
-        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#DataSource"/>
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#SesameDataSource"/>
     </owl:Class>
     
 
@@ -746,7 +803,15 @@
     <!-- http://kmi.open.ac.uk/fusion/fusion#SesameNativeDataSource -->
 
     <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#SesameNativeDataSource">
-        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#DataSource"/>
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#SesameDataSource"/>
+    </owl:Class>
+    
+
+
+    <!-- http://kmi.open.ac.uk/fusion/fusion#TransformationAttribute -->
+
+    <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#TransformationAttribute">
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#Attribute"/>
     </owl:Class>
     
 
@@ -754,7 +819,7 @@
     <!-- http://kmi.open.ac.uk/fusion/fusion#TransformationFunction -->
 
     <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#TransformationFunction">
-        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionConfigurationObject"/>
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#CustomFusionObject"/>
     </owl:Class>
     
 
@@ -762,7 +827,7 @@
     <!-- http://kmi.open.ac.uk/fusion/fusion#ValueMatchingFunction -->
 
     <owl:Class rdf:about="http://kmi.open.ac.uk/fusion/fusion#ValueMatchingFunction">
-        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#FusionConfigurationObject"/>
+        <rdfs:subClassOf rdf:resource="http://kmi.open.ac.uk/fusion/fusion#CustomFusionObject"/>
     </owl:Class>
     
 
