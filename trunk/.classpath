@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="uk/ac/open/kmi/fusion/objectidentification/standard/SimMetricsObjectIdentificationGlobals.java|uk/ac/open/kmi/fusion/util/KnoFussSingleFileOntoloaderStandalone.java|uk/ac/open/kmi/fusion/MultiOntologyUtil.java|uk/ac/open/kmi/fusion/filter/OneToOneFilterOld.java" kind="src" path="src/java"/>
+	<classpathentry excluding="uk/ac/open/kmi/fusion/objectidentification/standard/SimMetricsObjectIdentificationGlobals.java|uk/ac/open/kmi/fusion/util/KnoFussSingleFileOntoloaderStandalone.java|uk/ac/open/kmi/fusion/MultiOntologyUtil.java|uk/ac/open/kmi/fusion/filter/OneToOneFilterOld.java|uk/ac/open/kmi/fusion/objectidentification/standard/ObjectContextModelMatcher.java|uk/ac/open/kmi/fusion/index/AbstractLuceneIndexer.java" kind="src" path="src/java"/>
 	<classpathentry kind="src" path="src/test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/secondstring-20060615.jar"/>
@@ -48,7 +48,7 @@
 	<classpathentry kind="lib" path="lib/xercesImpl-2.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/jena-2.6.4.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="lib/an-utils.jar"/>
 	<classpathentry kind="lib" path="lib/mappingapilite.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/an-utils"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

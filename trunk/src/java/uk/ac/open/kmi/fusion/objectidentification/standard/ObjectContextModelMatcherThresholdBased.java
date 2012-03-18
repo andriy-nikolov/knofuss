@@ -50,22 +50,30 @@ public class ObjectContextModelMatcherThresholdBased {
 	
 	Map<String, Set<String>> targetUrisByClass;
 	
+	Set<String> goldStandardPairs = null;
+	
+	boolean goldStandardAvailable = false;
+	
 	private static Logger log = Logger.getLogger(ObjectContextModelMatcherThresholdBased.class); 
 	
-	//RDF2txtTranslator translator;
 	
 	private void init() {
 		sourceResources = new HashSet<LuceneBackedObjectContextWrapper>();
 		sourceResourcesTable = new HashMap<String, LuceneBackedObjectContextWrapper>();
 		candidatePairs = new HashMap<LuceneBackedObjectContextWrapper, List<ComparisonPair>>();
 		selectedPairs = new ArrayList<ComparisonPair>();
-		//indexer = FusionEnvironment.getIndexer();
 		mappings = new ArrayList<AtomicMapping>();
 		targetUrisByClass = new HashMap<String, Set<String>>();
+		
 	}
 	
 	public ObjectContextModelMatcherThresholdBased() {
 		init();
+	}
+	
+	public void setGoldStandard(Set<String> goldStandard) {
+		this.goldStandardPairs = goldStandard;
+		this.goldStandardAvailable = true;
 	}
 	
 	private void fillList(Set<LuceneBackedObjectContextWrapper> resList, Map<String, LuceneBackedObjectContextWrapper> resTable, RepositoryConnection connection) {
@@ -133,15 +141,26 @@ public class ObjectContextModelMatcherThresholdBased {
 
 		int comparisons = 0;
 		ComparisonPair pair;
+		
+		double tp = 0;
+		double fn = 0;
+		
+		Set<String> missedGoldStandardUris = new HashSet<String>();
+		
 		List<LuceneBackedObjectContextWrapper> notFound = new ArrayList<LuceneBackedObjectContextWrapper>();
 		
 		Map<String, Set<String>> mapSimilarities = new HashMap<String, Set<String>>();
 		
 		try {
 			
+			if(this.goldStandardAvailable) {
+				missedGoldStandardUris.addAll(this.goldStandardPairs);
+			}
+			
 			PrintWriter writerTest = new PrintWriter(System.out);
 			PrintWriter writerTestAccepted = null;
 			String type = null;
+			
 			if(!instanceModel.getRestrictedTypesTarget().isEmpty()) {
 				type = instanceModel.getRestrictedTypesTarget().get(0).toString();
 			}
@@ -175,11 +194,26 @@ public class ObjectContextModelMatcherThresholdBased {
 						
 						tmpList = (List<Object>)values.get(attribute);
 						tmpStringList = new ArrayList<String>();
-						valuesByPropertyPath.put(((AtomicAttribute)attribute).getPropertyPath(), tmpStringList);
 						for(Object tmp : tmpList) {
 							if(tmp instanceof String) {
+								
+								if(KnoFussDateUtils.isDate((String)tmp)) {
+									continue;
+								}
+								
+								try {
+									Double.parseDouble((String)tmp);
+									continue;
+								} catch(NumberFormatException e) {
+									
+								}
+								
 								tmpStringList.add((String)tmp);
 							}
+						}
+						
+						if(!tmpStringList.isEmpty()) {
+							valuesByPropertyPath.put(((AtomicAttribute)attribute).getPropertyPath(), tmpStringList);
 						}
 
 					}
@@ -188,7 +222,9 @@ public class ObjectContextModelMatcherThresholdBased {
 						
 						currentTime = System.currentTimeMillis();
 						
-						
+						if(resSource.getIndividual().toString().equals("http://data.linkedevents.org/event/f16352aa-7f1b-473c-8a3d-764757d400cc")) {
+							log.debug("");
+						}
 						
 						candidateDocs = indexer.findClosestDocuments(valuesByPropertyPath, indexer.getThreshold(), type);
 						totalTimeSearch+=(System.currentTimeMillis()-currentTime);
@@ -228,9 +264,6 @@ public class ObjectContextModelMatcherThresholdBased {
 						}
 						
 						if(resTarget==null) {
-							
-							// log.info("not comparable: resTarget=null: "+doc.toString());
-							
 							continue;
 						}
 						
@@ -241,6 +274,12 @@ public class ObjectContextModelMatcherThresholdBased {
 						}
 						
 						pair = new ComparisonPair(resSource, resTarget);
+						
+						if(goldStandardAvailable) {
+							if(missedGoldStandardUris.remove(resSource.getIndividual().toString()+" : "+resTarget.getIndividual().toString())) {
+								tp++;
+							}
+						}
 						
 						/*if(resTarget.getIndividual().toString().equals("http://dbpedia.org/resource/Mike_Figgis")&&
 								resSource.getIndividual().toString().equals("http://data.linkedmdb.org/music_contributor/3282")
@@ -253,12 +292,7 @@ public class ObjectContextModelMatcherThresholdBased {
 						pair.setSimilarity(similarity);
 						totalTimeComparison+=(System.currentTimeMillis()-currentTime);
 						
-						/*if(FusionEnvironment.debug) {
-							
-							this.writeComparison(writerTest, resSource, resTarget, similarity);
-							
-						}*/
-					
+				
 						if(similarity>=threshold) {
 							/*if(FusionEnvironment.debug) {
 								
@@ -295,6 +329,14 @@ public class ObjectContextModelMatcherThresholdBased {
 				if(top<minmax) {
 					minmax = top;
 				}
+			}
+			
+			if(this.goldStandardAvailable) {
+				double recall = 1-((double)missedGoldStandardUris.size())/goldStandardPairs.size();
+				log.info("Blocking recall: "+recall);
+				
+				recall = tp/goldStandardPairs.size();
+				log.info("Blocking recall: "+recall);
 			}
 			
 			log.info("Actually compared: "+j);

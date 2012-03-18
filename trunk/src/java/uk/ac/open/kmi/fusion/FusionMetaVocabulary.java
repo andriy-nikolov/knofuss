@@ -59,6 +59,8 @@ public class FusionMetaVocabulary {
 	public static final String HAS_RELIABILITY = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"hasReliability";
 	public static final String HAS_SELECT_QUERY = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"hasSelectQuery";
 	public static final String HAS_TOTAL_RESOURCES_PROCESSED = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"hasTotalResourcesProcessed";
+	public static final String HAS_TRANSFORMATION_FUNCTION = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"hasTransformationFunction";
+	
 	public static final String INCONSISTENCY_RESOLUTION = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"InconsistencyResolution";
 	public static final String INSTANCE_MATCHING_SPEC = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"instanceMatchingSpec";
 	public static final String INTERMEDIATE_STORE = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"intermediateStore";
@@ -108,7 +110,7 @@ public class FusionMetaVocabulary {
 	public static final String TARGET_RESTRICTION = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"targetRestriction";
 	public static final String THRESHOLD = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"threshold";
 	public static final String TRANSFORMATION_ATTRIBUTE = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"TransformationAttribute";
-	public static final String TRANSFORMATION_FUNCTION = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"transformationFunction";
+	public static final String TRANSFORMATION_FUNCTION = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"TransformationFunction";
 	public static final String URL = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"url";
 	
 	public static final String VALUE_MATCHING_FUNCTION = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"ValueMatchingFunction";

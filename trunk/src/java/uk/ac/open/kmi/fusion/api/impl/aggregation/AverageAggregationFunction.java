@@ -4,6 +4,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import uk.ac.open.kmi.fusion.api.IAggregationFunction;
 import uk.ac.open.kmi.fusion.api.IObjectContextWrapper;
+import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
 import uk.ac.open.kmi.fusion.api.impl.VariableComparisonSpecification;
 
 public class AverageAggregationFunction implements IAggregationFunction {
@@ -32,6 +33,8 @@ public class AverageAggregationFunction implements IAggregationFunction {
 		
 		for(VariableComparisonSpecification spec : variableComparisons) {
 			
+			
+			
 			List<? extends Object> sourceValues = source.getValuesByAttribute(spec.getSourceAttribute());
 			List<? extends Object> targetValues = target.getValuesByAttribute(spec.getTargetAttribute());
 			
@@ -59,12 +62,28 @@ public class AverageAggregationFunction implements IAggregationFunction {
 				similarity = 0.0;
 			}
 			
+			if(spec.getSourceAttribute() instanceof AtomicAttribute) {
+				if(((AtomicAttribute)spec.getSourceAttribute()).getPropertyPath().contains("atPlace")) {
+					if(similarity>=0.6) {
+						log.debug("here");
+					}
+					if(!targetValues.isEmpty()) {
+						log.debug("here");
+					}
+				}
+			}
+			
 			result += similarity*spec.getWeight();
 			sumWeights += spec.getWeight();
 			
 		}
 		
 		result = result/sumWeights;
+		
+		if(result>=0.7499999) {
+			log.debug("here");
+		}
+		
 		if(result.isNaN()) {
 			result = 0.0;
 		}

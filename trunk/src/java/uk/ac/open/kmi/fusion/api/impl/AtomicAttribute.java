@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -14,6 +15,7 @@ import org.openrdf.repository.RepositoryException;
 import uk.ac.open.kmi.common.utils.sparql.SPARQLUtils;
 import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
 import uk.ac.open.kmi.fusion.api.IAttribute;
+import uk.ac.open.kmi.fusion.learning.GeneticAlgorithmObjectIdentificationMethod;
 import uk.ac.open.kmi.fusion.util.FusionException;
 
 public class AtomicAttribute extends AbstractAttribute {
@@ -28,9 +30,16 @@ public class AtomicAttribute extends AbstractAttribute {
 	static int attributeNumber = 0;
 	
 	Map<String, Object> linkedObjects;
+	
+	private static Logger log = Logger.getLogger(AtomicAttribute.class);
 
 	public AtomicAttribute(String propertyPath) {
 		super();
+		
+		if(propertyPath.startsWith("(")) {
+			log.info("here");
+		}
+		
 		this.setPropertyPath(propertyPath);
 		this.variableName = "attr"+(attributeNumber++);
 		this.linkedObjects = new HashMap<String, Object>();
@@ -86,7 +95,7 @@ public class AtomicAttribute extends AbstractAttribute {
 	@Override
 	public List<String> getPropertyPathsAsQueryTriples() {
 		List<String> propertyPaths = new ArrayList<String>(1);
-		propertyPaths.add(SPARQLUtils.expandPath("uri", propertyPath, this.variableName));
+		propertyPaths.add(SPARQLUtils.expandPath("uri", propertyPath, this.variableName).replace("(", "").replace(")", ""));
 		return propertyPaths;
 	}
 
@@ -208,7 +217,7 @@ public class AtomicAttribute extends AbstractAttribute {
 		if(this.isOptional()) {
 			buffer.append("OPTIONAL { ");
 		} 
-		buffer.append(SPARQLUtils.expandPath("uri", SPARQLUtils.expandRestriction(this.propertyPath, namespaceMap), this.variableName));
+		buffer.append(SPARQLUtils.expandPath("uri", SPARQLUtils.expandRestriction(this.propertyPath, namespaceMap), this.variableName).replace("(", "").replace(")", ""));
 		buffer.append(" ");
 		
 		if(this.isOptional()) {

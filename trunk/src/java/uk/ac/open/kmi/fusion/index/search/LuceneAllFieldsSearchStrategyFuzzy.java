@@ -38,7 +38,6 @@ import uk.ac.open.kmi.common.utils.LuceneUtils;
 import uk.ac.open.kmi.common.utils.Utils;
 import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
-import uk.ac.open.kmi.fusion.index.AbstractLuceneIndexer;
 import uk.ac.open.kmi.fusion.objectidentification.SearchResult;
 import uk.ac.open.kmi.fusion.util.FusionException;
 

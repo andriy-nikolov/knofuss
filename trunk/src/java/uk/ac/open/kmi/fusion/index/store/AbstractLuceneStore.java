@@ -14,6 +14,7 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Version;
+import org.openrdf.OpenRDFException;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -21,6 +22,8 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 
@@ -141,7 +144,54 @@ public abstract class AbstractLuceneStore implements
 		
 		Document doc = indexIndividual(ind, con);
 		
-		List<Statement> stmts = SesameUtils.getStatements(ind, null, null, con);
+		for(int i=1;i<propertyPathDepth+1;i++) {
+			String sparqlQuery = getAttributeSelectSPARQLQuery(ind.toString(), i);
+			try {
+				TupleQueryResult res = SesameUtils.executeSelect(sparqlQuery, con);
+				BindingSet bs;
+				String currentProperty, path;
+				Literal lit;
+				try {
+					while(res.hasNext()) {
+						bs = res.next();
+						if(bs.getValue("obj") instanceof Literal) {
+							lit = (Literal)bs.getValue("obj");
+							
+							if(i>1) {
+							
+								path = "<"+bs.getValue("prop0").toString()+">";
+								for(int j=1;j<i;j++) {
+									path+="/";
+									path+="<";
+									currentProperty = bs.getValue("prop"+j).toString();
+									
+									path+=currentProperty;
+									path+=">";
+								}
+							} else {
+								path = bs.getValue("prop0").toString();
+							}
+							
+							doc.add(new Field(path, lit.stringValue(), Field.Store.YES, Field.Index.ANALYZED));
+							
+							addAlternatives(path, lit, doc);
+							
+						}
+						
+					}
+				} finally {
+					res.close();
+				}
+				
+				
+			} catch (OpenRDFException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		
+		
+		/*List<Statement> stmts = SesameUtils.getStatements(ind, null, null, con);
 		URI obj;
 		Field f;
 		
@@ -161,10 +211,10 @@ public abstract class AbstractLuceneStore implements
 						f = new Field(stmt.getPredicate().toString(), additionalValue, Field.Store.YES, Field.Index.ANALYZED);
 					}
 					
-					/*if(((Literal)stmt.getObject()).stringValue().toLowerCase().contains("r2-d2")) {
+					if(((Literal)stmt.getObject()).stringValue().toLowerCase().contains("r2-d2")) {
 						f = new Field(stmt.getPredicate().toString(), "r2 d2", Field.Store.YES, Field.Index.ANALYZED);
 						doc.add(f);
-					}*/
+					}
 					// log.debug("Indexed field: "+stmt.getPredicate().toString()+" = "+((Literal)stmt.getObject()).stringValue());
 					// skos patch - very clumsy, to be fixed
 					
@@ -179,8 +229,47 @@ public abstract class AbstractLuceneStore implements
 					}
 				} else {
 					if(propertyPathDepth>1) {
-						if((stmt.getObject() instanceof BNode)
-								||((stmt.getObject() instanceof URI)&&(stmt.getObject().toString().startsWith(OAEIUtils.IIMB_ADDONS_NS)))) {
+						
+						for(int i=1;i<propertyPathDepth;i++) {
+							String sparqlQuery = getAttributeSelectSPARQLQuery(ind.toString(), i);
+							try {
+								TupleQueryResult res = SesameUtils.executeSelect(sparqlQuery, con);
+								BindingSet bs;
+								String currentProperty, path;
+								Literal lit;
+								try {
+									while(res.hasNext()) {
+										bs = res.next();
+										if(bs.getValue("obj") instanceof Literal) {
+											lit = (Literal)bs.getValue("obj");
+											path = "<"+bs.getValue("prop0").toString()+">";
+											for(int j=0;j<i;j++) {
+												path+="/";
+												path+="<";
+												currentProperty = bs.getValue("prop"+(j+1)).toString();
+												path+=currentProperty;
+												path+=">";
+											}
+											
+											doc.add(new Field(path, lit.stringValue(), Field.Store.YES, Field.Index.ANALYZED));
+											
+											addAlternatives(path, lit, doc);
+											
+										}
+										
+									}
+								} finally {
+									res.close();
+								}
+								
+								
+							} catch (OpenRDFException e) {
+								e.printStackTrace();
+							}
+							
+						}*/
+						
+						/*if((stmt.getObject() instanceof Resource)) {
 							String pathPrefix = "<"+stmt.getPredicate().toString()+">";
 							String path;
 							List<Statement> stmts2 = SesameUtils.getStatements((Resource)stmt.getObject(), null, null, con);
@@ -200,11 +289,11 @@ public abstract class AbstractLuceneStore implements
 								}
 							}
 							
-						}
-					}
-				}
-			} 
-		}
+						}*/
+		//			}
+		//		}
+		//	} 
+		//}
 		
 		try {
 			this.indexWriter.addDocument(doc);
@@ -255,7 +344,47 @@ public abstract class AbstractLuceneStore implements
 	}
 	
 	
+	private String getAttributeSelectSPARQLQuery(String uri, int depth) {
+		if((depth<1)||(depth>3)) throw new IllegalArgumentException("Property path depth should be between 1 and 3, is "+depth);
+		
+		StringBuffer queryBuffer = new StringBuffer("SELECT ");
+		for(int i=0;i<depth;i++) {
+			queryBuffer.append("?prop"+i);
+			queryBuffer.append(" ");
+		}
+		
+		queryBuffer.append("?obj WHERE { \n");
+		queryBuffer.append("<");
+		queryBuffer.append(uri);
+		queryBuffer.append("> ?prop0 ");
+		for(int i=1;i<depth;i++) {
+			queryBuffer.append("?tmp"+(i-1));
+			queryBuffer.append(" . \n ");
+			queryBuffer.append("?tmp"+(i-1));
+			queryBuffer.append(" ?prop"+i);
+			queryBuffer.append(" ");
+		}
+		queryBuffer.append("?obj . \n");
 	
+		queryBuffer.append("}");
+		
+		return queryBuffer.toString();
+		
+		
+	}
+	
+	private void addAlternatives(String path, Literal lit, Document doc) {
+		if(path.endsWith("<http://www.w3.org/2004/02/skos/core#altLabel>")) {
+			doc.add(new Field(path.replace("<http://www.w3.org/2004/02/skos/core#altLabel>", "<"+RDFS.LABEL.toString()+">"), lit.stringValue(), Field.Store.YES, Field.Index.ANALYZED));
+		}
+		if(path.endsWith("<http://www.w3.org/2004/02/skos/core#prefLabel>")) {
+			doc.add(new Field(path.replace("<http://www.w3.org/2004/02/skos/core#prefLabel>", "<"+RDFS.LABEL.toString()+">"), lit.stringValue(), Field.Store.YES, Field.Index.ANALYZED));
+		}
+		if(path.endsWith("<http://www.w3.org/2004/02/skos/core#hiddenLabel>")) {
+			doc.add(new Field(path.replace("<http://www.w3.org/2004/02/skos/core#hiddenLabel>", "<"+RDFS.LABEL.toString()+">"), lit.stringValue(), Field.Store.YES, Field.Index.ANALYZED));
+		}
+		
+	}
 	
 
 }

@@ -9,18 +9,12 @@ import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.AttributeType;
 import uk.ac.open.kmi.fusion.objectidentification.standard.SimMetricsObjectIdentificationUtils;
+import uk.ac.open.kmi.fusion.util.KnoFussDateUtils;
 
 public class DateValueMatchingFunction implements IValueMatchingFunction<String> {
 
 	private static final DateValueMatchingFunction INSTANCE = new DateValueMatchingFunction();
-	public static final SimpleDateFormat[] dateFormats = {
-		new SimpleDateFormat("yyyy-MM-dd"),
-		new SimpleDateFormat("MMMM dd, yyyy"),
-		new SimpleDateFormat("M/d/yy"),
-		new SimpleDateFormat("MMM d, yyyy"),
-		new SimpleDateFormat("yyyy"),
-	};
-	
+		
 	private static AttributeType[][] supportedTypes = {
 		{ AttributeType.DATE, AttributeType.DATE }
 	};
@@ -33,32 +27,19 @@ public class DateValueMatchingFunction implements IValueMatchingFunction<String>
 	public double getSimilarity(IAttribute attr1, IAttribute attr2, String value1, String value2) {
 		Date date1, date2;
 		
-		date1 = parseDate(value1);
-		if(date1!=null) {
-			date2 = parseDate(value2);
-			if(date2!=null) {
-				if(date1.equals(date2)) {
-					return 1.0;
-				}
+		try {
+			date1 = KnoFussDateUtils.parseDate(value1);
+			date2 = KnoFussDateUtils.parseDate(value2);
+			if(date1.equals(date2)) {
+				return 1.0;
 			}
+		} catch(ParseException e) {
+			return 0.0;
 		}
 			
 		return 0.0;
 	}
 	
-	static Date parseDate(String value) {
-		Date date;
-		for(SimpleDateFormat format : dateFormats) {
-			try {
-				date = format.parse(value);
-				return date;
-			} catch(ParseException e) {
-				
-			}
-		}
-		return null;
-	}
-
 	static DateValueMatchingFunction getInstance() {
 		return INSTANCE;
 	}

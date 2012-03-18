@@ -43,7 +43,13 @@ public class TestEventValueMatchingFunction implements ICustomValueMatchingFunct
 		List<String> longitudes2 = (List<String>)value2.getAttributeValues().get(compAttr2.getAtomicAttributesByVariable().get("long"));
 		List<String> latitudes2 = (List<String>)value2.getAttributeValues().get(compAttr2.getAtomicAttributesByVariable().get("lat"));
 		
-		if((longitudes1==null)||(latitudes1==null)||(longitudes2==null)||(latitudes2==null))return 0;
+		if((longitudes1==null)||(latitudes1==null)||(longitudes2==null)||(latitudes2==null)) {
+			return 0;
+		}
+		
+		if(longitudes1.isEmpty()||latitudes1.isEmpty()||longitudes2.isEmpty()||latitudes2.isEmpty()) {
+			return 0;
+		}
 		
 		double dist = ((Math.abs(Double.parseDouble(longitudes1.get(0))-Double.parseDouble(longitudes2.get(0)))/360)
 				+(Math.abs(Double.parseDouble(latitudes1.get(0))-Double.parseDouble(latitudes2.get(0))))/180)/2;
@@ -58,7 +64,7 @@ public class TestEventValueMatchingFunction implements ICustomValueMatchingFunct
 
 	@Override
 	public String toString() {
-		return "event";
+		return "event-space";
 	}
 	
 	@Override

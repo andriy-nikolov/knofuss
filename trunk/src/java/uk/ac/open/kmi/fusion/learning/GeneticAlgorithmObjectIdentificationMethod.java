@@ -66,7 +66,7 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 	private double crossoverRate = 0.3;
 	
 	// private boolean addMissing = false;
-	private boolean addMissing = true;
+	private boolean addMissing = false;
 
 	private boolean useSampling = false;
 	
@@ -116,10 +116,10 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 		}
 		if(descriptor.getProperties().containsKey(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"depth")) {
 			this.depth = Integer.parseInt((descriptor.getProperties().get(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"depth")));
-			if(this.depth>2) {
+			/*if(this.depth>2) {
 				log.error("Does not support depth greater than 2");
 				depth = 2;
-			}
+			}*/
 		}
 		
 	}
@@ -228,7 +228,7 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 				// if(val>=0.95) {
 				if(val>=0.5) {
 					if((!key.equals(Utils.FOAF_NS+"name"))&&(!key.equals("http://oaei.ontologymatching.org/2010/IIMBTBOX/article"))) {
-						// Many thanks to the DBPedia bug which assigns the person's birth year as her name !
+						// Many thanks to the DBpedia bug which assigns the person's birth year as her name !
 						targetPropertiesPool.add(attribute);
 					}
 				}
@@ -343,6 +343,10 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 				tmpList = new ArrayList<String>(1);
 				tmpList.add(sourceEntry.getUri().toString());
 				searchValues.put("uri", tmpList);
+			}
+			
+			if(sourceEntry.getUri().toString().equals("http://data.linkedevents.org/event/f16352aa-7f1b-473c-8a3d-764757d400cc")) {
+				log.debug("");
 			}
 			
 			docs = blocker.findClosestDocuments(searchValues, targetPropertyArray, blocker.getThreshold(), type);
@@ -522,9 +526,106 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 			res.close();
 		}
 		
-		// Retrieve all forward paths of length 2
-		if(depth==2) {
-			tmpQueryParser = new MySPARQLParser(context.serializeQuerySPARQLSource());
+		// Retrieve all forward paths of length more than 1
+		if(depth>1) {
+			Node[] tripleNodes = new Node[3];
+			for(int i=1;i<depth;i++) {
+				
+				log.info("Retrieving paths with the length: "+(i+1));
+				
+				tmpQueryParser = new MySPARQLParser(context.serializeQuerySPARQLSource());
+				tripleNodes[0] = Node.createVariable("uri");
+				tripleNodes[1] = Node.createVariable("property1");
+				tmpQueryParser.addOutputVariable("property1");
+				for(int j=1;j<i+1;j++) {
+					tripleNodes[2] = Node.createVariable("tmp"+j);
+					tmpQueryParser.addTriplePattern(tripleNodes[0], tripleNodes[1], tripleNodes[2]);
+					
+					tripleNodes[0] = Node.createVariable("tmp"+j);
+					tripleNodes[1] = Node.createVariable("property"+(j+1));
+					tmpQueryParser.addOutputVariable("property"+(j+1));
+					
+				}
+				tripleNodes[2] = Node.createVariable("obj");
+				tmpQueryParser.addOutputVariable("obj");
+				tmpQueryParser.addTriplePattern(tripleNodes[0], tripleNodes[1], tripleNodes[2]);
+				
+				tmpQuery = tmpQueryParser.getFilteredQuery();
+				log.info(tmpQuery);
+				query = FusionEnvironment.getInstance().getFusionRepositoryConnection().prepareTupleQuery(QueryLanguage.SPARQL, tmpQuery);
+				res = query.evaluate();
+				
+				try {
+					Set<String> paths = new HashSet<String>();
+					StringBuffer pathBuffer;
+					String path;
+					currentUri = "";
+					previousUri = "";
+					
+					while(res.hasNext()) {
+						bs = res.next();
+						
+						if(!(bs.getValue("uri") instanceof URI)) continue;
+						currentUri = bs.getValue("uri").toString();
+						if(!currentUri.equals(previousUri)) {
+							
+							currentCacheEntry = cache.getSourceCacheEntry((URI)bs.getValue("uri"));
+							tmpSet.clear();
+						}
+						previousUri = currentUri;
+						
+						if(bs.getValue("obj") instanceof Literal) {
+							pathBuffer = new StringBuffer("<");
+							pathBuffer.append(bs.getValue("property1").toString());
+							pathBuffer.append(">");
+							for(int j=1;j<i+1;j++) {
+								pathBuffer.append("/");
+								pathBuffer.append("<");
+								pathBuffer.append(bs.getValue("property"+(j+1)).toString());
+								pathBuffer.append(">");
+							}
+							
+							path = pathBuffer.toString();
+							if(path.contains(RDF.TYPE.toString())) continue;
+							
+							paths.add(path);
+							
+							if(sourceAttributeProfiles.containsKey(path)) {
+								currentAttributeProfile = sourceAttributeProfiles.get(path);
+							} else {
+								currentAttributeProfile = new AttributeProfileInDataset(path);
+								sourceAttributeProfiles.put(path, currentAttributeProfile);
+							}
+							if(!tmpSet.contains(path)) {
+								currentAttributeProfile.increaseMentionedIn();
+								tmpSet.add(path);
+							}
+							currentAttributeProfile.increasePropertyCount();
+							val = SesameUtils.cleanSesameLiteralValue((Literal)bs.getValue("obj"));
+							tokens = Utils.splitByStringTokenizer(val, " \t\n\r\f:(),-.");
+							currentAttributeProfile.setAverageNumberOfTokens(currentAttributeProfile.getAverageNumberOfTokens()+tokens.size());
+							currentAttributeProfile.doTypeChecking(val);
+							// sourcePropertiesSet.add(path);
+							currentCacheEntry.addValue(path, val);
+							
+						}
+						
+					}
+					log.info("Source instances: "+cache.getSourceCachedEntries().size());
+					
+					log.info(paths.size());
+					
+					for(String tmp : paths) {
+						log.info(tmp);
+					}
+				} finally {
+					res.close();
+				}
+				
+			}
+			
+			
+			/*tmpQueryParser = new MySPARQLParser(context.serializeQuerySPARQLSource());
 			tmpQueryParser.addTriplePattern(Node.createVariable("uri"), Node.createVariable("property1"), Node.createVariable("tmp"));
 			tmpQueryParser.addTriplePattern(Node.createVariable("tmp"), Node.createVariable("property2"), Node.createVariable("obj"));
 			tmpQueryParser.addOutputVariable("property1");
@@ -595,7 +696,7 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 				
 			} finally {
 				res.close();
-			}
+			}*/
 		}
 		
 		double freq;
