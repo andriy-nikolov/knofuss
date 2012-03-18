@@ -17,6 +17,7 @@ import org.openrdf.repository.RepositoryException;
 
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryFactory;
+import com.hp.hpl.jena.query.QueryParseException;
 
 
 import uk.ac.open.kmi.common.utils.sparql.MySPARQLParser;
@@ -304,9 +305,13 @@ public class ObjectContextModel extends FusionConfigurationObject {
 		}
 		
 		String sQuery = KnoFussUtils.generateQuery(restrictions, attributes, FusionEnvironment.getInstance().getNamespaceURITable());
-		
-		Query result = QueryFactory.create(sQuery);
-		return result;
+		try {	
+			Query result = QueryFactory.create(sQuery);
+			return result;
+		} catch(QueryParseException e) {
+			log.error("Could not parse query: \n "+sQuery, e);
+			throw e;
+		}
 
 	}
 	

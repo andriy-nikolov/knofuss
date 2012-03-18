@@ -7,6 +7,7 @@ import java.util.Map;
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.ITransformationFunction;
 import uk.ac.open.kmi.fusion.api.impl.CompositeAttributeValue;
+import uk.ac.open.kmi.fusion.api.impl.TransformationAttribute;
 
 public class ConcatenateAttributesTransformationFunction implements
 		ITransformationFunction<String> {
@@ -22,11 +23,16 @@ public class ConcatenateAttributesTransformationFunction implements
 	}
 
 	@Override
-	public List<String> getTransformationResult(List<List<? extends Object>> operands) {
+	public List<String> getTransformationResult(TransformationAttribute top, Map<IAttribute, List<? extends Object>> operands) {
 		StringBuffer result = new StringBuffer();
 		
 		List<String> res = new ArrayList<String>(1);
-		for(List<? extends Object> operandList : operands) {
+		
+		List<IAttribute> attributes = top.getAttributes();
+		
+		List<? extends Object> operandList;
+		for(IAttribute attr : attributes) {
+			operandList = operands.get(attr);
 			if(operandList!=null) {
 				for(Object operand : operandList) {
 					if(operand!=null) {

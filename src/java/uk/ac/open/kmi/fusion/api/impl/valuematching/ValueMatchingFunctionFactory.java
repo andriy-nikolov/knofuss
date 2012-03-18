@@ -8,11 +8,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+import org.openjena.atlas.logging.Log;
+
 import uk.ac.open.kmi.common.utils.Utils;
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.ICustomValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.AttributeType;
+import uk.ac.open.kmi.fusion.api.impl.TransformationAttribute;
+import uk.ac.open.kmi.fusion.learning.GeneticAlgorithmObjectIdentificationMethod;
 
 public final class ValueMatchingFunctionFactory {
 
@@ -37,7 +42,11 @@ public final class ValueMatchingFunctionFactory {
 		//IValueMatchingFunction.AVERAGE_JARO_WINKLER,
 	};
 	
+	
+	
 	private static Map<String, IValueMatchingFunction<? extends Object>> pool = new HashMap<String, IValueMatchingFunction<? extends Object>>();
+	
+	private static Logger log = Logger.getLogger(ValueMatchingFunctionFactory.class);
 	
 	static {
 		pool.put(IValueMatchingFunction.JARO, JaroValueMatchingFunction.getInstance());
@@ -59,6 +68,8 @@ public final class ValueMatchingFunctionFactory {
 		pool.put(IValueMatchingFunction.DOUBLE, DoubleValueMatchingFunction.getInstance());		
 		
 	}
+	
+	
 	
 	public static IValueMatchingFunction<? extends Object> getInstance(String name) {
 		if(pool.containsKey(name)) {
@@ -86,6 +97,10 @@ public final class ValueMatchingFunctionFactory {
 		
 		Set<IValueMatchingFunction<? extends Object>> applicableFunctions = new HashSet<IValueMatchingFunction<? extends Object>>();
 		IValueMatchingFunction<? extends Object> tmp;
+		
+		if((attr1 instanceof TransformationAttribute)&&(attr2 instanceof TransformationAttribute)) {
+			log.info("here");
+		}
 		
 		for(String key : pool.keySet()) {
 			tmp = pool.get(key);

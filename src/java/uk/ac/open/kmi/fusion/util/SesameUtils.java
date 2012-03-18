@@ -8,6 +8,7 @@ import java.util.Set;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.openrdf.OpenRDFException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -528,5 +529,12 @@ public abstract class SesameUtils {
 		}
 	}
 	
+	public static TupleQueryResult executeSelect(String sQuery, RepositoryConnection con) throws OpenRDFException {
+		
+		TupleQuery query = con.prepareTupleQuery(QueryLanguage.SPARQL, sQuery);
+		return query.evaluate();
+		
+		
+	}
 	
 }

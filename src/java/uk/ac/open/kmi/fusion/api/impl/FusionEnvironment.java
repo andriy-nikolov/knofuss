@@ -32,6 +32,7 @@ import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
 import uk.ac.open.kmi.fusion.api.IPersistentStore;
 import uk.ac.open.kmi.fusion.api.impl.datasource.FileDump;
 import uk.ac.open.kmi.fusion.api.impl.datasource.SesameDataSource;
+import uk.ac.open.kmi.fusion.api.impl.transformation.TransformationFunctionFactory;
 import uk.ac.open.kmi.fusion.api.impl.valuematching.ValueMatchingFunctionFactory;
 //import uk.ac.open.kmi.fusion.index.LuceneDiskIndexer;
 //import uk.ac.open.kmi.fusion.index.LuceneDiskIndexerAllFields;
@@ -85,6 +86,7 @@ public class FusionEnvironment {
 	private Map<String, String> namespaceURITable;
 	private List<FusionMethodWrapper> methodWrappers;
 	private List<ValueMatchingFunctionWrapper> valueMatchingFunctionWrappers;
+	private List<TransformationFunctionWrapper> transformationFunctionWrappers;
 	private Map<String, String> abbreviations; 
 
 	// private Map<String, FusionMethodWrapper> methodWrapperTable;
@@ -114,6 +116,7 @@ public class FusionEnvironment {
 		mappingSetTable = new HashMap<String, MappingSet>();
 		methodWrappers = new ArrayList<FusionMethodWrapper>();
 		valueMatchingFunctionWrappers = new ArrayList<ValueMatchingFunctionWrapper>();
+		transformationFunctionWrappers = new ArrayList<TransformationFunctionWrapper>();
 		
 		// methodWrapperTable = new HashMap<String, FusionMethodWrapper>();
 		atomicMappingTable = new HashMap<String, AtomicMapping>();
@@ -203,6 +206,10 @@ public class FusionEnvironment {
 					this.valueMatchingFunctionWrappers.add((ValueMatchingFunctionWrapper)obj);
 					obj.readFromRDFIndividual(connection);
 					ValueMatchingFunctionFactory.addToPool(((ValueMatchingFunctionWrapper) obj).getImplementation());
+				} else if(obj instanceof TransformationFunctionWrapper) {
+					this.transformationFunctionWrappers.add((TransformationFunctionWrapper)obj);
+					obj.readFromRDFIndividual(connection);
+					TransformationFunctionFactory.addToPool(((TransformationFunctionWrapper) obj).getImplementation());
 				}
 			} catch(FusionException e) {
 				e.printStackTrace();
@@ -213,6 +220,7 @@ public class FusionEnvironment {
 		for(Resource res : this.configObjectRegistry.keySet()) {
 			obj = this.configObjectRegistry.get(res);
 			if(obj instanceof ValueMatchingFunctionWrapper) continue;
+			if(obj instanceof TransformationFunctionWrapper) continue;
 			obj.readFromRDFIndividual(connection);
 			if(obj.getRDFIndividual().toString().endsWith("EventComparisonFunction")) {
 				System.out.println("here");

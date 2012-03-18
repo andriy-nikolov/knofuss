@@ -9,9 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -98,28 +100,34 @@ public class ObjectContextWrapper implements IObjectContextWrapper {
 		
 		IAttribute attribute;
 		
+		Value rdfValue;
 		for(String curVar : queryResult.getBindingNames()) {
 			
-			val = queryResult.getValue(curVar).stringValue();
+			rdfValue = queryResult.getValue(curVar);
 			
-			if(val.trim().startsWith("\""))
-				val = val.trim().substring(1);
-			if(val.trim().endsWith("\"")) {
-				val = val.trim().substring(0, val.length()-1);
-			}
-			if(val.contains("^^")) {
-				val = val.substring(0, val.indexOf("^^"));
-			}
-			if(val.contains("\"@en")) {
-				val = val.substring(0, val.indexOf("\"@en"));
-			}
-			if(val.trim().endsWith("\"")) {
-				val = val.trim().substring(0, val.length()-1);
-			}
+			if(rdfValue instanceof Literal) {
 			
-			attribute = model.getSourceAttributeByVarName(curVar);
-			if(attribute!=null) {
-				addValue(attribute, val);
+				val = rdfValue.stringValue();
+				
+				if(val.trim().startsWith("\""))
+					val = val.trim().substring(1);
+				if(val.trim().endsWith("\"")) {
+					val = val.trim().substring(0, val.length()-1);
+				}
+				if(val.contains("^^")) {
+					val = val.substring(0, val.indexOf("^^"));
+				}
+				if(val.contains("\"@en")) {
+					val = val.substring(0, val.indexOf("\"@en"));
+				}
+				if(val.trim().endsWith("\"")) {
+					val = val.trim().substring(0, val.length()-1);
+				}
+				
+				attribute = model.getSourceAttributeByVarName(curVar);
+				if(attribute!=null) {
+					addValue(attribute, val);
+				}
 			}
 			
 		}

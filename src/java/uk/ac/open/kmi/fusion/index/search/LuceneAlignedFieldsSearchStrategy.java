@@ -21,7 +21,6 @@ import org.apache.lucene.util.Version;
 import org.openrdf.model.vocabulary.RDF;
 
 import uk.ac.open.kmi.common.utils.LuceneUtils;
-import uk.ac.open.kmi.fusion.index.AbstractLuceneIndexer;
 import uk.ac.open.kmi.fusion.objectidentification.SearchResult;
 
 public class LuceneAlignedFieldsSearchStrategy extends

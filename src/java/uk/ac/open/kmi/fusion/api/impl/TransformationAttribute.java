@@ -45,7 +45,7 @@ public class TransformationAttribute extends AbstractAttribute {
 				AbstractAttribute attr = (AbstractAttribute)FusionEnvironment.getInstance().findConfigurationObjectByID(res);
 				this.attributes.add(attr);
 			}
-		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.TRANSFORMATION_FUNCTION)) {
+		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.HAS_TRANSFORMATION_FUNCTION)) {
 			if(statement.getObject() instanceof Literal) {
 				lit = (Literal)statement.getObject();
 				if(TransformationFunctionFactory.hasInstance(lit.stringValue())) {
@@ -153,23 +153,23 @@ public class TransformationAttribute extends AbstractAttribute {
 	public List<? extends Object> getValuesHavingAttributes(
 			Map<IAttribute, List<? extends Object>> valueTable) {
 		
-		List<List<? extends Object>> rawValues = new ArrayList<List<? extends Object>>();
+		Map<IAttribute, List<? extends Object>> rawValues = new HashMap<IAttribute, List<? extends Object>>();
 		for(IAttribute attr : attributes) {
-			rawValues.add(attr.getValuesHavingAttributes(valueTable));
+			rawValues.put(attr, attr.getValuesHavingAttributes(valueTable));
 		}
 		
-		return transformationFunction.getTransformationResult(rawValues);
+		return transformationFunction.getTransformationResult(this, rawValues);
 	}
 
 	@Override
 	public List<? extends Object> getValuesHavingPropertyPaths(
 			Map<String, List<? extends Object>> valueTable) {
-		List<List<? extends Object>> rawValues = new ArrayList<List<? extends Object>>();
+		Map<IAttribute, List<? extends Object>> rawValues = new HashMap<IAttribute, List<? extends Object>>();
 		for(IAttribute attr : attributes) {
-			rawValues.add(attr.getValuesHavingPropertyPaths(valueTable));
+			rawValues.put(attr, attr.getValuesHavingPropertyPaths(valueTable));
 		}
 		
-		return transformationFunction.getTransformationResult(rawValues);
+		return transformationFunction.getTransformationResult(this, rawValues);
 	}
 
 	@Override
@@ -215,7 +215,7 @@ public class TransformationAttribute extends AbstractAttribute {
 			return false;
 		}
 		for(int i = 0;i<this.attributes.size();i++) {
-			if(!this.attributes.get(i).equals(attrs.get(i))) {
+			if(!this.attributes.get(i).samePropertyPathAs(attrs.get(i))) {
 				return false;
 			}
 		}

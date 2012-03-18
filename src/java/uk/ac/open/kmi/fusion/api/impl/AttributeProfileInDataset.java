@@ -3,8 +3,12 @@ package uk.ac.open.kmi.fusion.api.impl;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
+import org.apache.log4j.Logger;
+
 import uk.ac.open.kmi.common.utils.Utils;
 import uk.ac.open.kmi.fusion.api.impl.valuematching.DateValueMatchingFunction;
+import uk.ac.open.kmi.fusion.learning.CandidateSolution;
+import uk.ac.open.kmi.fusion.util.KnoFussDateUtils;
 
 public class AttributeProfileInDataset {
 	
@@ -24,6 +28,8 @@ public class AttributeProfileInDataset {
 	double max = 0;
 	
 	boolean summarized = false;
+	
+	Logger log = Logger.getLogger(AttributeProfileInDataset.class);
 	
 	public AttributeProfileInDataset(String propertyPath) {
 		this.propertyPath = propertyPath;
@@ -141,6 +147,9 @@ public class AttributeProfileInDataset {
 	}
 	
 	public void doTypeChecking(String val) {
+		if(this.propertyPath.contains("hasBeginning")) {
+			log.debug("here");
+		}
 		if(isInteger()) {
 			try {
 				Integer.parseInt(val);
@@ -161,19 +170,23 @@ public class AttributeProfileInDataset {
 		
 		if(!isDate()) {
 			try {
-				SimpleDateFormat[] dateFormats = DateValueMatchingFunction.dateFormats;
 				boolean isDate = false;
-
-				for(SimpleDateFormat df : dateFormats) {
-					try {
-						df.parse(val);
-						isDate = true;
-						break;
-					} catch(ParseException e) {
-						
-					}
+				
+				if(this.propertyPath.contains("hasBeginning")) {
+					log.debug("here");
 				}
+				
+				try {
+					KnoFussDateUtils.parseDate(val);
+					isDate = true;
+				
+				} catch(ParseException e) {
+					
+				}
+				
 				if(isDate) {
+					
+					
 					percentageOfDates++;
 				}
 			} catch(NumberFormatException e) {

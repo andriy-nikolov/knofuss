@@ -578,7 +578,7 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 						try {
 							((AtomicMapping)mapping).writeToXML(writer);
 							i++;
-							if(i%1000==0) {
+							if(i%10000==0) {
 								log.info(i+" out of "+mappings.size());
 							}
 						} catch(Exception e) {

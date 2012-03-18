@@ -82,9 +82,9 @@ public abstract class LuceneIndexer extends FusionConfigurationObject implements
 			}
 		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"depth")) {
 			this.propertyPathDepth = Integer.parseInt(((Literal)statement.getObject()).stringValue());
-			if(this.propertyPathDepth>2) {
-				log.error("Does not support depth greater than 2");
-				this.propertyPathDepth = 2;
+			if(this.propertyPathDepth>3) {
+				log.error("Does not support depth greater than 3");
+				this.propertyPathDepth = 3;
 			}
 		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.THRESHOLD)) {
 			if(statement.getObject() instanceof Literal) {

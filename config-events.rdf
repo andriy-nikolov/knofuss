@@ -27,13 +27,11 @@
     <configurationFile>source-owlim.ttl</configurationFile>
     <path>data/sesame</path>
     <name>source-default</name>
-    <refresh>true</refresh>
+    <refresh>false</refresh>
     <loadFrom rdf:resource="#EventsSource"/>
   </SesameDataSource>
   
   <FileDump rdf:ID="EventsSource">
-	<!-- <dataFile>d:/work/dataset/events/eventful/events-subset.nt</dataFile> -->
-    <!-- <dataFile>d:/work/dataset/events/smalltest/eventful.nt</dataFile> -->
     <dataFile>d:/work/dataset/events/upcoming/events.nt</dataFile>
   </FileDump>
     
@@ -41,25 +39,23 @@
     <configurationFile>target-owlim.ttl</configurationFile>
     <path>data/sesame</path>
     <name>target-default</name>
-    <refresh>true</refresh>
+    <refresh>false</refresh>
     <loadFrom rdf:resource="#EventsTarget"/>
     <intermediateStore rdf:resource="#LuceneIndexAllFields"/>
   </SesameDataSource>
 
   <FileDump rdf:ID="EventsTarget">
-	<!-- <dataFile>d:/work/dataset/events/upcoming/events.nt</dataFile> -->
 	<dataFile>d:/work/dataset/events/lastfm/events.nt</dataFile>
-	<!-- <dataFile>d:/work/dataset/events/smalltest/upcoming.nt</dataFile> -->
   </FileDump>
 
   <LuceneDiskBlocker rdf:ID="LuceneIndexAllFields">
     <path>data/lucene</path>
     <searchStrategy>all</searchStrategy>
-    <refresh>true</refresh>
+    <refresh>false</refresh>
     <threshold>-0.1</threshold>
-    <fuzzyThreshold>0.0</fuzzyThreshold>
-    <depth>2</depth>
-    <cutOff>30</cutOff>
+    <fuzzyThreshold>0.5</fuzzyThreshold>
+    <depth>3</depth>
+    <cutOff>20</cutOff>
   </LuceneDiskBlocker>
 
   <!-- <LuceneMemoryBlockerAllFields rdf:ID="LuceneMemory"/> -->
@@ -68,10 +64,7 @@
     <sourceDataset rdf:resource="#SourceOWLIMRepository"/>
     <targetDataset rdf:resource="#TargetOWLIMRepository"/>
     <instanceMatchingSpec rdf:resource="#EventGeneticApplicationContext"/>
-    <!-- <instanceMatchingSpec rdf:resource="#EventPredefinedApplicationContext"/> -->
-    <!-- <datasetMatchingSpec rdf:resource="#PostFilterApplicationContext"/> -->
-    <!-- <datasetMatchingSpec rdf:resource="#FunctionalApplicationContext"/> -->
-    <goldStandard>d:/work/dataset/events/mappings/mapping_upcoming_lastfm_events.nt</goldStandard>
+    <goldStandard>d:/work/dataset/events/mappings/upcoming_lastfm_GS.nt</goldStandard>
     <resultsFile>logs/results.xml</resultsFile>
     <resultsFormat>custom</resultsFormat>
   </LinkSession>
@@ -87,8 +80,8 @@
         
         <sourceAttribute>
 			<TransformationAttribute>
-				<attributeType>string</attributeType>
-		   		<transformationFunction>concat</transformationFunction>
+				<attributeType>composite</attributeType>
+		   		<hasTransformationFunction>time-period</hasTransformationFunction>
 		   	 	<hasAttribute>
 		   	 		<AtomicAttribute>
 		   	 			<optional>true</optional>
@@ -101,8 +94,8 @@
 		   	 			<optional>true</optional>
 		   	 			<variable>startTime</variable>
 		   	 			<variable>endTime</variable>
-		   	 			<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasBeginning ?startTime . </propertyPath>
-		   	 			<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasEnd ?endTime . </propertyPath>
+		   	 			<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasBeginning ?beginningTimeNode . ?beginningTimeNode w3ctime:inXSDDateTime ?startTime . </propertyPath>
+		   	 			<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasEnd ?endTimeNode . ?endTimeNode w3ctime:inXSDDateTime ?endTime . </propertyPath>
 		   	 		</CompositeAttribute>
 		   		</hasAttribute>
 			</TransformationAttribute>
@@ -110,8 +103,8 @@
 		   	 
 		<targetAttribute>
 		   	 <TransformationAttribute>
-		   	 	<attributeType>string</attributeType>
-		   	 	<transformationFunction>concat</transformationFunction>
+		   	 	<attributeType>composite</attributeType>
+		   	 	<hasTransformationFunction>time-period</hasTransformationFunction>
 		   	 	<hasAttribute>
 		   	 		<AtomicAttribute>
 		   	 			<optional>true</optional>
@@ -121,11 +114,11 @@
 		   	 	</hasAttribute>
 		   	 	<hasAttribute>
 		   	 		<CompositeAttribute>
-		   	 				<optional>true</optional>
-		   	 				<variable>startTime</variable>
-		   	 				<variable>endTime</variable>
-		   	 				<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasBeginning ?startTime . </propertyPath>
-		   	 				<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasEnd ?endTime . </propertyPath>
+		   	 			<optional>true</optional>
+		   	 			<variable>startTime</variable>
+		   	 			<variable>endTime</variable>
+		   	 			<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasBeginning ?beginningTimeNode . ?beginningTimeNode w3ctime:inXSDDateTime ?startTime . </propertyPath>
+		   	 			<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasEnd ?endTimeNode . ?endTimeNode w3ctime:inXSDDateTime ?endTime . </propertyPath>
 		   	 		</CompositeAttribute>
 		   		</hasAttribute>
 			</TransformationAttribute>
@@ -182,14 +175,14 @@
 	<hasMethod rdf:resource="#SimMetricsAverageDistanceMatcher"/>
 
 	<hasObjectModel>
-	      <ObjectContextModel>
+	    <ObjectContextModel>
 		<aggregationFunction>average</aggregationFunction>
-		<threshold>0.0</threshold>
+		<threshold>0.98</threshold>
 		<variableComparison>
 		   <VariableComparisonSpec>
 		   	 <sourceAttribute>
 		   	 	<TransformationAttribute>
-		   	 		<transformationFunction>concat</transformationFunction>
+		   	 		<hasTransformationFunction>time-period</hasTransformationFunction>
 		   	 		<hasAttribute>
 		   	 			<AtomicAttribute>
 		   	 				<optional>true</optional>
@@ -202,15 +195,15 @@
 		   	 				<optional>true</optional>
 		   	 				<variable>startTime</variable>
 		   	 				<variable>endTime</variable>
-		   	 				<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasBeginning ?startTime . </propertyPath>
-		   	 				<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasEnd ?endTime . </propertyPath>
+		   	 				<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasBeginning ?beginningTimeNode . ?beginningTimeNode w3ctime:inXSDDateTime ?startTime . </propertyPath>
+		   	 				<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasEnd ?endTimeNode . ?endTimeNode w3ctime:inXSDDateTime ?endTime . </propertyPath>
 		   	 			</CompositeAttribute>
 		   	 		</hasAttribute>
 		   	 	</TransformationAttribute>
 		   	 </sourceAttribute>
 		   	 <targetAttribute>
 		   	 	<TransformationAttribute>
-		   	 		<transformationFunction>concat</transformationFunction>
+		   	 		<hasTransformationFunction>time-period</hasTransformationFunction>
 		   	 		<hasAttribute>
 		   	 			<AtomicAttribute>
 		   	 				<optional>true</optional>
@@ -223,14 +216,23 @@
 		   	 				<optional>true</optional>
 		   	 				<variable>startTime</variable>
 		   	 				<variable>endTime</variable>
-		   	 				<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasBeginning ?startTime . </propertyPath>
-		   	 				<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasEnd ?endTime . </propertyPath>
+		   	 				<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasBeginning ?beginningTimeNode . ?beginningTimeNode w3ctime:inXSDDateTime ?startTime . </propertyPath>
+			   	 			<propertyPath>?uri lode:atTime ?timeNode . ?timeNode w3ctime:hasEnd ?endTimeNode . ?endTimeNode w3ctime:inXSDDateTime ?endTime . </propertyPath>
 		   	 			</CompositeAttribute>
 		   	 		</hasAttribute>
 		   	 	</TransformationAttribute>
 		   	 </targetAttribute>
-		     <metric>jaro</metric>
-             <weight>0.5</weight>
+		     <metric>event-time</metric>
+             <weight>0.25</weight>
+		   </VariableComparisonSpec>
+		</variableComparison>
+		<variableComparison>
+		   <VariableComparisonSpec>
+		     <variable>place</variable>
+		     <sourcePath>?uri lode:atPlace ?pl . ?pl rdfs:label ?place . </sourcePath>
+		     <targetPath>?uri lode:atPlace ?pl . ?pl rdfs:label ?place . </targetPath>
+		     <metric>l2 jaro</metric>
+             <weight>0.25</weight>
 		   </VariableComparisonSpec>
 		</variableComparison>
 		<variableComparison>
@@ -238,23 +240,37 @@
 		     <variable>name</variable>
 		     <sourcePath>?uri dc:title ?name .</sourcePath>
 		     <targetPath>?uri dc:title ?name .</targetPath>
-		     <metric>jaro</metric>
+		     <metric>l2 jaro</metric>
              <weight>0.5</weight>
 		   </VariableComparisonSpec>
 		</variableComparison>
 		<!-- <variableComparison>
 		   <VariableComparisonSpec>
-		     <variable>long</variable>
-		     <variable>lat</variable>
-		     <sourcePath>?uri lode:inSpace ?x . ?x wgs84:long ?long .</sourcePath>
-		     <sourcePath>?uri lode:inSpace ?x . ?x wgs84:lat ?lat .</sourcePath>
-		     <targetPath>?uri lode:inSpace ?x . ?x wgs84:long ?long .</targetPath>
-		     <targetPath>?uri lode:inSpace ?x . ?x wgs84:lat ?lat .</targetPath>
-		     <metric>event</metric>
-                     <weight>0.5</weight>
+		   	<sourceAttribute>
+		   		<CompositeAttribute>
+			     	<variable>long</variable>
+			     	<variable>lat</variable>
+			     	<optional>true</optional>
+			     	<propertyPath>?uri lode:inSpace ?x . ?x wgs84:long ?long .</propertyPath>
+			     	<propertyPath>?uri lode:inSpace ?x . ?x wgs84:lat ?lat .</propertyPath>
+		     	</CompositeAttribute>
+		     </sourceAttribute>
+		     <targetAttribute>
+		     	<CompositeAttribute>
+		     		<optional>true</optional>
+		     		<variable>long</variable>
+			     	<variable>lat</variable>
+			    	<propertyPath>?uri lode:inSpace ?x . ?x wgs84:long ?long .</propertyPath>
+			    	<propertyPath>?uri lode:inSpace ?x . ?x wgs84:lat ?lat .</propertyPath>
+			    </CompositeAttribute>
+			 </targetAttribute>
+			 <metric>event-space</metric>
+	         <weight>0.165</weight>
+	             
+             
 		   </VariableComparisonSpec>
 		</variableComparison> -->
-	      </ObjectContextModel> 
+	   </ObjectContextModel> 
 	</hasObjectModel>
   </ApplicationContext>
 
@@ -264,8 +280,8 @@
     <!-- <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string">uk.ac.open.kmi.fusion.learning.DummyBlockerOnlyObjectIdentificationMethod</hasImplementingClass> -->
     <populationSize>100</populationSize>
     <useUnsupervisedFitness>false</useUnsupervisedFitness>
-    <sampleSize>200</sampleSize>
-    <depth>2</depth>
+    <sampleSize>500</sampleSize>
+    <depth>3</depth>
     <aligned>true</aligned>
     <maxIterations>20</maxIterations>
   </FusionMethod>
@@ -289,9 +305,17 @@
     >uk.ac.open.kmi.fusion.objectidentification.standard.StandardObjectIdentificationMethod</hasImplementingClass>
   </FusionMethod>
   
-  <ValueMatchingFunction rdf:ID="EventComparisonFunction">
+  <ValueMatchingFunction rdf:ID="EventTimeComparisonFunction">
+    <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string">uk.ac.open.kmi.fusion.api.impl.valuematching.EventTimeValueMatchingFunction</hasImplementingClass>
+  </ValueMatchingFunction>
+  
+  <ValueMatchingFunction rdf:ID="EventSpaceComparisonFunction">
     <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string">uk.ac.open.kmi.fusion.api.impl.valuematching.TestEventValueMatchingFunction</hasImplementingClass>
   </ValueMatchingFunction>
+  
+  <TransformationFunction rdf:ID="EventTimePeriodTransformationFunction">
+    <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string">uk.ac.open.kmi.fusion.api.impl.transformation.TimePeriodTransformationFunction</hasImplementingClass>
+  </TransformationFunction>
   
 </rdf:RDF> 
 

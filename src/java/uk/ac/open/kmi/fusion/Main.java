@@ -53,7 +53,6 @@ import uk.ac.open.kmi.fusion.api.ILinkSession;
 import uk.ac.open.kmi.fusion.api.impl.AtomicMapping;
 import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
 import uk.ac.open.kmi.fusion.api.impl.LinkSession;
-import uk.ac.open.kmi.fusion.index.AbstractLuceneIndexer;
 import uk.ac.open.kmi.fusion.index.LuceneDiskIndexer;
 import uk.ac.open.kmi.fusion.objectidentification.standard.SimMetricsObjectIdentificationUtils;
 import uk.ac.open.kmi.fusion.util.FusionException;
