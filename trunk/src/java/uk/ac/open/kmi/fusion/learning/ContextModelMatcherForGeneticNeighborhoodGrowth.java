@@ -1,42 +1,28 @@
 package uk.ac.open.kmi.fusion.learning;
 
-import java.util.*;
-import java.io.*;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Fieldable;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
-
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.*;
-import org.openrdf.model.*;
-import org.openrdf.model.vocabulary.RDF;
-
 
 import uk.ac.open.kmi.common.utils.Utils;
-import uk.ac.open.kmi.common.utils.sparql.MySPARQLParser;
-import uk.ac.open.kmi.fusion.api.*;
-import uk.ac.open.kmi.fusion.api.impl.*;
-// import uk.ac.open.kmi.fusion.index.LuceneDiskIndexer;
-// import uk.ac.open.kmi.fusion.index.LuceneMemoryIndexer;
-// import uk.ac.open.kmi.fusion.index.LuceneMemoryIndexerAllFields;
+import uk.ac.open.kmi.fusion.api.IObjectContextWrapper;
+import uk.ac.open.kmi.fusion.api.impl.ComparisonPair;
+import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
+import uk.ac.open.kmi.fusion.api.impl.VariableComparisonSpecification;
 import uk.ac.open.kmi.fusion.learning.cache.CachedPair;
 import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
-import uk.ac.open.kmi.fusion.objectidentification.*;
-import uk.ac.open.kmi.fusion.objectidentification.standard.*;
-import uk.ac.open.kmi.fusion.util.*;
+import uk.ac.open.kmi.fusion.objectidentification.LuceneBackedObjectContextWrapper;
 
 public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 	ObjectContextModel instanceModel;
@@ -47,7 +33,6 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 	MemoryInstanceCache cache;
 	
 	double threshold;
-	//List<AtomicMapping> mappings;
 	boolean multiOntologyCase = false;
 	
 	Map<Integer, Double> results;
@@ -58,12 +43,8 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 	
 	boolean selectionAll = false;
 	
-	// boolean useSampling = false;
-	
 	private static Logger log = Logger.getLogger(ContextModelMatcherForGeneticNeighborhoodGrowth.class);
 	
-	
-
 	private void init() {
 		sourceResources = new HashSet<LuceneBackedObjectContextWrapper>();
 		sourceResourcesTable = new HashMap<String, LuceneBackedObjectContextWrapper>();
@@ -91,25 +72,13 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 		Map<Integer, Double> preliminaryResults = new HashMap<Integer, Double>();
 		
 		Map<Integer, Set<Integer>> compsBySourceInstance = new HashMap<Integer, Set<Integer>>();
-		// Map<Integer, Set<Integer>> compsByTargetInstance = new HashMap<Integer, Set<Integer>>();
-		
-		
 		
 		try {
 
 			i=0;
-			// j=0;
 			long currentTime;
-			// long totalTimeSearch = 0;
 			long totalTimeComparison = 0;
 			long totalTimeRetrieval = 0;
-			// long initTime = System.currentTimeMillis();
-			// String type = instanceModel.getRestrictedTypesTarget().get(0).toString();
-			//log.info("Concept type : "+type);
-			
-			//log.info("Cache size : "+FusionEnvironment.getInstance().getMemoryInstanceCache().getSize());
-			
-			// Map<String, List<String>> valuesByPropertyUri = new HashMap<String, List<String>>();
 
 			Iterator<CachedPair> iterator = cache.getComparablePairsIterator(useSample);
 			
@@ -132,11 +101,11 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 				totalTimeRetrieval+=(System.currentTimeMillis()-currentTime);
 			
 				pair = new ComparisonPair(resSource, resTarget);
-				// System.out.print("Comparison ... ");
+
 				currentTime = System.currentTimeMillis();
 				similarity = instanceModel.getSimilarity(pair);
 				pair.setSimilarity(similarity);
-				// System.out.println("done");
+
 				if(resSource.getIndividual().toString().equals("http://data.nytimes.com/N78390312302609901431")&&
 						resTarget.getIndividual().toString().equals("http://sws.geonames.org/1275004/")) {
 					log.info("Person990 vs Person991 similarity: " + similarity);
@@ -149,14 +118,9 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 				
 				totalTimeComparison+=(System.currentTimeMillis()-currentTime);
 					
-				//if(similarity>=epsilon) {
-				
-					preliminaryResults.put(cachedPair.getId(), similarity);
-					Utils.addToSetMap(cachedPair.getCandidateInstance().getId(), cachedPair.getId(), compsBySourceInstance);
-					// Utils.addToSetMap(cachedPair.getTargetInstance().getId(), cachedPair.getId(), compsByTargetInstance);
-					// results.put(cachedPair.getId(), similarity);	
-				// }
-				//}
+				preliminaryResults.put(cachedPair.getId(), similarity);
+				Utils.addToSetMap(cachedPair.getCandidateInstance().getId(), cachedPair.getId(), compsBySourceInstance);
+					
 				i++;
 			}
 			
@@ -218,18 +182,12 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 					List<Integer> topPairsSorted = new ArrayList<Integer>();
 					
 					List<Integer> pairsSorted = new ArrayList<Integer>(preliminaryResults.keySet());
-					List<Integer> wrongPairsSorted = new ArrayList<Integer>();
-					
 					Collections.sort(pairsSorted, comparator);
-					
-					double runningPseudoPrecision = 0.0;
-					
-					double runningPseudoRecall = 0.0;
 					
 					List<Integer> sortedPairIds;
 					Set<Integer> pairIds;
 					Integer selectedPairId;
-					double sim, bestSim;
+					double bestSim;
 					
 					CachedPair testPair;
 					
@@ -249,7 +207,6 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 						bestSim = preliminaryResults.get(selectedPairId);
 						if(bestSim > epsilon) {
 							if(isValid(instanceModel, testPair)) {
-							//	results.put(selectedPairId, bestSim);
 								topPairs.put(selectedPairId, bestSim);
 							}
 						}
@@ -259,12 +216,10 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 					topPairsSorted.addAll(topPairs.keySet());
 					Collections.sort(topPairsSorted, comparator);
 					
-					int currentTop = 0; // current index in the main list
 					double threshold, bestThreshold = 0;
-					int pairId;
-					double tp, p = 0, fp, fn, total = compsBySourceInstance.size();
+					
+					double tp, p = 0, total = compsBySourceInstance.size();
 					double pseudoPrecision, pseudoRecall, pseudoF, maxPseudoF = -1, maxPseudoP = -1, maxPseudoR = -1.0;
-					int bestI = 0;
 					int j = 0;
 					i = 0;
 					while(i<topPairsSorted.size()) {
@@ -282,49 +237,16 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 						pseudoPrecision = tp/p;
 						pseudoRecall = tp/total;
 						pseudoF = (1+alpha)*pseudoPrecision*pseudoRecall/(alpha*pseudoPrecision+pseudoRecall);
-						// log.info("pp: "+pseudoPrecision+", pr: "+pseudoRecall+", pf: "+pseudoF);
+
 						if(pseudoF>=maxPseudoF) {
 							maxPseudoF = pseudoF;
 							maxPseudoP = pseudoPrecision;
 							maxPseudoR = pseudoRecall;
 							bestThreshold = threshold;
-							bestI = i;
 							
 						}
 						
 					}
-					
-					/*for(i = 0; i<topPairsSorted.size();i++) {
-						threshold = topPairs.get(topPairsSorted.get(i));
-						tp = i+1;
-						for(int j = currentTop;j<pairsSorted.size();j++) {
-							pairId = pairsSorted.get(j);
-							sim = preliminaryResults.get(pairId);
-							currentTop++;
-							if(sim>=threshold) {
-								p++;
-							} else {
-								break;
-							}
-						}
-						
-						log.info("tp: "+tp+", p: "+p+", total: "+total);
-						
-						
-						pseudoPrecision = tp/p;
-						pseudoRecall = tp/total;
-						pseudoF = (1+alpha)*pseudoPrecision*pseudoRecall/(alpha*pseudoPrecision+pseudoRecall);
-						log.info("pp: "+pseudoPrecision+", pr: "+pseudoRecall+", pf: "+pseudoF);
-						if(pseudoF>=maxPseudoF) {
-							maxPseudoF = pseudoF;
-							maxPseudoP = pseudoPrecision;
-							maxPseudoR = pseudoRecall;
-							bestThreshold = threshold;
-							bestI = i;
-							
-						}
-						
-					}*/
 					
 					log.info("Best pseudo F: "+maxPseudoF+", p: "+maxPseudoP+", r: "+maxPseudoR);
 					log.info("Best threshold: "+bestThreshold);
@@ -336,39 +258,7 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 						}
 					}
 					
-					/*for(Integer sourceId : compsBySourceInstance.keySet()) {
-						
-						pairIds = compsBySourceInstance.get(sourceId);
-						sortedPairIds = new ArrayList<Integer>(pairIds);
-						Collections.sort(sortedPairIds, comparator);
-						selectedPairId = sortedPairIds.get(0);
-						testPair = cache.getCachedPairById(selectedPairId);
-						if(testPair.getCandidateInstance().getUri().toString().equals("http://data.nytimes.com/N45527707190659418771")) {
-							log.info("here");
-						}
-						
-						bestSim = preliminaryResults.get(selectedPairId);
-						if((bestSim > epsilon)&&(bestSim>=bestThreshold)) {
-							if(isValid(instanceModel, testPair)) {
-								results.put(selectedPairId, bestSim);
-								
-							}
-							for(i = 1;i<sortedPairIds.size();i++) {
-								selectedPairId = sortedPairIds.get(i);
-								sim = preliminaryResults.get(selectedPairId);
-								testPair = cache.getCachedPairById(selectedPairId);
-								
-								if((Math.abs(sim-bestSim)<=epsilon)) {
-									if(isValid(instanceModel, testPair)) {
-										results.put(selectedPairId, sim);
-									} 
-								} else {
-									
-									break;
-								}
-							}
-						}
-					}*/
+
 					writeNeighborhoodGrowthsToFile(preliminaryResults, compsBySourceInstance, comparator);
 					
 				}
@@ -422,7 +312,6 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 					sim = preliminaryResults.get(selectedPairId);
 					if((1-sim)<=2*epsilon) {
 						neighbourhoodGrowth++;
-						// results.put(selectedPairId, sim);
 					} else {
 						
 						break;
@@ -493,39 +382,18 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 	public Map<Integer, Double> execute(double threshold, MemoryInstanceCache cache, boolean useSample, boolean isFinal) {
 		this.cache = cache;
 		this.threshold = threshold;
-//		properties.clear();
 		sourceResources.clear();
-		//targetResources.clear();
 		selectedPairs.clear();
-		//candidatePairs.clear();
-		
-		
-		//this.sourceQuery = instanceModel.serializeQuerySPARQLSource();
 		
 		List<String> searchFieldNames = new ArrayList<String>();
 		
 		searchFieldNames.addAll(instanceModel.getTargetAttributesByPath().keySet());
 		
-		// Map<String, String> variablePropertyMap = instanceModel.getVariablePathMapTarget();
-		// for(String key : variablePropertyMap.keySet()) {
-		//	searchFieldNames.add(variablePropertyMap.get(key));
-		// }
-				
-		//PersistenceUtil.setDaoManager(FusionGlobals.fusionSession.getDaoManager());
-		
-//		log.info("Loading sources... "+this.instanceModel.getRestrictedTypesSource().get(0));
-//		fillList(sourceResources, this.sourceResourcesTable, FusionEnvironment.getInstance().getFusionRepositoryConnection());
-//		log.info("Loading targets... "+this.instanceModel.getRestrictedTypesTarget().get(0));
-//		log.info("Indexing... "+this.instanceModel.getRestrictedTypesTarget().get(0));
-//		log.info("Candidate individuals: "+sourceResources.size());
-		
-		//log.info("Calculating similarities... "+this.instanceModel.getRestrictedTypesTarget().get(0));
 		Calendar calendarBefore = new GregorianCalendar();
 		int comparisons = calculateSimilarities(useSample, isFinal);
 		Calendar calendarAfter = new GregorianCalendar();
 		log.info("Comparisons: "+comparisons);
 		log.info("Time cost: "+(calendarAfter.getTimeInMillis()-calendarBefore.getTimeInMillis()));
-		//addToModel();
 	
 		return results; 
 	}
