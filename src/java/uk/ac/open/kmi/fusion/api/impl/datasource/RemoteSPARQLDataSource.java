@@ -130,7 +130,14 @@ public class RemoteSPARQLDataSource extends FusionConfigurationObject implements
 			ApplicationContext context, Map<String, AttributeProfileInDataset> targetAttributes)
 			throws FusionException {
 		
-		Set<String> tmpSet = new HashSet<String>();
+		if(intermediateStore!=null) {
+			return intermediateStore.copyRelevantSubsetToBlocker(blocker, context, targetAttributes);
+			
+		} else {
+			return 0;
+		}
+		
+		/*Set<String> tmpSet = new HashSet<String>();
 		// Map<String, AttributeProfileInDataset> tmpMap = new HashMap<String, AttributeProfileInDataset>();
 		String type = context.getRestrictedTypesTarget().get(0);
 		if(this!=blocker) {
@@ -260,7 +267,7 @@ public class RemoteSPARQLDataSource extends FusionConfigurationObject implements
 	
 		} catch(Exception e) {
 			throw new FusionException("Error when copying relevant instances to the indexer", e);
-		}
+		}*/
 		
 			
 	}
