@@ -13,6 +13,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
 import org.openrdf.model.vocabulary.RDFS;
@@ -42,7 +46,7 @@ import uk.ac.open.kmi.fusion.learning.genetic.crossover.ICrossoverOperator;
 import uk.ac.open.kmi.fusion.learning.genetic.mutation.IMutationOperator;
 import uk.ac.open.kmi.fusion.learning.genetic.mutation.MutationOperatorFactory;
 
-public class CandidateSolutionPool {
+public class CandidateSolutionPoolMultiThread {
 
 	private class CandidateSolutionComparator implements
 			Comparator<CandidateSolution> {
@@ -94,7 +98,7 @@ public class CandidateSolutionPool {
 	
 	private CandidateSolution finalSolution = null;
 	
-	private static Logger log = Logger.getLogger(CandidateSolutionPool.class);
+	private static Logger log = Logger.getLogger(CandidateSolutionPoolMultiThread.class);
 	
 	private boolean useUnsupervisedFitness = true;
 	private boolean useThresholdCut = false;
@@ -105,9 +109,13 @@ public class CandidateSolutionPool {
 	
 	private int maxIterationsWithoutIncrease = 10;
 	
+	private int N_THREADS = 10;
+	
+	private ExecutorService threadPool;
+	
 	// private boolean useSampling = false;
 	
-	public CandidateSolutionPool(ApplicationContext context, List<IAttribute> sourcePropertiesPool, List<IAttribute> targetPropertiesPool, MemoryInstanceCache cache) {
+	public CandidateSolutionPoolMultiThread(ApplicationContext context, List<IAttribute> sourcePropertiesPool, List<IAttribute> targetPropertiesPool, MemoryInstanceCache cache) {
 		this.context = context;
 		this.cache = cache;
 		population = new ArrayList<CandidateSolution>(populationSize);
@@ -128,7 +136,7 @@ public class CandidateSolutionPool {
 		this.crossoverOperator = CrossoverOperatorFactory.getInstance(ICrossoverOperator.CROSSOVER_SPLIT_BY_MATRIX_INDEX);
 		this.mutationOperator = MutationOperatorFactory.getInstance(IMutationOperator.MUTATION_DEFAULT);
 		
-		
+		this.threadPool = Executors.newFixedThreadPool(N_THREADS);
 	}
 	
 	public Map<Integer, Double> run(boolean useSampling) {
@@ -180,64 +188,81 @@ public class CandidateSolutionPool {
 		
 		List<CandidateSolution> crossoverResults, mutationResults;
 		int currentIndex;
+		
+		Map<Integer, CandidateSolutionFitnessResult> mapResults = new HashMap<Integer, CandidateSolutionFitnessResult>();
+		List<Future<CandidateSolutionFitnessResult>> futureResults = new ArrayList<Future<CandidateSolutionFitnessResult>>(population.size());
+		
+		Future<CandidateSolutionFitnessResult> futureResult;
+		CandidateSolutionFitnessResult solutionResultMeasurement;
+		
+		CandidateSolution solution;
+		CandidateSolutionPoolEvaluatorRunnable solutionEvaluationTask;
+		
 		while(((numberOfIterations<maxIterationsWithoutIncrease)&&(iterations<maxIterations))/*||((bestUnsupervisedFitness<0.9)&&(iterations<100))*/) {
 			averageUnsupervisedFitness = 0;
 			averageRealFitness = 0;
 			iterations++;
-			solutions = 0;
 			bestRealFitnessValue = 0;
 			bestUnsupervisedFitness = 0;
-			for(CandidateSolution solution : population) {
-				solutions ++;
-				solutionResults = solution.applySolution(cache, useSampling, false, criterion);
-				realFitness = this.evaluateFitness(solution, solutionResults.keySet(), sampleGoldStandard);
-				if(criterion.equals(GeneticAlgorithmObjectIdentificationMethod.CRITERION_NEIGHBOURHOOD_GROWTH)) {
-					unsupervisedFitness = UnsupervisedFitnessNeighbourhoodGrowth.calculateUnsupervisedFitness(solution, solutionResults, cache);
-				} else {
-					unsupervisedFitness = UnsupervisedFitness.calculateUnsupervisedFitness(solution, solutionResults, cache);
-				}
-				// unsupervisedFitness = UnsupervisedFitnessNeighbourhoodGrowth.calculateUnsupervisedFitness(solution, solutionResults, cache);
-				// unsupervisedFitness = UnsupervisedFitnessNeighbourhoodGrowth.calculateUnsupervisedFitness(solution, solutionResults, cache);
+			
+			futureResults.clear();
+			
+			for(int i=0;i<population.size();i++) {
+				solution = population.get(i);
+				solutionEvaluationTask = new CandidateSolutionPoolEvaluatorRunnable(iterations, i, solution, cache, sampleGoldStandard, useSampling, useUnsupervisedFitness);
+				solutionEvaluationTask.setCriterion(this.criterion);
+				futureResult = threadPool.submit(solutionEvaluationTask);
+				futureResults.add(futureResult);
+			}
 				
-				if(solutions==10) {
-					log.info("Top 10");
-				}
-				/*if(solution==testSolution) {
-					log.debug();
-					writeSolutionResultsToFileForTestPurposes(solutionResults);
-				}*/
-				log.info("Iteraton: "+iterations+", solution: "+solutions+", results: "+solutionResults.size());
-				log.info("F1 fitness: "+realFitness.getF1()+", precision: "+realFitness.getPrecision()+", recall: "+realFitness.getRecall());
-				log.info("Unsupervised fitness: "+unsupervisedFitness.getValue()+", pseudo precision: "+unsupervisedFitness.getPrecision()+", pseudo recall: "+unsupervisedFitness.getRecall());
-				
-				fitnessCorrelationPoints.add(new ChartPoint2D(realFitness.getValue(), unsupervisedFitness.getValue()));
-				
-				//averageFitness+=fitness.getValue();
-				averageUnsupervisedFitness += unsupervisedFitness.getValue();
-				averageRealFitness += realFitness.getValue();
-				//solution.setFitness(realFitness);
-				if(useUnsupervisedFitness) {
-					solution.setFitness(unsupervisedFitness);
-				} else {
-					solution.setFitness(realFitness);
-				}
-				if(realFitness.getValue() >= bestRealFitnessValue) {
-					if(!useUnsupervisedFitness) {
-						previousBestFitness = bestRealFitnessValue;
-						bestSolution = solution;
+			for(int i=0;i<population.size();i++) {	
+				futureResult = futureResults.get(i);
+				solution = population.get(i);
+				try {
+					solutionResultMeasurement = futureResult.get();
+					realFitness = solutionResultMeasurement.getRealFitness();
+					unsupervisedFitness = solutionResultMeasurement.getUnsupervisedFitness();
+					
+					if(i==10) {
+						log.info("Top 10");
 					}
-					bestRealFitnessValue = realFitness.getValue();
-					bestRealFitness = realFitness;
-				}
-				
-				if(unsupervisedFitness.getValue() >= bestUnsupervisedFitness) {
+					
+					fitnessCorrelationPoints.add(new ChartPoint2D(realFitness.getValue(), unsupervisedFitness.getValue()));
+					
+					//averageFitness+=fitness.getValue();
+					averageUnsupervisedFitness += unsupervisedFitness.getValue();
+					averageRealFitness += realFitness.getValue();
+					//solution.setFitness(realFitness);
 					if(useUnsupervisedFitness) {
-						previousBestFitness = bestUnsupervisedFitness;
-						bestSolution = solution;
+						solution.setFitness(unsupervisedFitness);
+					} else {
+						solution.setFitness(realFitness);
 					}
-					chosenMaxRealFitness = realFitness;
-					bestUnsupervisedFitness = unsupervisedFitness.getValue();
+					if(realFitness.getValue() >= bestRealFitnessValue) {
+						if(!useUnsupervisedFitness) {
+							previousBestFitness = bestRealFitnessValue;
+							bestSolution = solution;
+						}
+						bestRealFitnessValue = realFitness.getValue();
+						bestRealFitness = realFitness;
+					}
+					
+					if(unsupervisedFitness.getValue() >= bestUnsupervisedFitness) {
+						if(useUnsupervisedFitness) {
+							previousBestFitness = bestUnsupervisedFitness;
+							bestSolution = solution;
+						}
+						chosenMaxRealFitness = realFitness;
+						bestUnsupervisedFitness = unsupervisedFitness.getValue();
+					}
+					
+					
+				} catch(ExecutionException e) {
+					e.printStackTrace();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
+				
 			}
 			if(bestSolution.getFitness().getValue()==0.0) {
 				log.info("Could not find any good solution");
@@ -293,6 +318,8 @@ public class CandidateSolutionPool {
 		}
 		
 		this.finalSolution = bestSolution;
+		
+		threadPool.shutdown();
 		
 		log.info("Final average unsupervised fitness: "+averageUnsupervisedFitness);
 		log.info("Best real fitness (sample): "+bestRealFitnessValue+", precision: "+bestRealFitness.getPrecision()+", recall: "+bestRealFitness.getRecall());

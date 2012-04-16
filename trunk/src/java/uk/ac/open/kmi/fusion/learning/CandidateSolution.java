@@ -204,33 +204,34 @@ public class CandidateSolution {
 	}
 		
 
-	public Map<Integer, Double> applySolution(MemoryInstanceCache cache, boolean useSampling, boolean isFinal) {
+	public Map<Integer, Double> applySolution(MemoryInstanceCache cache, boolean useSampling, boolean isFinal, String criterion) {
 		if(!isFinal) {
 			if((!useSampling)||(solutions==null)) {
-				ObjectContextModelMatcherForGenetic matcher = new ObjectContextModelMatcherForGenetic();
-				// ObjectContextModelMatcherForGeneticExperimental matcher = new ObjectContextModelMatcherForGeneticExperimental();
 				
-				// ObjectContextModelMatcherForGeneticExperimental2 matcher = new ObjectContextModelMatcherForGeneticExperimental2();
-				// ContextModelMatcherForGeneticNeighborhoodGrowth matcher = new ContextModelMatcherForGeneticNeighborhoodGrowth();
+				if(criterion.equals(GeneticAlgorithmObjectIdentificationMethod.CRITERION_NEIGHBOURHOOD_GROWTH)) {
+					ContextModelMatcherForGeneticNeighborhoodGrowth matcher = new ContextModelMatcherForGeneticNeighborhoodGrowth();
+					matcher.setObjectContextModel(modelSpec);
+					solutions = matcher.execute(modelSpec.getThreshold(), cache, useSampling, isFinal);
+				} else {
 				
-				matcher.setObjectContextModel(modelSpec);
-				
-				// solutions = matcher.execute(modelSpec.getThreshold(), cache, useSampling, isFinal);
-				solutions = matcher.execute(modelSpec.getThreshold(), cache, useSampling);
+					ObjectContextModelMatcherForGenetic matcher = new ObjectContextModelMatcherForGenetic();
+										
+					matcher.setObjectContextModel(modelSpec);
+					solutions = matcher.execute(modelSpec.getThreshold(), cache, useSampling);
+				}
 			} else {
 				log.info(this.toString());
 			}
 		} else {
-			ObjectContextModelMatcherForGenetic matcher = new ObjectContextModelMatcherForGenetic();
-			// ObjectContextModelMatcherForGeneticExperimental matcher = new ObjectContextModelMatcherForGeneticExperimental();
-			// ObjectContextModelMatcherForGeneticExperimental2 matcher = new ObjectContextModelMatcherForGeneticExperimental2();
-			// ContextModelMatcherForGeneticNeighborhoodGrowth matcher = new ContextModelMatcherForGeneticNeighborhoodGrowth();
-			
-			matcher.setObjectContextModel(modelSpec);
-			
-
-			// solutions = matcher.execute(modelSpec.getThreshold(), cache, useSampling, isFinal);
-			solutions = matcher.execute(modelSpec.getThreshold(), cache, useSampling);
+			if(criterion.equals(GeneticAlgorithmObjectIdentificationMethod.CRITERION_NEIGHBOURHOOD_GROWTH)) {
+				ContextModelMatcherForGeneticNeighborhoodGrowth matcher = new ContextModelMatcherForGeneticNeighborhoodGrowth();
+				matcher.setObjectContextModel(modelSpec);
+				solutions = matcher.execute(modelSpec.getThreshold(), cache, useSampling, isFinal);
+			} else {
+				ObjectContextModelMatcherForGenetic matcher = new ObjectContextModelMatcherForGenetic();
+				matcher.setObjectContextModel(modelSpec);
+				solutions = matcher.execute(modelSpec.getThreshold(), cache, useSampling);
+			}
 
 		}
 		 

@@ -11,7 +11,6 @@ public class AverageAggregationFunction implements IAggregationFunction {
 
 	private static final AverageAggregationFunction INSTANCE = new AverageAggregationFunction();
 	
-	@SuppressWarnings("unused")
 	private static Logger log = Logger.getLogger(AverageAggregationFunction.class);
 	
 	private AverageAggregationFunction() {

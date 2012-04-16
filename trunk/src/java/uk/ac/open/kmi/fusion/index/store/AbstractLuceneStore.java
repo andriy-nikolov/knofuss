@@ -144,6 +144,8 @@ public abstract class AbstractLuceneStore implements
 		
 		Document doc = indexIndividual(ind, con);
 		
+		Set<String> alternativeValues;
+		
 		for(int i=1;i<propertyPathDepth+1;i++) {
 			String sparqlQuery = getAttributeSelectSPARQLQuery(ind.toString(), i);
 			try {
@@ -174,7 +176,15 @@ public abstract class AbstractLuceneStore implements
 							
 							doc.add(new Field(path, lit.stringValue(), Field.Store.YES, Field.Index.ANALYZED));
 							
-							addAlternatives(path, lit, doc);
+							addAlternatives(path, lit.stringValue(), doc);
+							
+							alternativeValues = KnoFussUtils.getAlternativeStringValues(lit.stringValue());
+							for(String val : alternativeValues) {
+								doc.add(new Field(path, val, Field.Store.YES, Field.Index.ANALYZED));
+								
+								addAlternatives(path, val, doc);
+							}
+							
 							
 						}
 						
@@ -373,17 +383,27 @@ public abstract class AbstractLuceneStore implements
 		
 	}
 	
-	private void addAlternatives(String path, Literal lit, Document doc) {
-		if(path.endsWith("<http://www.w3.org/2004/02/skos/core#altLabel>")) {
-			doc.add(new Field(path.replace("<http://www.w3.org/2004/02/skos/core#altLabel>", "<"+RDFS.LABEL.toString()+">"), lit.stringValue(), Field.Store.YES, Field.Index.ANALYZED));
-		}
-		if(path.endsWith("<http://www.w3.org/2004/02/skos/core#prefLabel>")) {
-			doc.add(new Field(path.replace("<http://www.w3.org/2004/02/skos/core#prefLabel>", "<"+RDFS.LABEL.toString()+">"), lit.stringValue(), Field.Store.YES, Field.Index.ANALYZED));
-		}
-		if(path.endsWith("<http://www.w3.org/2004/02/skos/core#hiddenLabel>")) {
-			doc.add(new Field(path.replace("<http://www.w3.org/2004/02/skos/core#hiddenLabel>", "<"+RDFS.LABEL.toString()+">"), lit.stringValue(), Field.Store.YES, Field.Index.ANALYZED));
-		}
-		
+	private void addAlternatives(String path, String val, Document doc) {
+		if(path.contains("http://www.w3.org/2004/02/skos/core#altLabel")) {
+			doc.add(new Field(path.replace("http://www.w3.org/2004/02/skos/core#altLabel", RDFS.LABEL.toString()), val, Field.Store.YES, Field.Index.ANALYZED));
+		} else
+		if(path.contains("http://www.w3.org/2004/02/skos/core#prefLabel")) {
+			doc.add(new Field(path.replace("http://www.w3.org/2004/02/skos/core#prefLabel", RDFS.LABEL.toString()), val, Field.Store.YES, Field.Index.ANALYZED));
+		} else
+		if(path.contains("http://www.w3.org/2004/02/skos/core#hiddenLabel")) {
+			doc.add(new Field(path.replace("http://www.w3.org/2004/02/skos/core#hiddenLabel", RDFS.LABEL.toString()), val, Field.Store.YES, Field.Index.ANALYZED));
+		} else
+		if(path.contains("http://www.w3.org/2004/02/skos/core#hiddenLabel")) {
+			doc.add(new Field(path.replace("http://www.w3.org/2004/02/skos/core#hiddenLabel", RDFS.LABEL.toString()), val, Field.Store.YES, Field.Index.ANALYZED));
+		} else if(path.contains(Utils.FOAF_NS+"name")) {
+			doc.add(new Field(path.replace("http://www.w3.org/2004/02/skos/core#hiddenLabel", RDFS.LABEL.toString()), val, Field.Store.YES, Field.Index.ANALYZED));
+		} else if(path.contains(Utils.FOAF_NS+"name")) {
+			doc.add(new Field(path.replace(Utils.FOAF_NS+"name", RDFS.LABEL.toString()), val, Field.Store.YES, Field.Index.ANALYZED));
+		} else if(path.contains("http://www.geonames.org/ontology#name")) {
+			doc.add(new Field(path.replace("http://www.geonames.org/ontology#name", RDFS.LABEL.toString()), val, Field.Store.YES, Field.Index.ANALYZED));
+		} else if(path.contains("http://www.geonames.org/ontology#alternateName")) {
+			doc.add(new Field(path.replace("http://www.geonames.org/ontology#alternateName", RDFS.LABEL.toString()), val, Field.Store.YES, Field.Index.ANALYZED));
+		}				
 	}
 	
 

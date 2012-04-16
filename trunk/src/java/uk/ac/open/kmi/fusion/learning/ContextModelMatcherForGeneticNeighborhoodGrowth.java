@@ -41,7 +41,7 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 	
 	String notFoundFile = "not-found.txt";
 	
-	boolean selectionAll = false;
+	boolean selectionAll = true;
 	
 	private static Logger log = Logger.getLogger(ContextModelMatcherForGeneticNeighborhoodGrowth.class);
 	
@@ -109,6 +109,10 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 				if(resSource.getIndividual().toString().equals("http://data.nytimes.com/N78390312302609901431")&&
 						resTarget.getIndividual().toString().equals("http://sws.geonames.org/1275004/")) {
 					log.info("Person990 vs Person991 similarity: " + similarity);
+				}
+				
+				if(resSource.getIndividual().toString().equals("http://data.nytimes.com/17063342946337637851")) {
+					log.info("http://data.nytimes.com/17063342946337637851 vs " + resTarget.getIndividual().toString()+" similarity: " + similarity);
 				}
 				
 				totalSimilarity+=similarity;
@@ -342,6 +346,10 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 			List<? extends Object> targetValues = resTarget.getValuesByAttribute(spec.getTargetAttribute());
 			
 			if((sourceValues==null)||(targetValues==null)) {
+				return false;
+			}
+			
+			if(sourceValues.isEmpty()||targetValues.isEmpty()) {
 				return false;
 			}
 		}

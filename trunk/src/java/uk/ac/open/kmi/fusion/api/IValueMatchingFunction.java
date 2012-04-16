@@ -18,6 +18,10 @@ public interface IValueMatchingFunction<T> {
 	public static final String SMITH_WATERMAN = "smith-waterman";
 	public static final String L2_SMITH_WATERMAN = "l2 smith-waterman";
 	public static final String PERSON_NAME_JARO = "person name jaro";
+	public static final String tokenwise_JARO = "tokenwise_jaro";
+	public static final String tokenwise_JARO_WINKLER  = "tokenwise_jarowinkler";
+	public static final String tokenwise_LEVENSHTEIN = "tokenwise_levenshtein";
+	public static final String tokenwise_SMITH_WATERMAN = "tokenwise_smith";
 	public static final String I_SUB = "i-sub";
 	public static final String JACCARD = "jaccard";
 	public static final String OVERLAP = "overlap";
@@ -25,14 +29,14 @@ public interface IValueMatchingFunction<T> {
 	public static final String DATE = "date";
 	public static final String DOUBLE = "double";
 
-	
+
 	public double getSimilarity(IAttribute attr1, IAttribute attr2, T value1, T value2);
-			
+
 	public boolean isSuitableForAttributeTypes(AttributeType attributeType1, AttributeType attributeType2);
 	public boolean isSuitableForAttributes(IAttribute attribute1, IAttribute attribute2);
-	
+
 	public AttributeType[][] suitableForTypes();
-	
+
 	public void setAttributeFeatures(IAttribute attr1, IAttribute attr2);
-	
+
 }
