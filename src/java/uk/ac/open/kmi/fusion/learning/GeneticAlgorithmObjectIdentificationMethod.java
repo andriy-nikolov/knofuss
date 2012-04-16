@@ -52,6 +52,9 @@ import uk.ac.open.kmi.fusion.learning.genetic.fitness.IFitnessFunction;
 public class GeneticAlgorithmObjectIdentificationMethod implements
 		IObjectIdentificationMethod {
 
+	public static final String CRITERION_PSEUDO_F_MEASURE = "pseudo-f-measure";
+	public static final String CRITERION_NEIGHBOURHOOD_GROWTH = "neighbourhood growth";
+	
 	private FusionMethodWrapper descriptor;
 	private static Logger log = Logger.getLogger(GeneticAlgorithmObjectIdentificationMethod.class);
 	
@@ -74,6 +77,8 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 	
 	private int sampleSize = 0;
 	
+	private String criterion = CRITERION_PSEUDO_F_MEASURE;
+	
 	public GeneticAlgorithmObjectIdentificationMethod() {
 		
 	}
@@ -87,6 +92,8 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 	public FusionMethodWrapper getDescriptor() {
 		return descriptor;
 	}
+	
+	
 	
 	
 	private void initProperties() {
@@ -113,6 +120,9 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 			if(sampleSize>0) {
 				useSampling = true;
 			}
+		}
+		if(descriptor.getProperties().containsKey(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"criterion")) {
+			this.criterion = descriptor.getProperties().get(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"criterion");
 		}
 		if(descriptor.getProperties().containsKey(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"depth")) {
 			this.depth = Integer.parseInt((descriptor.getProperties().get(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"depth")));
@@ -149,13 +159,15 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 				return new ArrayList<AtomicMapping>();
 			}
 			
-			CandidateSolutionPool candidateSolutionPool = new CandidateSolutionPool(context, sourcePropertiesPool, targetPropertiesPool, cache);
+			// CandidateSolutionPool candidateSolutionPool = new CandidateSolutionPool(context, sourcePropertiesPool, targetPropertiesPool, cache);
+			CandidateSolutionPoolMultiThread candidateSolutionPool = new CandidateSolutionPoolMultiThread(context, sourcePropertiesPool, targetPropertiesPool, cache);
 			candidateSolutionPool.setMaxIterations(maxIterations);
 			candidateSolutionPool.setPopulationSize(populationSize);
 			candidateSolutionPool.setUseUnsupervisedFitness(useUnsupervisedFitness);
 			candidateSolutionPool.setCrossoverRate(crossoverRate);
 			candidateSolutionPool.setMutationRate(mutationRate);
 			candidateSolutionPool.setAligned(aligned);
+			candidateSolutionPool.setCriterion(criterion);
 			
 			candidateSolutionPool.setGoldStandardSet(goldStandardEncoded.keySet());
 			
@@ -400,14 +412,15 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 							targetEntry = cache.getTargetCacheEntry(FusionEnvironment.getInstance().getMainKbValueFactory().createURI(uris[1].trim()));
 							targetEntry.readPropertiesFromLuceneDocument(doc);
 							pair = cache.addPairToCache(sourceEntry, targetEntry, true);
-//							try {
-//								log.info(sourceEntry.getUri().toString());
-//								log.info(targetEntry.getUri().toString());
-//								log.info("Missed: "+sourceEntry.getValueTable().get("http://www.w3.org/2004/02/skos/core#prefLabel").get(0));
-//								log.info(" : "+targetEntry.getValueTable().get(RDFS.LABEL.toString()).get(0));
-//							} catch(NullPointerException e) {
-//								e.printStackTrace();
-//							}
+							try {
+								log.info(sourceEntry.getUri().toString());
+								log.info(targetEntry.getUri().toString());
+								log.info("Missed: "+sourceEntry.getValueTable().get("http://www.w3.org/2004/02/skos/core#prefLabel").get(0));
+								// log.info(" : "+targetEntry.getValueTable().get(RDFS.LABEL.toString()).get(0));
+								log.info(" : "+targetEntry.getValueTable().get(RDFS.LABEL.toString()).get(0));
+							} catch(NullPointerException e) {
+								e.printStackTrace();
+							}
 							if(!addMissing) {
 								pair.setMissing(true);
 							}
@@ -841,5 +854,7 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 			return new DefaultFitnessFunction(0, 0, 0);
 		}
 	}
+	
+	
 
 }
