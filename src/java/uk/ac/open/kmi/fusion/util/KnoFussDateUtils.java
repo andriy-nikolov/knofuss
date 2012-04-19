@@ -9,7 +9,7 @@ import org.apache.commons.lang.time.DateUtils;
 public class KnoFussDateUtils {
 	
 	public static final String[] dateFormats = {
-		"yyyy-MM-dd'T'hh:mm:ss",
+		"yyyy-MM-dd'T'HH:mm:ss",
 		"yyyy-MM-dd",
 		"MMMM dd, yyyy",
 		"M/d/yy",

@@ -1,13 +1,10 @@
 package uk.ac.open.kmi.fusion.api.impl;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.open.kmi.common.utils.Utils;
-import uk.ac.open.kmi.fusion.api.impl.valuematching.DateValueMatchingFunction;
-import uk.ac.open.kmi.fusion.learning.CandidateSolution;
 import uk.ac.open.kmi.fusion.util.KnoFussDateUtils;
 
 public class AttributeProfileInDataset {

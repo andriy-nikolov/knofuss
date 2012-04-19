@@ -215,13 +215,18 @@ public class VariableComparisonSpecification extends FusionConfigurationObject {
 		
 		for(Object value1 : valuesSource) {
 			for(Object value2 : valuesTarget) {
-				val = valueMatchingFunction.getSimilarity(this.sourceAttribute, this.targetAttribute, value1, value2);
-				if(max==null) {
-					max = val;
-				} else {
-					if(val>max) {
+				try {
+					val = valueMatchingFunction.getSimilarity(this.sourceAttribute, this.targetAttribute, value1, value2);
+				
+					if(max==null) {
 						max = val;
+					} else {
+						if(val>max) {
+							max = val;
+						}
 					}
+				} catch(ArrayIndexOutOfBoundsException e) {
+					e.printStackTrace();
 				}
 			}
 		}

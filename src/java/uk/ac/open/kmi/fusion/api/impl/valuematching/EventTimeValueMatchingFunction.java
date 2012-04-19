@@ -1,7 +1,6 @@
 package uk.ac.open.kmi.fusion.api.impl.valuematching;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
