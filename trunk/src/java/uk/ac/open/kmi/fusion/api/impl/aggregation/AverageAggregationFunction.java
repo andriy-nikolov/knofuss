@@ -6,6 +6,7 @@ import uk.ac.open.kmi.fusion.api.IAggregationFunction;
 import uk.ac.open.kmi.fusion.api.IObjectContextWrapper;
 import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
 import uk.ac.open.kmi.fusion.api.impl.VariableComparisonSpecification;
+import uk.ac.open.kmi.fusion.api.impl.valuematching.EventTimeValueMatchingFunction;
 
 public class AverageAggregationFunction implements IAggregationFunction {
 
@@ -32,7 +33,12 @@ public class AverageAggregationFunction implements IAggregationFunction {
 		
 		for(VariableComparisonSpecification spec : variableComparisons) {
 			
-			
+			/*if(source.getIndividual().toString().equals("http://data.linkedevents.org/event/c7b0cc05-355f-405a-806b-5d5ab38170ff")
+					&&target.getIndividual().toString().equals("http://data.linkedevents.org/event/02d792fa-74aa-4233-9d2c-1b89c0a87209")) {
+				if(spec.getValueMatchingFunction() instanceof EventTimeValueMatchingFunction) {
+					log.info("here: similarity: ");
+				}
+			}*/
 			
 			List<? extends Object> sourceValues = source.getValuesByAttribute(spec.getSourceAttribute());
 			List<? extends Object> targetValues = target.getValuesByAttribute(spec.getTargetAttribute());
@@ -86,6 +92,8 @@ public class AverageAggregationFunction implements IAggregationFunction {
 		if(result.isNaN()) {
 			result = 0.0;
 		}
+		
+		
 		
 		return result;
 	}

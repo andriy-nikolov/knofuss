@@ -46,10 +46,6 @@ public class ObjectContextModelMatcherForGenetic {
 		int comparisons = 0;
 		ComparisonPair pair;
 
-		if(instanceModel.toString().contains("event-time")) {
-			log.info("here");
-		}
-		
 		log.info(instanceModel.toString());
 		
 		try {
@@ -79,7 +75,9 @@ public class ObjectContextModelMatcherForGenetic {
 				pair = new ComparisonPair(resSource, resTarget);
 				
 				currentTime = System.currentTimeMillis();
+				
 				similarity = instanceModel.getSimilarity(pair);
+				
 				pair.setSimilarity(similarity);
 				
 				

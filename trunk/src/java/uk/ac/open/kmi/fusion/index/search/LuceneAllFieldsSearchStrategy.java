@@ -144,7 +144,7 @@ public class LuceneAllFieldsSearchStrategy extends AbstractLuceneSearchStrategy 
 	    		}
 	    	}
 	    	
-	    	if(!labels.isEmpty()) { 
+	    	/*if(!labels.isEmpty()) { 
 	    		for(String label : labels) {
 		    		TermQuery termQuery = new TermQuery(new Term(RDFS.LABEL.toString(), label));
 		    		
@@ -181,7 +181,7 @@ public class LuceneAllFieldsSearchStrategy extends AbstractLuceneSearchStrategy 
 			    		}
 		    		}
 	    		}
-	    	}
+	    	}*/
 	    	
 	    	String queryString = LuceneUtils.getTransducedQuery(getConcatenatedString(allFieldValues));
 	    	if(queryString.contains("rhodes")) {
@@ -219,8 +219,8 @@ public class LuceneAllFieldsSearchStrategy extends AbstractLuceneSearchStrategy 
 		    				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
 		    				docs.put(doc.get("uri"), doc);
 		    			} else {
-		    				// break;
-		    				if(!labels.isEmpty()) {
+		    				break;
+		    				/*if(!labels.isEmpty()) {
 		    					for(String label : labels) {
 				    				labelFields = doc.getFields(RDFS.LABEL.toString());
 				    				if(labelFields!=null) {
@@ -231,7 +231,7 @@ public class LuceneAllFieldsSearchStrategy extends AbstractLuceneSearchStrategy 
 					    				}
 				    				}
 		    					}
-		    				}
+		    				}*/
 		    			}
 		    		}
 	    		}

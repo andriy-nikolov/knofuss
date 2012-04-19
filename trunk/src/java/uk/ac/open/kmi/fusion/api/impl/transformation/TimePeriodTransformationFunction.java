@@ -30,7 +30,9 @@ public class TimePeriodTransformationFunction implements
 	private static TimePeriodTransformationFunction INSTANCE = new TimePeriodTransformationFunction();
 	private static Logger log = Logger.getLogger(TimePeriodTransformationFunction.class);
 	
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
+	// private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
+	
+	private String dateFormattingString = "yyyy-MM-dd'T'HH:mm:ss";
 	
 	TransformationFunctionWrapper descriptor;
 	
@@ -43,11 +45,13 @@ public class TimePeriodTransformationFunction implements
 	}
 
 	@Override
-	public List<CompositeAttributeValue> getTransformationResult(TransformationAttribute top, Map<IAttribute, List<? extends Object>> operands) {
+	public synchronized List<CompositeAttributeValue> getTransformationResult(TransformationAttribute top, Map<IAttribute, List<? extends Object>> operands) {
 		StringBuffer result = new StringBuffer();
 		
 		List<CompositeAttributeValue> res = new ArrayList<CompositeAttributeValue>(1);
 		CompositeAttributeValue val;
+		
+		SimpleDateFormat dateFormat = new SimpleDateFormat(dateFormattingString); 
 		
 		List<IAttribute> attrs = top.getAttributes();
 		
@@ -91,9 +95,15 @@ public class TimePeriodTransformationFunction implements
 								
 								// beginValue = new Date(originalValue.getTime()-86400000);
 								beginValue = calendar.getTime();
-								valueList = new ArrayList<String>(1);
-								valueList.add(dateFormat.format(beginValue));
-								val.getAttributeValues().put(hasBeginning, valueList);
+								try {
+									valueList = new ArrayList<String>(1);
+									valueList.add(dateFormat.format(beginValue));
+									val.getAttributeValues().put(hasBeginning, valueList);
+								} catch(ArrayIndexOutOfBoundsException e) {
+									e.printStackTrace();
+									log.error("Date: "+beginValue.toString());
+									throw e;
+								}
 							
 								calendar.set(Calendar.HOUR_OF_DAY, 23);
 								calendar.set(Calendar.MINUTE, 59);
@@ -101,11 +111,18 @@ public class TimePeriodTransformationFunction implements
 								calendar.set(Calendar.MILLISECOND, 999);
 								// endValue = new Date(originalValue.getTime()+86400000);
 								endValue = calendar.getTime();
-								valueList = new ArrayList<String>(1);
-								valueList.add(dateFormat.format(endValue));
-								val.getAttributeValues().put(hasEnd, valueList);
+								
+								try {
+									valueList = new ArrayList<String>(1);
+									valueList.add(dateFormat.format(endValue));
+									val.getAttributeValues().put(hasEnd, valueList);
 							
-								res.add(val);
+									res.add(val);
+								} catch(ArrayIndexOutOfBoundsException e) {
+									e.printStackTrace();
+									log.error("Date: "+endValue.toString());
+									throw e;
+								}
 								break;
 							} catch (ParseException e) {
 								e.printStackTrace();
