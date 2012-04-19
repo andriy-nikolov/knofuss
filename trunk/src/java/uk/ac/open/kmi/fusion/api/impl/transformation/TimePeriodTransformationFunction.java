@@ -88,10 +88,11 @@ public class TimePeriodTransformationFunction implements
 								originalValue = KnoFussDateUtils.parseDate((String)operandList.get(0));
 							
 								calendar.setTime(originalValue);
-								calendar.set(Calendar.HOUR_OF_DAY, 0);
+								/*calendar.set(Calendar.HOUR_OF_DAY, 0);
 								calendar.set(Calendar.MINUTE, 0);
 								calendar.set(Calendar.SECOND, 0);
-								calendar.set(Calendar.MILLISECOND, 0);
+								calendar.set(Calendar.MILLISECOND, 0);*/
+								calendar.add(Calendar.HOUR_OF_DAY, -24);
 								
 								// beginValue = new Date(originalValue.getTime()-86400000);
 								beginValue = calendar.getTime();
@@ -105,10 +106,13 @@ public class TimePeriodTransformationFunction implements
 									throw e;
 								}
 							
-								calendar.set(Calendar.HOUR_OF_DAY, 23);
+								calendar.setTime(originalValue);
+								calendar.add(Calendar.HOUR_OF_DAY, 24);
+								
+								/*calendar.set(Calendar.HOUR_OF_DAY, 23);
 								calendar.set(Calendar.MINUTE, 59);
 								calendar.set(Calendar.SECOND, 59);
-								calendar.set(Calendar.MILLISECOND, 999);
+								calendar.set(Calendar.MILLISECOND, 999);*/
 								// endValue = new Date(originalValue.getTime()+86400000);
 								endValue = calendar.getTime();
 								
