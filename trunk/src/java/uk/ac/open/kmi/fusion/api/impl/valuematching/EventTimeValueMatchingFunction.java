@@ -57,7 +57,7 @@ public class EventTimeValueMatchingFunction implements ICustomValueMatchingFunct
 			Date end2 = KnoFussDateUtils.parseDate(endList2.get(0));
 			//KnoFussUtils.log.info("end1 date :"+end1+"/n");
 			//KnoFussUtils.log.info("end2 date :"+end2+"/n");
-			if(Math.abs(begin1.getTime() - begin2.getTime() ) < 86400)
+			if(Math.abs(begin1.getTime() - begin2.getTime() ) < 86400000)
 			{
 				//KnoFussUtils.log.info("time true");
 				return 1.0 ;
