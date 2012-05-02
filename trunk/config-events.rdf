@@ -27,31 +27,33 @@
     <configurationFile>source-owlim.ttl</configurationFile>
     <path>data/sesame</path>
     <name>source-default</name>
-    <refresh>false</refresh>
+    <refresh>true</refresh>
     <loadFrom rdf:resource="#EventsSource"/>
   </SesameDataSource>
   
   <FileDump rdf:ID="EventsSource">
-    <dataFile>d:/work/dataset/events/upcoming/events.nt</dataFile>
+    <!-- <dataFile>d:/work/dataset/events/upcoming/events.nt</dataFile> -->
+    <dataFile>d:/work/dataset/events/houda-dump-0304/events_dump/2009/upcoming_2009.nt</dataFile>
   </FileDump>
     
   <SesameDataSource rdf:ID="TargetOWLIMRepository">
     <configurationFile>target-owlim.ttl</configurationFile>
     <path>data/sesame</path>
     <name>target-default</name>
-    <refresh>false</refresh>
+    <refresh>true</refresh>
     <loadFrom rdf:resource="#EventsTarget"/>
     <intermediateStore rdf:resource="#LuceneIndexAllFields"/>
   </SesameDataSource>
 
   <FileDump rdf:ID="EventsTarget">
-	<dataFile>d:/work/dataset/events/lastfm/events.nt</dataFile>
+	<!-- <dataFile>d:/work/dataset/events/lastfm/events.nt</dataFile> -->
+	<dataFile>d:/work/dataset/events/houda-dump-0304/events_dump/2009/lastfm_2009.nt</dataFile>
   </FileDump>
 
   <LuceneDiskBlocker rdf:ID="LuceneIndexAllFields">
     <path>data/lucene</path>
     <searchStrategy>all</searchStrategy>
-    <refresh>false</refresh>
+    <refresh>true</refresh>
     <threshold>-0.1</threshold>
     <fuzzyThreshold>0.5</fuzzyThreshold>
     <depth>3</depth>
@@ -64,7 +66,9 @@
     <sourceDataset rdf:resource="#SourceOWLIMRepository"/>
     <targetDataset rdf:resource="#TargetOWLIMRepository"/>
     <instanceMatchingSpec rdf:resource="#EventGeneticApplicationContext"/>
-    <goldStandard>d:/work/dataset/events/mappings/upcoming_lastfm_GS.nt</goldStandard>
+    <!-- <instanceMatchingSpec rdf:resource="#EventPredefinedApplicationContext"/> -->
+    <goldStandard>d:/work/dataset/events/houda-dump-0304/events_dump/2009/upcoming_lastfm_GS_2009.nt</goldStandard>
+    <!-- <goldStandard>d:/work/dataset/events/mappings/upcoming_lastfm_GS.nt</goldStandard> -->
     <resultsFile>logs/results.xml</resultsFile>
     <resultsFormat>custom</resultsFormat>
   </LinkSession>
@@ -280,7 +284,8 @@
     <!-- <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string">uk.ac.open.kmi.fusion.learning.DummyBlockerOnlyObjectIdentificationMethod</hasImplementingClass> -->
     <populationSize>100</populationSize>
     <useUnsupervisedFitness>false</useUnsupervisedFitness>
-    <sampleSize>500</sampleSize>
+    <sampleSize>100</sampleSize>
+    <!-- <criterion>neighbourhood growth</criterion> -->
     <depth>3</depth>
     <aligned>true</aligned>
     <maxIterations>20</maxIterations>
