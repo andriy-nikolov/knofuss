@@ -415,9 +415,13 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 							try {
 								log.info(sourceEntry.getUri().toString());
 								log.info(targetEntry.getUri().toString());
-								log.info("Missed: "+sourceEntry.getValueTable().get("http://www.w3.org/2004/02/skos/core#prefLabel").get(0));
+								if(sourceEntry.getValueTable().containsKey("http://www.w3.org/2004/02/skos/core#prefLabel")) {
+									log.info("Missed: "+sourceEntry.getValueTable().get("http://www.w3.org/2004/02/skos/core#prefLabel").get(0));
+								}
 								// log.info(" : "+targetEntry.getValueTable().get(RDFS.LABEL.toString()).get(0));
-								log.info(" : "+targetEntry.getValueTable().get(RDFS.LABEL.toString()).get(0));
+								if(targetEntry.getValueTable().containsKey(RDFS.LABEL.toString())) {
+									log.info(": "+targetEntry.getValueTable().get(RDFS.LABEL.toString()).get(0));
+								}
 							} catch(NullPointerException e) {
 								e.printStackTrace();
 							}
