@@ -67,7 +67,7 @@ public class AverageAggregationFunction implements IAggregationFunction {
 				similarity = 0.0;
 			}
 			
-			if(spec.getSourceAttribute() instanceof AtomicAttribute) {
+			/*if(spec.getSourceAttribute() instanceof AtomicAttribute) {
 				if(((AtomicAttribute)spec.getSourceAttribute()).getPropertyPath().contains("atPlace")) {
 					if(similarity>=0.6) {
 						log.debug("here");
@@ -76,7 +76,7 @@ public class AverageAggregationFunction implements IAggregationFunction {
 						log.debug("here");
 					}
 				}
-			}
+			}*/
 			
 			result += similarity*spec.getWeight();
 			sumWeights += spec.getWeight();

@@ -42,6 +42,7 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 	String notFoundFile = "not-found.txt";
 	
 	boolean selectionAll = true;
+	// boolean selectionAll = false;
 	
 	private static Logger log = Logger.getLogger(ContextModelMatcherForGeneticNeighborhoodGrowth.class);
 	

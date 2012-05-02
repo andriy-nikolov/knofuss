@@ -1,5 +1,6 @@
 package uk.ac.open.kmi.fusion.learning.cache;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.log4j.Logger;
 
@@ -79,7 +80,10 @@ public class CachedPair {
 	public AtomicMapping convertToAtomicMapping(ObjectContextModel modelSpec, double similarity, double confidence) {
 		AtomicMapping mapping = convertToAtomicMapping(similarity, confidence);
 		
-		List<VariableComparisonSpecification> varSpecs = modelSpec.getVariableComparisonSpecifications();
+		List<VariableComparisonSpecification> varSpecs = new ArrayList<VariableComparisonSpecification>();
+		if(modelSpec!=null) {
+			varSpecs.addAll(modelSpec.getVariableComparisonSpecifications());
+		}
 
 		String sourceProperty, targetProperty;
 		String sourceLabel = "", targetLabel = "";

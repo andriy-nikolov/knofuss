@@ -64,9 +64,9 @@ import uk.ac.open.kmi.fusion.api.IDataSource;
 import uk.ac.open.kmi.fusion.api.IDatasetMatchingMethod;
 import uk.ac.open.kmi.fusion.api.ILinkSession;
 import uk.ac.open.kmi.fusion.api.IObjectIdentificationMethod;
-import uk.ac.open.kmi.fusion.core.conflictdetection.ConflictDetectionHandler;
-import uk.ac.open.kmi.fusion.core.inconsistencyresolution.InconsistencyResolutionHandler;
-import uk.ac.open.kmi.fusion.core.objectidentification.ObjectIdentificationHandler;
+// import uk.ac.open.kmi.fusion.core.conflictdetection.ConflictDetectionHandler;
+// import uk.ac.open.kmi.fusion.core.inconsistencyresolution.InconsistencyResolutionHandler;
+// import uk.ac.open.kmi.fusion.core.objectidentification.ObjectIdentificationHandler;
 //import uk.ac.open.kmi.fusion.index.LuceneDiskIndexer;
 //import uk.ac.open.kmi.fusion.index.LuceneDiskIndexerAllFields;
 import uk.ac.open.kmi.fusion.learning.CandidateSolution;
@@ -99,9 +99,9 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 	
 	private String abbreviationsPath = null;
 	
-	ObjectIdentificationHandler objectIdentificationHandler;
+	/*ObjectIdentificationHandler objectIdentificationHandler;
 	ConflictDetectionHandler conflictDetectionHandler;
-	InconsistencyResolutionHandler inconsistencyResolutionHandler;
+	InconsistencyResolutionHandler inconsistencyResolutionHandler;*/
 
 	private Alignment schemaAlignment;
 	protected Repository targetKB;

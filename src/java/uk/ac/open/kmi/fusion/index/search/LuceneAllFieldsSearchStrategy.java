@@ -200,8 +200,8 @@ public class LuceneAllFieldsSearchStrategy extends AbstractLuceneSearchStrategy 
 	    		} else {
 	    			TermsFilter filter = new TermsFilter();
 	    			filter.addTerm(new Term(RDF.TYPE.toString(), type));
-	    			// hits = indexSearcher.search(query, filter, this.getCutOff());
-	    			hits = indexSearcher.search(query, filter, indexReader.numDocs());
+	    			hits = indexSearcher.search(query, filter, this.getCutOff());
+	    			// hits = indexSearcher.search(query, filter, indexReader.numDocs());
 	    		}
 	    		
 	    		double topScore = -1;

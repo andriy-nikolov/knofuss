@@ -88,6 +88,7 @@ public class LuceneEnhancedStoreStrategy implements
 		
 		for(URI concept : types) {
 			doc.add(new Field(RDF.TYPE.toString(), concept.toString(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+			// log.info(concept.toString());
 		}
 		
 		if(!hasSpecificTypes) {
