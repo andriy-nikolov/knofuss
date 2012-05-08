@@ -24,7 +24,7 @@
   xml:base="http://kmi.open.ac.uk/fusion/fusion">
 
   <SesameDataSource rdf:ID="SourceOWLIMRepository">
-    <configurationFile>source-owlim.ttl</configurationFile>
+    <configurationFile>source-sesame.ttl</configurationFile>
     <path>data/sesame</path>
     <name>source-default</name>
     <refresh>true</refresh>
@@ -37,7 +37,7 @@
   </FileDump>
     
   <SesameDataSource rdf:ID="TargetOWLIMRepository">
-    <configurationFile>target-owlim.ttl</configurationFile>
+    <configurationFile>target-sesame.ttl</configurationFile>
     <path>data/sesame</path>
     <name>target-default</name>
     <refresh>true</refresh>
