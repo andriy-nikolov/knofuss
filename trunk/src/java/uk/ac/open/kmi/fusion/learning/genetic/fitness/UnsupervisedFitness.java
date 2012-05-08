@@ -15,6 +15,10 @@ import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
 
 public class UnsupervisedFitness implements IFitnessFunction {
 	
+	public static double ALPHA = 1;
+	
+	public static double OVERLAP_DEGREE = 1;
+	
 	double value;
 	
 	double averagePerIndividual = 0;
@@ -93,12 +97,9 @@ public class UnsupervisedFitness implements IFitnessFunction {
 			
 		} else {
 			
-			double alpha = 0.01;
 			// double alpha = 1;
 			
 			// double alpha = 100;
-			
-			double overlapDegree = 1;
 			
 			pseudoPrecision = 1/this.averagePerIndividual;
 			int sourceInstances = cache.getSourceCachedEntries().size();
@@ -109,14 +110,14 @@ public class UnsupervisedFitness implements IFitnessFunction {
 			int targetInstances = cache.getTargetCachedEntries().size();
 			int minSetSize = Math.min(sourceInstances, targetInstances);
 		
-			pseudoRecall = ((double)this.coveredIndividualsSize) / (overlapDegree * minSetSize);
+			pseudoRecall = ((double)this.coveredIndividualsSize) / (OVERLAP_DEGREE * minSetSize);
 			
 			if(pseudoRecall > 2.0) {
 				log.fatal("Pseudo recall too high: "+pseudoRecall);
 				log.error("Source instances: "+sourceInstances+", targetInstances: "+targetInstances+", minSetSize: "+minSetSize);
 			}
 			
-			this.value = (1+alpha)*pseudoPrecision*pseudoRecall / (alpha*pseudoPrecision + pseudoRecall);
+			this.value = (1+ALPHA)*pseudoPrecision*pseudoRecall / (ALPHA*pseudoPrecision + pseudoRecall);
 			double coefficient = (1-Math.pow(1-averageSimilarity, 2));
 			log.info("Coefficient: "+coefficient+", average similarity: "+averageSimilarity);
 			
