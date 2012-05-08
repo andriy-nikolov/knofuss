@@ -23,7 +23,7 @@
        both standard Sesame and OWLIM repositories are supported -->
   <SesameDataSource rdf:ID="SourceOWLIMRepository">
     <!-- Sesame SAIL configuration file -->
-    <configurationFile>source-owlim.ttl</configurationFile>
+    <configurationFile>source-sesame.ttl</configurationFile>
     <!-- Path to the data storage -->
     <path>data/sesame</path>
     <!-- Repository name: should match the one in the Sesame SAIL configuration file. 
@@ -43,7 +43,7 @@
   <!-- Target data repository spec. Since the configuration is in the Sesame configuration file,
        both standard Sesame and OWLIM repositories are supported -->
   <SesameDataSource rdf:ID="TargetOWLIMRepository">
-    <configurationFile>target-owlim.ttl</configurationFile>
+    <configurationFile>target-sesame.ttl</configurationFile>
     <path>data/sesame</path>
     <name>target-default</name>
     <refresh>true</refresh>
