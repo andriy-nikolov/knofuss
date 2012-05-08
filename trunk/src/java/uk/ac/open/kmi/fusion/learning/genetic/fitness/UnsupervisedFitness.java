@@ -15,7 +15,7 @@ import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
 
 public class UnsupervisedFitness implements IFitnessFunction {
 	
-	public static double ALPHA = 1;
+	public static double BETA = 0.1;
 	
 	public static double OVERLAP_DEGREE = 1;
 	
@@ -117,7 +117,7 @@ public class UnsupervisedFitness implements IFitnessFunction {
 				log.error("Source instances: "+sourceInstances+", targetInstances: "+targetInstances+", minSetSize: "+minSetSize);
 			}
 			
-			this.value = (1+ALPHA)*pseudoPrecision*pseudoRecall / (ALPHA*pseudoPrecision + pseudoRecall);
+			this.value = (1+BETA*BETA)*pseudoPrecision*pseudoRecall / (BETA*BETA*pseudoPrecision + pseudoRecall);
 			double coefficient = (1-Math.pow(1-averageSimilarity, 2));
 			log.info("Coefficient: "+coefficient+", average similarity: "+averageSimilarity);
 			

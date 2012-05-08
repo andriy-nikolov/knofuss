@@ -48,6 +48,7 @@ import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.DefaultFitnessFunction;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.F1Fitness;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.IFitnessFunction;
+import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitness;
 
 public class GeneticAlgorithmObjectIdentificationMethod implements
 		IObjectIdentificationMethod {
@@ -130,6 +131,10 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 				log.error("Does not support depth greater than 2");
 				depth = 2;
 			}*/
+		}
+		if(descriptor.getProperties().containsKey(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"beta")) {
+			double beta = Double.parseDouble((descriptor.getProperties().get(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"beta"))); 
+			UnsupervisedFitness.BETA = beta;
 		}
 		
 	}

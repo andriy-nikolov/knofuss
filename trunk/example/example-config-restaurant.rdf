@@ -157,6 +157,8 @@
     <sampleSize>100</sampleSize>
     <!-- Genetic algorithm parameter: maximum number of iterations -->
     <maxIterations>20</maxIterations>
+    <!-- Unsupervised fitness parameter: specifies the preference for recall over precision when calculating the F-measure (beta=1 - equal preference, beta=0.01 - precision is 10 times more important than precision, beta = 10 - recall is 10 times more important) -->
+    <beta>1</beta>
   </FusionMethod>
      
   
