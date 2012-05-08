@@ -4,4 +4,4 @@ ant dist
 
 Then, if the task is completed successfully, the command to run an example (taken from the OAEI 2010 benchmark) is
 
-java -Xmx4000m -jar dist/knofuss-standalone.jar -c example/example-config-restaurant.rdf
+java -Xmx2000m -jar dist/knofuss-standalone.jar -c example/example-config-restaurant.rdf
