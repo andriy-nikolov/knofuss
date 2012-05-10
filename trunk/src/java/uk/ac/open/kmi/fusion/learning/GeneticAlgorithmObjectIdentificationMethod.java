@@ -443,7 +443,7 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 			
 			log.info("Gold standard size: "+goldStandardEncoded.size());
 			
-			LoggingUtils.writeURIPairsToFile(cache, "cachedPairs.txt");
+			// LoggingUtils.writeURIPairsToFile(cache, "cachedPairs.txt");
 			
 		} catch(Exception e) {
 			throw new FusionException("Could not create the cache of instance pairs for comparison: ", e);

@@ -52,13 +52,12 @@
 
 	        <copy todir="${dist}">
 	            <fileset dir=".">
-	            	<include name="source-owlim.ttl"/>
-	            	<include name="target-owlim.ttl"/>
-			<include name="config.rdf"/>
-                        <include name="build.xml"/>
-                        <include name=".classpath"/>
-                        <include name=".project"/>
+	            	<include name="source-sesame.ttl"/>
+	            	<include name="target-sesame.ttl"/>
+					<include name="config.rdf"/>
 	            	<include name="log4j.properties"/>
+	            	<include name="run-example.txt"/>
+	            	<include name="copyright.txt"/>
 	            </fileset>
 	        </copy>
 
