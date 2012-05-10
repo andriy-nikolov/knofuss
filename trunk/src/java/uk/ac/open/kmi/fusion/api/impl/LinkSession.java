@@ -1,83 +1,47 @@
 package uk.ac.open.kmi.fusion.api.impl;
 
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.FileReader;
-import java.io.BufferedReader;
 import java.io.PrintWriter;
-import java.io.StringReader;
-import java.io.StringWriter;
-//import java.net.URI;
 import java.net.URISyntaxException;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
-import org.openrdf.OpenRDFException;
-import org.openrdf.model.Resource;
 import org.openrdf.model.Literal;
-import org.openrdf.model.ValueFactory;
+import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.vocabulary.OWL;
-import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFWriter;
-import org.openrdf.rio.RDFWriterFactory;
 import org.openrdf.rio.Rio;
-import org.openrdf.rio.n3.N3WriterFactory;
-import org.openrdf.rio.ntriples.NTriplesWriter;
-import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 import org.openrdf.sail.memory.MemoryStore;
-//import org.xmedia.kernel.ontologies.XMOntologyHandler;
-
 import org.semanticweb.owl.align.Alignment;
-import org.semanticweb.owl.align.AlignmentException;
-import org.semanticweb.owl.align.Cell;
 
 import uk.ac.open.kmi.common.utils.AlignmentUtils;
 import uk.ac.open.kmi.common.utils.OIComparison;
 import uk.ac.open.kmi.common.utils.Utils;
 import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
-// import uk.ac.open.kmi.fusion.MultiOntologyUtil;
 import uk.ac.open.kmi.fusion.api.IDataSource;
 import uk.ac.open.kmi.fusion.api.IDatasetMatchingMethod;
 import uk.ac.open.kmi.fusion.api.ILinkSession;
 import uk.ac.open.kmi.fusion.api.IObjectIdentificationMethod;
-// import uk.ac.open.kmi.fusion.core.conflictdetection.ConflictDetectionHandler;
-// import uk.ac.open.kmi.fusion.core.inconsistencyresolution.InconsistencyResolutionHandler;
-// import uk.ac.open.kmi.fusion.core.objectidentification.ObjectIdentificationHandler;
-//import uk.ac.open.kmi.fusion.index.LuceneDiskIndexer;
-//import uk.ac.open.kmi.fusion.index.LuceneDiskIndexerAllFields;
-import uk.ac.open.kmi.fusion.learning.CandidateSolution;
-import uk.ac.open.kmi.fusion.learning.cache.CachedPair;
-import uk.ac.open.kmi.fusion.objectidentification.standard.SimMetricsObjectIdentificationUtils;
 import uk.ac.open.kmi.fusion.util.FusionException;
 import uk.ac.open.kmi.fusion.util.KnoFussUtils;
-import uk.ac.open.kmi.fusion.util.SesameUtils;
-
 import fr.inrialpes.exmo.align.impl.BasicAlignment;
-import fr.inrialpes.exmo.align.impl.renderer.RDFRendererVisitor;
 
 public class LinkSession extends FusionConfigurationObject implements ILinkSession {
 
@@ -92,17 +56,12 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 	public boolean multiOntology = false;
 	
 	public FusionEnvironment fusionEnvironment;
-	private ValueFactory sesameValueFactory;
 	
 	private Map<String, OIComparison> goldStandard;
 	private String goldStandardPath = null;
 	
 	private String abbreviationsPath = null;
 	
-	/*ObjectIdentificationHandler objectIdentificationHandler;
-	ConflictDetectionHandler conflictDetectionHandler;
-	InconsistencyResolutionHandler inconsistencyResolutionHandler;*/
-
 	private Alignment schemaAlignment;
 	protected Repository targetKB;
 	
@@ -115,6 +74,7 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 	private List<AtomicMapping> resultMappings;
 	private String resultsFilePath;
 	private int resultsFileFormat;
+	
 	private static Logger log = Logger.getLogger(LinkSession.class);
 	
 	public LinkSession() {
@@ -138,7 +98,6 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 	@Override
 	protected void readFromPropertyMember(Statement statement)
 			throws RepositoryException {
-		// TODO Auto-generated method stub
 		super.readFromPropertyMember(statement);
 		if(statement.getPredicate().toString().equals(FusionMetaVocabulary.SOURCE_DATASET)) {
 			this.sourceDataset = (IDataSource)FusionEnvironment.getInstance().findConfigurationObjectByID((Resource)statement.getObject());
@@ -224,6 +183,7 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 		log.info("Total mappings: "+resultMappings.size());
 		
 		if(this.goldStandard!=null) {
+			log.info("Results for the instance matching stage: ");
 			this.calculateF1Measure(false);
 
 		}
@@ -254,6 +214,7 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 		}
 		
 		if(this.goldStandard!=null) {
+			log.info("Overall results for the link session: ");
 			this.calculateF1Measure(true);
 
 		}
@@ -297,7 +258,6 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 			f1 = (2*precision*recall)/(precision+recall);
 		}
 		
-		log.info("Overall results for the link session: ");
 		log.info("F1: "+f1+", precision: "+precision+", recall: "+recall);
 		if(save) {
 			this.writeFalsePositives(falsePositives);
@@ -361,35 +321,6 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 		
 	}
 	
-	
-	private Alignment getObjectIdentificationResults() {
-		
-		Alignment oialignment = null;
-		oialignment = new BasicAlignment();
-		Cell cell;
-		AtomicMapping oMapping;
-		
-		org.openrdf.model.URI[] mappingInds = new org.openrdf.model.URI[2];
-		
-		for(MappingSet cluster : FusionEnvironment.getInstance().getMappingSets()) {
-			List<AtomicMapping> mappings = cluster.getMappings();
-			for(AtomicMapping mapping : mappings) {
-				try {
-					oMapping = (AtomicMapping)mapping;
-					mappingInds = mapping.getIndividuals().toArray(mappingInds);
-					
-					cell = oialignment.addAlignCell(new java.net.URI(mappingInds[0].toString()), new java.net.URI(mappingInds[1].toString()), "=", mapping.getConfidence());
-					/*cell.setExtension("http://kmi.open.ac.uk/fusion#", "label1", oMapping.getLabel(mappingInds[0]));
-					cell.setExtension("http://kmi.open.ac.uk/fusion#", "label2", oMapping.getLabel(mappingInds[1]));*/
-				} catch(Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		
-		return oialignment;
-	}
-	
 	public List<AtomicMapping> getAtomicMappings() {
 		List<AtomicMapping> res = new ArrayList<AtomicMapping>();
 		for(MappingSet cluster : FusionEnvironment.getInstance().getMappingSets()) {
@@ -404,7 +335,6 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 		this.instanceMatchingTasks = new LinkedList<ApplicationContext>();
 		this.datasetMatchingTasks = new LinkedList<ApplicationContext>();
 		this.resultMappings = new LinkedList<AtomicMapping>();
-		// this.goldStandard = new HashMap<String, OIComparison>();
 
 	}
 	

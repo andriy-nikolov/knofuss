@@ -1,46 +1,31 @@
 package uk.ac.open.kmi.fusion.api.impl;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import javax.xml.parsers.ParserConfigurationException;
-
+import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.Literal;
 import org.openrdf.model.Value;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
-import org.semanticweb.owl.align.Alignment;
-import org.semanticweb.owl.align.Cell;
-import org.xml.sax.SAXException;
-
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QueryFactory;
-
-import fr.inrialpes.exmo.align.impl.BasicAlignment;
-import fr.inrialpes.exmo.align.parser.AlignmentParser;
 
 import uk.ac.open.kmi.common.utils.OIComparison;
-import uk.ac.open.kmi.common.utils.OIComparisonUtils;
 import uk.ac.open.kmi.common.utils.sparql.MySPARQLParser;
 import uk.ac.open.kmi.common.utils.sparql.SPARQLUtils;
 import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
-import uk.ac.open.kmi.fusion.objectidentification.standard.StandardObjectIdentificationMethod;
-import uk.ac.open.kmi.fusion.util.FusionException;
-import uk.ac.open.kmi.fusion.util.KnoFussUtils;
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
+import uk.ac.open.kmi.fusion.util.FusionException;
+import uk.ac.open.kmi.fusion.util.KnoFussUtils;
+
+import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QueryFactory;
 
 
 public class ApplicationContext extends FusionConfigurationObject {
