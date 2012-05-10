@@ -2,14 +2,11 @@ package uk.ac.open.kmi.fusion.learning.genetic.fitness;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.open.kmi.common.utils.Utils;
-import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
 import uk.ac.open.kmi.fusion.learning.CandidateSolution;
-import uk.ac.open.kmi.fusion.learning.cache.CacheEntry;
 import uk.ac.open.kmi.fusion.learning.cache.CachedPair;
 import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
 
@@ -35,12 +32,9 @@ public class UnsupervisedFitness implements IFitnessFunction {
 	
 	public static UnsupervisedFitness calculateUnsupervisedFitness(CandidateSolution solution, Map<Integer, Double> solutionResults, MemoryInstanceCache cache) {
 		
-		//MemoryInstanceCache cache = FusionEnvironment.getInstance().getMemoryInstanceCache();
-		
 		Map<Integer, Integer> idCachedPairMap = new HashMap<Integer, Integer>();
 		
 		CachedPair pair;
-		CacheEntry entry;
 		
 		double averageSimilarity = 0;
 		
@@ -53,13 +47,6 @@ public class UnsupervisedFitness implements IFitnessFunction {
 		averageSimilarity = averageSimilarity / solutionResults.size();
 		
 		double std = 0;
-		/*double val;
-		for(Integer res : solutionResults.keySet()) {
-			val = averageSimilarity - solutionResults.get(res);
-			std += val*val;
-		}
-		
-		std = Math.sqrt(std/solutionResults.size());*/
 		
 		double average = 0;
 		for(int index : idCachedPairMap.keySet()) {
@@ -96,10 +83,6 @@ public class UnsupervisedFitness implements IFitnessFunction {
 			this.pseudoRecall = 0;
 			
 		} else {
-			
-			// double alpha = 1;
-			
-			// double alpha = 100;
 			
 			pseudoPrecision = 1/this.averagePerIndividual;
 			int sourceInstances = cache.getSourceCachedEntries().size();

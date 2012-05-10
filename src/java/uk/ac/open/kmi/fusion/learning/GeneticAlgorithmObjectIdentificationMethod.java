@@ -40,7 +40,6 @@ import uk.ac.open.kmi.fusion.api.impl.AttributeType;
 import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
 import uk.ac.open.kmi.fusion.api.impl.FusionMethodWrapper;
 import uk.ac.open.kmi.fusion.util.FusionException;
-import uk.ac.open.kmi.fusion.util.LoggingUtils;
 import uk.ac.open.kmi.fusion.index.LuceneBlockedDiskIndexer;
 import uk.ac.open.kmi.fusion.learning.cache.CacheEntry;
 import uk.ac.open.kmi.fusion.learning.cache.CachedPair;
@@ -185,7 +184,7 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 			CandidateSolution finalSolution = candidateSolutionPool.getFinalSolution();
 			// doFilteringByClasses(finalResults, cache, goldStandardEncoded.keySet(), finalSolution.getFitness(), context.getRestrictedTypesTarget().get(0)); 
 			
-			return createAtomicMappings(finalResults, cache, candidateSolutionPool.getFinalSolution());
+			return createAtomicMappings(finalResults, cache, finalSolution);
 			
 		} catch(Exception e) {
 			throw new FusionException("Could not perform coreference resolution: ", e);
@@ -767,6 +766,7 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 		
 	}
 	
+	@SuppressWarnings("unused")
 	private void doFilteringByClasses(Map<Integer, Double> results, MemoryInstanceCache cache, Set<Integer> goldStandardSet, IFitnessFunction resultingFitness, String topClass) {
 		CachedPair pair;
 		CacheEntry entry;
@@ -774,7 +774,6 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 		Map<String, IFitnessFunction> fitnessByType = processFitnessByType(cache, results);
 		
 		Set<String> dominantClasses = new HashSet<String>();
-		double highestRecallPercentage = 0.0;
 		double totalRecall = resultingFitness.getRecall();
 		double recallPercentage;
 		for(String type : fitnessByType.keySet()) {

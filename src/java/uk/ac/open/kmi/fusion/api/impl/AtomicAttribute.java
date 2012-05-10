@@ -15,7 +15,6 @@ import org.openrdf.repository.RepositoryException;
 import uk.ac.open.kmi.common.utils.sparql.SPARQLUtils;
 import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
 import uk.ac.open.kmi.fusion.api.IAttribute;
-import uk.ac.open.kmi.fusion.learning.GeneticAlgorithmObjectIdentificationMethod;
 import uk.ac.open.kmi.fusion.util.FusionException;
 
 public class AtomicAttribute extends AbstractAttribute {

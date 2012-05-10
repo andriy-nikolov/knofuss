@@ -1,26 +1,19 @@
 package uk.ac.open.kmi.fusion.api.impl;
 
 
-import java.io.*;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
+import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
-import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
-import org.openrdf.model.Literal;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 
-import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
 import uk.ac.open.kmi.fusion.util.SesameUtils;
 
 public class AtomicMapping extends FusionSet {
@@ -183,16 +176,15 @@ public class AtomicMapping extends FusionSet {
 			}
 			List<Statement> stmts = SesameUtils.getStatements(ind2, null, null, con);
 							
-			Statement addedStatement;
-			Calendar calendarBefore, calendarAfter;
+			// Calendar calendarBefore, calendarAfter;
 				
-			for(Statement stmt : stmts) {
+			/*for(Statement stmt : stmts) {
 				calendarBefore = new GregorianCalendar();
 					
 				calendarAfter = new GregorianCalendar();
 				log.info("Statement insertion time cost: "+(calendarAfter.getTimeInMillis()-calendarBefore.getTimeInMillis()));
 				i++;
-			}
+			}*/
 					
 			stmts = SesameUtils.getStatements(null, null, ind2, con);
 								
@@ -200,12 +192,12 @@ public class AtomicMapping extends FusionSet {
 				if(stmt.getPredicate().toString().equals(RDF.TYPE.toString())) {
 					continue;
 				}
-				if(stmt.getSubject() instanceof Resource) {
+				/*if(stmt.getSubject() instanceof Resource) {
 					calendarBefore = new GregorianCalendar();
 					
 					calendarAfter = new GregorianCalendar();
 					log.info("Statement insertion time cost: "+(calendarAfter.getTimeInMillis()-calendarBefore.getTimeInMillis()));
-				}
+				}*/
 						
 				i++;
 			}
