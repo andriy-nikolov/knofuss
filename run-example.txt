@@ -1,7 +1,18 @@
-The code can be build using the Apache ant build file:
+If you downloaded the binary distribution: 
+
+The command to run an example (taken from the OAEI 2010 benchmark) is
+
+java -Xmx2000m -jar knofuss-standalone.jar -c example/example-config-restaurant.rdf
+
+
+
+
+If you checked out the source code from SVN:
+
+The source code can be built using the Apache ant build file:
 
 ant dist
 
-Then, if the task is completed successfully, the command to run an example (taken from the OAEI 2010 benchmark) is
+Then, if the task is completed successfully, the command to run the same example is
 
 java -Xmx2000m -jar dist/knofuss-standalone.jar -c example/example-config-restaurant.rdf
