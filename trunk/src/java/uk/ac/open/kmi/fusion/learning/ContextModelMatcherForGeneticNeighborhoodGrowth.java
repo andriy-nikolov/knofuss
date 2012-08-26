@@ -22,6 +22,7 @@ import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
 import uk.ac.open.kmi.fusion.api.impl.VariableComparisonSpecification;
 import uk.ac.open.kmi.fusion.learning.cache.CachedPair;
 import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
+import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitness;
 import uk.ac.open.kmi.fusion.objectidentification.LuceneBackedObjectContextWrapper;
 
 public class ContextModelMatcherForGeneticNeighborhoodGrowth {
@@ -41,9 +42,11 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 	
 	String notFoundFile = "not-found.txt";
 	
-	boolean selectionAll = true;
-	// boolean selectionAll = false;
+	// boolean selectionAll = true;
+	static boolean selectionAll = true;
 	
+	double validPairsRatio = 0;
+		
 	private static Logger log = Logger.getLogger(ContextModelMatcherForGeneticNeighborhoodGrowth.class);
 	
 	private void init() {
@@ -93,6 +96,9 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 			
 			CachedPair cachedPair;
 			
+			int total = 0;
+			double valid = 0;
+			
 			while(iterator.hasNext()) {
 				
 				cachedPair = iterator.next();
@@ -102,31 +108,38 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 				totalTimeRetrieval+=(System.currentTimeMillis()-currentTime);
 			
 				pair = new ComparisonPair(resSource, resTarget);
+				
+				total++;
+				
+				if(isValid(instanceModel, cachedPair)) {
 
-				currentTime = System.currentTimeMillis();
-				similarity = instanceModel.getSimilarity(pair);
-				pair.setSimilarity(similarity);
-
-				if(resSource.getIndividual().toString().equals("http://data.nytimes.com/N78390312302609901431")&&
-						resTarget.getIndividual().toString().equals("http://sws.geonames.org/1275004/")) {
-					log.info("Person990 vs Person991 similarity: " + similarity);
-				}
-				
-				if(resSource.getIndividual().toString().equals("http://data.nytimes.com/17063342946337637851")) {
-					log.info("http://data.nytimes.com/17063342946337637851 vs " + resTarget.getIndividual().toString()+" similarity: " + similarity);
-				}
-				
-				totalSimilarity+=similarity;
-				if(similarity>maxSimilarity) {
-					maxSimilarity = similarity;
-				}
-				
-				totalTimeComparison+=(System.currentTimeMillis()-currentTime);
+					valid++;
 					
-				preliminaryResults.put(cachedPair.getId(), similarity);
+					currentTime = System.currentTimeMillis();
+					similarity = instanceModel.getSimilarity(pair);
+					pair.setSimilarity(similarity);
+	
+					totalSimilarity+=similarity;
+					if(similarity>maxSimilarity) {
+						maxSimilarity = similarity;
+					}
+					
+					totalTimeComparison+=(System.currentTimeMillis()-currentTime);
+						
+					preliminaryResults.put(cachedPair.getId(), similarity);
+				} else {
+				  preliminaryResults.put(cachedPair.getId(), 0.0);
+				}
+				
 				Utils.addToSetMap(cachedPair.getCandidateInstance().getId(), cachedPair.getId(), compsBySourceInstance);
 					
 				i++;
+			}
+			
+			if(total>0) {
+				this.validPairsRatio = valid/total;
+			} else {
+				this.validPairsRatio = 0.0;
 			}
 			
 			averageSimilarity = totalSimilarity/comparisons;
@@ -153,9 +166,7 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 						Collections.sort(sortedPairIds, comparator);
 						selectedPairId = sortedPairIds.get(0);
 						testPair = cache.getCachedPairById(selectedPairId);
-						if(testPair.getCandidateInstance().getUri().toString().equals("http://data.nytimes.com/N45527707190659418771")) {
-							log.info("here");
-						}
+						
 						
 						bestSim = preliminaryResults.get(selectedPairId);
 						if(bestSim > epsilon) {
@@ -196,7 +207,7 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 					
 					CachedPair testPair;
 					
-					double alpha = 0.01;
+					double beta = UnsupervisedFitness.BETA;
 					
 					for(Integer sourceId : compsBySourceInstance.keySet()) {
 						
@@ -205,10 +216,7 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 						Collections.sort(sortedPairIds, comparator);
 						selectedPairId = sortedPairIds.get(0);
 						testPair = cache.getCachedPairById(selectedPairId);
-						if(testPair.getCandidateInstance().getUri().toString().equals("http://data.nytimes.com/N45527707190659418771")) {
-							log.info("here");
-						}
-						
+												
 						bestSim = preliminaryResults.get(selectedPairId);
 						if(bestSim > epsilon) {
 							if(isValid(instanceModel, testPair)) {
@@ -223,7 +231,8 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 					
 					double threshold, bestThreshold = 0;
 					
-					double tp, p = 0, total = compsBySourceInstance.size();
+					double tp, p = 0;
+					total = compsBySourceInstance.size();
 					double pseudoPrecision, pseudoRecall, pseudoF, maxPseudoF = -1, maxPseudoP = -1, maxPseudoR = -1.0;
 					int j = 0;
 					i = 0;
@@ -241,7 +250,7 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 						p = j;
 						pseudoPrecision = tp/p;
 						pseudoRecall = tp/total;
-						pseudoF = (1+alpha)*pseudoPrecision*pseudoRecall/(alpha*pseudoPrecision+pseudoRecall);
+						pseudoF = (1+beta)*pseudoPrecision*pseudoRecall/(beta*pseudoPrecision+pseudoRecall);
 
 						if(pseudoF>=maxPseudoF) {
 							maxPseudoF = pseudoF;
@@ -296,9 +305,6 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 			PrintWriter writer = Utils.openPrintFileWriter(fileName);
 			
 			for(Integer sourceId : compsBySourceInstance.keySet()) {
-				
-				
-				
 				pairIds = compsBySourceInstance.get(sourceId);
 				sortedPairIds.clear();
 				sortedPairIds.addAll(pairIds);
@@ -332,9 +338,6 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 		} catch(IOException e) {
 			e.printStackTrace();
 		}
-		
-		
-		
 	}
 	
 	private boolean isValid(ObjectContextModel model, CachedPair pair) {
@@ -432,7 +435,10 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 		this.multiOntologyCase = multiOntologyCase;
 	}
 
+	public double getValidPairsRatio() {
+		return validPairsRatio;
+	}
 	
 	
-	
+
 }

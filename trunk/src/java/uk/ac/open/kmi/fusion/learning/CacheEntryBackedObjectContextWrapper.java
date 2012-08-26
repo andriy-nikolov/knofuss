@@ -8,34 +8,31 @@ import java.util.Map;
 import org.openrdf.model.URI;
 
 import uk.ac.open.kmi.fusion.api.IAttribute;
+import uk.ac.open.kmi.fusion.api.IObjectContextModel;
 import uk.ac.open.kmi.fusion.api.IObjectContextWrapper;
 import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
 import uk.ac.open.kmi.fusion.api.impl.CompositeAttribute;
 import uk.ac.open.kmi.fusion.api.impl.CompositeAttributeValue;
-import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
 import uk.ac.open.kmi.fusion.learning.cache.CacheEntry;
 
 public class CacheEntryBackedObjectContextWrapper implements
 		IObjectContextWrapper {
 
 	CacheEntry entry;
-	ObjectContextModel model;
-	// Map<String, String> variablePropertyMap;
+	IObjectContextModel model;
 	
-	public CacheEntryBackedObjectContextWrapper(CacheEntry entry, ObjectContextModel model) {
+	public CacheEntryBackedObjectContextWrapper(CacheEntry entry, IObjectContextModel model) {
 		this.entry = entry;
 		this.model = model;
-		// this.variablePropertyMap = variablePropertyMap;
 	}
 
 	@Override
-	public ObjectContextModel getModel() {
-		// TODO Auto-generated method stub
+	public IObjectContextModel getModel() {
 		return model;
 	}
 
 	@Override
-	public void setModel(ObjectContextModel model) {
+	public void setModel(IObjectContextModel model) {
 		this.model = model;
 
 	}

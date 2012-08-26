@@ -3,7 +3,6 @@ package uk.ac.open.kmi.fusion.api.impl;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.List;
 import java.util.Set;
 
@@ -20,79 +19,53 @@ import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.query.QueryParseException;
 
 
-import uk.ac.open.kmi.common.utils.sparql.MySPARQLParser;
 import uk.ac.open.kmi.common.utils.sparql.SPARQLUtils;
 import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
 import uk.ac.open.kmi.fusion.api.IAggregationFunction;
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IDump;
+import uk.ac.open.kmi.fusion.api.IObjectContextModel;
 import uk.ac.open.kmi.fusion.api.IObjectContextWrapper;
 import uk.ac.open.kmi.fusion.api.impl.aggregation.AggregationFunctionFactory;
 import uk.ac.open.kmi.fusion.util.FusionException;
 import uk.ac.open.kmi.fusion.util.KnoFussUtils;
 import uk.ac.open.kmi.fusion.util.SesameUtils;
 
-public class ObjectContextModel extends FusionConfigurationObject {
+public class ObjectContextModel extends AbstractObjectContextModel implements IObjectContextModel {
 
 	public static final String TYPE_URI = FusionMetaVocabulary.OBJECT_CONTEXT_MODEL;
 	
-	protected Query querySPARQLSource = null;
-	protected Query querySPARQLTarget = null;
-	
 	protected List<VariableComparisonSpecification> variableComparisonSpecifications;
-	// protected Map<String, VariableComparisonSpecification> variableComparisonSpecificationsByName;
-	
-	protected Map<String, IAttribute> sourceAttributesByVarName;
-	protected Map<String, IAttribute> targetAttributesByVarName;
-	
-	protected Map<String, IAttribute> sourceAttributesByPath;
-	protected Map<String, IAttribute> targetAttributesByPath;
-	
-	protected List<ObjectContextWrapper> instances;
-	protected Map<String, ObjectContextWrapper> instanceTable;
-	
-	protected FusionEnvironment ontology;
-	protected ApplicationContext applicationContext; 
 	
 	protected IAggregationFunction aggregationFunction;
-	
-	// protected Map<String, String> variablePathMapSource;
-	// protected Map<String, String> variablePathMapTarget;
-	
-	protected List<IAttribute> sourceAttributes;
-	protected List<IAttribute> targetAttributes;
-	
-	protected List<String> restrictedTypesSource;
-	protected List<String> restrictedTypesTarget;
 	
 	protected double threshold;
 	
 	Logger log = Logger.getLogger(ObjectContextModel.class);
 	
-	public void init() {
-		instances = new ArrayList<ObjectContextWrapper>();
-		instanceTable = new HashMap<String, ObjectContextWrapper>();
+	private void init() {
+		
 		variableComparisonSpecifications = new ArrayList<VariableComparisonSpecification>();
-		// variableComparisonSpecificationsByName = new HashMap<String, VariableComparisonSpecification>();
-		// variablePathMapSource = new HashMap<String, String>();
-		// variablePathMapTarget = new HashMap<String, String>();
-		
-		restrictedTypesSource = new ArrayList<String>(1);
-		restrictedTypesTarget = new ArrayList<String>(1);
-		
-		sourceAttributes = new ArrayList<IAttribute>();
-		targetAttributes = new ArrayList<IAttribute>();
-		
-		sourceAttributesByVarName = new HashMap<String, IAttribute>();
-		targetAttributesByVarName = new HashMap<String, IAttribute>();
-		
-		sourceAttributesByPath = new HashMap<String, IAttribute>();
-		targetAttributesByPath = new HashMap<String, IAttribute>();
 	}
 
 	public ObjectContextModel() {
 		super();
 		init();
+	}
+	
+	
+	public ObjectContextModel(ObjectContextModel copy) {
+		this();
+		
+		setApplicationContext(copy.getApplicationContext());
+		
+		setAggregationFunction(copy.getAggregationFunction());
+		setEnvironment(copy.getEnvironment());
+		setQuerySPARQLSource(copy.getQuerySPARQLSource());
+		setQuerySPARQLTarget(copy.getQuerySPARQLTarget());
+		setThreshold(copy.getThreshold());
+		
+		prepare();
 	}
 	
 	public ObjectContextModel(Resource individual, FusionEnvironment ontology) {
@@ -108,35 +81,35 @@ public class ObjectContextModel extends FusionConfigurationObject {
 		return variableComparisonSpecificationsByName;
 	}*/
 	
-	public List<ObjectContextWrapper> getInstances() {
-		return instances;
-	}
-	
-	public IObjectContextWrapper getInstance(int index) {
-		return instances.get(index);
-	}
-	
-	public IObjectContextWrapper getInstance(String uri) {
-		if(instanceTable.containsKey(uri)) {
-			return instanceTable.get(uri);
-		}
-		return null;
-	}
-	
-	public void addInstance(ObjectContextWrapper instance) {
-		if(!instances.contains(instance)) {
-			instances.add(instance);
-			instance.setModel(this);
-		}
+	@Override
+	public void readFromRDFIndividual(RepositoryConnection connection) throws FusionException {
+		super.readFromRDFIndividual(connection);
 	}
 
-	public FusionEnvironment getOntology() {
+	@Override
+	protected void readFromPropertyMember(Statement statement)
+			throws RepositoryException {
+				super.readFromPropertyMember(statement);
+				if(statement.getPredicate().toString().equals(FusionMetaVocabulary.VARIABLE_COMPARISON)) {
+					VariableComparisonSpecification spec = (VariableComparisonSpecification)FusionEnvironment.getInstance().findConfigurationObjectByID((Resource)statement.getObject());
+					spec.setObjectContextModel(this);
+					addVariableComparisonSpecification(spec);						
+				} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.THRESHOLD)) {
+					Literal lit = (Literal)statement.getObject();
+					this.threshold = lit.doubleValue();
+				} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.AGGREGATION_FUNCTION)) {
+					Literal lit = (Literal)statement.getObject();
+					this.aggregationFunction = AggregationFunctionFactory.getInstance(lit.stringValue());
+				} 
+			}
+
+/*	public FusionEnvironment getOntology() {
 		return ontology;
 	}
 
 	public void setOntology(FusionEnvironment ontology) {
 		this.ontology = ontology;
-	}
+	}*/
 			
 	public IAggregationFunction getAggregationFunction() {
 		return aggregationFunction;
@@ -146,7 +119,8 @@ public class ObjectContextModel extends FusionConfigurationObject {
 		this.aggregationFunction = aggregationFunction;
 	}
 	
-	public void prepare() {
+	@Override
+	protected void fillAttributeMaps() {
 		IAttribute attr;
 		String varName;
 		
@@ -176,112 +150,9 @@ public class ObjectContextModel extends FusionConfigurationObject {
 				// this.sourceAttributesByPath.putAll(((CompositeAttribute)attr).getAtomicAttributesByPropertyPath());
 			}
 		}
-		
-		constructQuerySPARQLTarget();
-		constructQuerySPARQLSource();
 	}
 	
-	
-	
-	private void constructQuerySPARQLTarget() {
-		if(querySPARQLTarget==null) {
-			if(this.getApplicationContext().getRestrictionTarget()!=null) {
-				this.querySPARQLTarget = generateQuery(true);
-			} else {
-				querySPARQLTarget = getQuerySPARQLSource();
-			}
-			MySPARQLParser parser = new MySPARQLParser(querySPARQLTarget);
-			this.restrictedTypesTarget.addAll(parser.getRestrictedTypes());
-			// this.variablePathMapTarget = parser.getVariablePathMap();
-			
-			Map<String, String> variablePathMapTarget = parser.getVariablePathMap();
-			
-			AtomicAttribute attribute;
-			for(String var : variablePathMapTarget.keySet()) {
-				attribute = (AtomicAttribute)this.getTargetAttributeByVarName(var);
-				attribute.setPropertyPath(variablePathMapTarget.get(var));
-			}
-		}
-	}
-	
-	private void constructQuerySPARQLSource() {
-		if(querySPARQLSource==null) {
-			if(this.getApplicationContext().getRestrictionSource()!=null) {
-				this.querySPARQLSource = generateQuery(false);
-			} /*else if(FusionEnvironment.isMultiOntologyCase) {
-				querySPARQLSource = FusionEnvironment.multiOntologyUtil.translateSPARQLQuery(getQuerySPARQLTarget());
-			}*/ else {
-				querySPARQLSource = getQuerySPARQLTarget();
-			}
-			
-			MySPARQLParser parser = new MySPARQLParser(querySPARQLSource);
-			this.restrictedTypesSource.addAll(parser.getRestrictedTypes());
-			
-			Map<String, String> variablePathMapSource = parser.getVariablePathMap();
-			
-			AtomicAttribute attribute;
-			for(String var : variablePathMapSource.keySet()) {
-				attribute = (AtomicAttribute)this.getSourceAttributeByVarName(var);
-				attribute.setPropertyPath(variablePathMapSource.get(var));
-			}
-			
-		}
-	}
-	
-	@Override
-	public void readFromRDFIndividual(RepositoryConnection connection) throws FusionException {
-		super.readFromRDFIndividual(connection);
-		/*List<Statement> statements = SesameUtils.getStatements(
-				this.rdfIndividual, 
-				null, 
-				null, connection);
-		for(Statement statement : statements) {
-			readFromPropertyMember(statement);
-		}*/
-	}
-
-	@Override
-	protected void readFromPropertyMember(Statement statement) throws RepositoryException {
-		super.readFromPropertyMember(statement);
-		if(statement.getPredicate().toString().equals(FusionMetaVocabulary.VARIABLE_COMPARISON)) {
-			VariableComparisonSpecification spec = (VariableComparisonSpecification)FusionEnvironment.getInstance().findConfigurationObjectByID((Resource)statement.getObject());
-			spec.setObjectContextModel(this);
-			addVariableComparisonSpecification(spec);						
-		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.THRESHOLD)) {
-			Literal lit = (Literal)statement.getObject();
-			this.threshold = lit.doubleValue();
-		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.AGGREGATION_FUNCTION)) {
-			Literal lit = (Literal)statement.getObject();
-			this.aggregationFunction = AggregationFunctionFactory.getInstance(lit.stringValue());
-		} 
-	}
-	
-	public ApplicationContext getApplicationContext() {
-		return applicationContext;
-	}
-
-	public void setApplicationContext(ApplicationContext applicationContext) {
-		this.applicationContext = applicationContext;
-	}
-
-	private Query getQuerySPARQLSource() {
-		
-		return querySPARQLSource;
-	}
-	
-	private Query getQuerySPARQLTarget() {
-		
-		return querySPARQLTarget;
-	}
-	
-	public void initializeQueries() {
-		if((this.querySPARQLSource==null)||(this.querySPARQLTarget==null)) {
-			getQuerySPARQLTarget();
-			getQuerySPARQLSource();
-		}
-	}
-	
-	private Query generateQuery(boolean isTarget) {
+	protected Query generateQuery(boolean isTarget) {
 		// List<String> variables = new ArrayList<String>();
 		List<String> restrictions = new ArrayList<String>();
 		
@@ -316,6 +187,10 @@ public class ObjectContextModel extends FusionConfigurationObject {
 	}
 	
 	
+	/* (non-Javadoc)
+	 * @see uk.ac.open.kmi.fusion.api.impl.IObjectContextModel#serializeQuerySPARQLSource()
+	 */
+	@Override
 	public String serializeQuerySPARQLSource() {
 		if(this.querySPARQLSource==null) {
 			this.getQuerySPARQLSource();
@@ -323,6 +198,10 @@ public class ObjectContextModel extends FusionConfigurationObject {
 		return this.querySPARQLSource.serialize();
 	}
 
+	/* (non-Javadoc)
+	 * @see uk.ac.open.kmi.fusion.api.impl.IObjectContextModel#serializeQuerySPARQLTarget()
+	 */
+	@Override
 	public String serializeQuerySPARQLTarget() {
 		if(this.querySPARQLTarget==null) {
 			this.getQuerySPARQLTarget();
@@ -346,28 +225,6 @@ public class ObjectContextModel extends FusionConfigurationObject {
 		return variablePathMapTarget;
 	}*/
 
-	public List<IAttribute> getSourceAttributes() {
-		return sourceAttributes;
-	}
-
-	public List<IAttribute> getTargetAttributes() {
-		return targetAttributes;
-	}
-
-	public List<String> getRestrictedTypesSource() {
-		if(this.querySPARQLSource==null) {
-			this.getQuerySPARQLSource();
-		}
-		return restrictedTypesSource;
-	}
-
-	public List<String> getRestrictedTypesTarget() {
-		if(this.querySPARQLTarget==null) {
-			this.getQuerySPARQLTarget();
-		}
-		return restrictedTypesTarget;
-	}	
-	
 	public double getSimilarity(ComparisonPair pair) {
 		return this.aggregationFunction.calculate(pair.getSourceInstance(), pair.getTargetInstance(), this.variableComparisonSpecifications);
 	}
@@ -411,41 +268,4 @@ public class ObjectContextModel extends FusionConfigurationObject {
 		return result.toString();
 	}
 
-	public IAttribute getSourceAttributeByVarName(String varName) {
-		
-		return this.sourceAttributesByVarName.get(varName);
-		
-	}
-	
-	public IAttribute getTargetAttributeByVarName(String varName) {
-		
-		return this.targetAttributesByVarName.get(varName);
-		
-	}
-	
-	public Map<String, IAttribute> getSourceAttributesByVarName() {
-		return sourceAttributesByVarName;
-	}
-
-	public Map<String, IAttribute> getTargetAttributesByVarName() {
-		return targetAttributesByVarName;
-	}
-
-	public Map<String, IAttribute> getSourceAttributesByPath() {
-		return sourceAttributesByPath;
-	}
-
-	public Map<String, IAttribute> getTargetAttributesByPath() {
-		return targetAttributesByPath;
-	}
-
-	public IAttribute getTargetAttributeByPath(String path) {
-		return this.targetAttributesByPath.get(path);
-	}
-	
-	public IAttribute getSourceAttributeByPath(String path) {
-		return this.sourceAttributesByPath.get(path);
-	}
-	
-	
 }

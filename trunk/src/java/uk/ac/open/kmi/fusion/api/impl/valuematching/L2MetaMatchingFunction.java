@@ -14,7 +14,8 @@ public class L2MetaMatchingFunction extends TokenBasedSimilarityValueMatchingFun
 
 	private static AttributeType[][] supportedTypes = {
 		{ AttributeType.NOMINAL, AttributeType.NOMINAL_MULTI_TOKEN },
-		{ AttributeType.NOMINAL_MULTI_TOKEN, AttributeType.NOMINAL_MULTI_TOKEN }
+		{ AttributeType.NOMINAL_MULTI_TOKEN, AttributeType.NOMINAL_MULTI_TOKEN }// ,
+		// { AttributeType.INTEGER, AttributeType.DATE }
 		//{ AttributeType.NOMINAL_MULTI_TOKEN, AttributeType.LONG_TEXT },
 	};
 	

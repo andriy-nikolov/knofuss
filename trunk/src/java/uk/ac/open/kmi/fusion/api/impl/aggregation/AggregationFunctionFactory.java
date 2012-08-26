@@ -9,7 +9,7 @@ import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 public final class AggregationFunctionFactory {
 
 	private static String[] availableFunctionTypes = new String[]{
-		IAggregationFunction.AVERAGE,
+		IAggregationFunction.AVERAGE// ,
 		// IAggregationFunction.MAX
 	};
 	

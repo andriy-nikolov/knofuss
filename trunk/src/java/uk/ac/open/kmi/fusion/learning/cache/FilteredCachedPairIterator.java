@@ -31,9 +31,7 @@ public class FilteredCachedPairIterator implements Iterator<CachedPair> {
 				if((!next.isMissing())||includeMissedGoldStandardMappings) {
 					hasNext = true;
 					return hasNext;
-				} /*else {
-					System.out.println("here");
-				}*/
+				} 
 			}
 		}
 		hasNext = false;

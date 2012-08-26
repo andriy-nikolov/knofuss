@@ -12,6 +12,7 @@ import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.RDF;
 
 
+import uk.ac.open.kmi.fusion.api.IObjectContextModel;
 import uk.ac.open.kmi.fusion.api.IObjectContextWrapper;
 import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
 import uk.ac.open.kmi.fusion.learning.CacheEntryBackedObjectContextWrapper;
@@ -62,7 +63,7 @@ public class CacheEntry {
 		}
 	}
 	
-	public IObjectContextWrapper getObjectContextWrapper(ObjectContextModel model, boolean isSource) {
+	public IObjectContextWrapper getObjectContextWrapper(IObjectContextModel model, boolean isSource) {
 		
 		/*Map<String, String> variablePropertyMap = 
 			(isSource)?model.getVariablePathMapSource():model.getVariablePathMapTarget();*/

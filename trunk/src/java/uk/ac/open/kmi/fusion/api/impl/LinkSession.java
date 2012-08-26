@@ -157,7 +157,7 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 		sourceDataset.prepare();
 		FusionEnvironment.getInstance().setFusionRepositoryConnection(sourceDataset.getConnection());
 		FusionEnvironment.getInstance().setFusionKbValueFactory(sourceDataset.getConnection().getValueFactory());
-	
+			
 		targetDataset.prepare();
 		FusionEnvironment.getInstance().setMainKbRepositoryConnection(targetDataset.getConnection());
 		FusionEnvironment.getInstance().setMainKbValueFactory(targetDataset.getConnection().getValueFactory());
@@ -185,8 +185,7 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 		if(this.goldStandard!=null) {
 			log.info("Results for the instance matching stage: ");
 			this.calculateF1Measure(false);
-
-		}
+			}
 		log.info("Proceed with dataset matching");
 		for(ApplicationContext context : this.datasetMatchingTasks) {
 			
@@ -216,10 +215,10 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 		if(this.goldStandard!=null) {
 			log.info("Overall results for the link session: ");
 			this.calculateF1Measure(true);
-
 		}
-
+	
 		cleanIntermediateRepository();
+		
 	}
 	
 	private void calculateF1Measure(boolean save) {

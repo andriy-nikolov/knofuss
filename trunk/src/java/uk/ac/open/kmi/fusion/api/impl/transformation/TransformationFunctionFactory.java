@@ -50,47 +50,5 @@ public final class TransformationFunctionFactory {
 		pool.put(function.toString(), function);
 	}
 	
-/*	public static IValueMatchingFunction getRandomInstance() {
-		IValueMatchingFunction res;
-		
-		int val = (int)(Math.random()*availableFunctionTypes.length);
-		
-		res = getInstance(availableFunctionTypes[val]);
-		
-		return res;
-	}*/
-	
-	/*public static List<ITransformationFunction<? extends Object>> getApplicableFunctionsForAttributes(IAttribute attr1, IAttribute attr2) {
-		
-		Set<ITransformationFunction<? extends Object>> applicableFunctions = new HashSet<IValueMatchingFunction<? extends Object>>();
-		ITransformationFunction<? extends Object> tmp;
-		
-		for(String key : pool.keySet()) {
-			tmp = pool.get(key);
-			if(tmp.isSuitableForAttributes(attr1, attr2)) {
-				//if(tmp instanceof DoubleValueMatchingFunction) {
-					//System.out.println("here");
-				//}
-				applicableFunctions.add(tmp);
-			}
-		}
-		
-		return new ArrayList<IValueMatchingFunction<? extends Object>>(applicableFunctions);
-		
-	}*/
-	
-	/*public static IValueMatchingFunction<? extends Object> getRandomInstanceForAttributes(IAttribute attr1, IAttribute attr2) {
-		
-		IValueMatchingFunction<? extends Object> res = null;
-		
-		List<IValueMatchingFunction<? extends Object>> applicableFunctions = getApplicableFunctionsForAttributes(attr1, attr2);
-		
-		if(applicableFunctions.size()>0) {
-			Collections.shuffle(applicableFunctions);
-			res = applicableFunctions.get(0);
-			return res;
-		} 
-		return null;
-	}*/
-	
+
 }

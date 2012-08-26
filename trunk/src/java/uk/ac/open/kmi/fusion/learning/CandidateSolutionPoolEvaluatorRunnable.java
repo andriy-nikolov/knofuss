@@ -14,6 +14,7 @@ import uk.ac.open.kmi.fusion.learning.genetic.fitness.F1Fitness;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.IFitnessFunction;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitness;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitnessNeighbourhoodGrowth;
+import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitnessNeighbourhoodGrowthWholeSet;
 
 public class CandidateSolutionPoolEvaluatorRunnable implements Callable<CandidateSolutionFitnessResult> {
 
@@ -71,8 +72,10 @@ public class CandidateSolutionPoolEvaluatorRunnable implements Callable<Candidat
 		realFitness = this.evaluateFitness(solution, solutionResults.keySet(), sampleGoldStandard);
 		if(criterion.equals(GeneticAlgorithmObjectIdentificationMethod.CRITERION_NEIGHBOURHOOD_GROWTH)) {
 			unsupervisedFitness = UnsupervisedFitnessNeighbourhoodGrowth.calculateUnsupervisedFitness(solution, solutionResults, cache);
+		} else if(criterion.equals(GeneticAlgorithmObjectIdentificationMethod.CRITERION_UNBIASED_NEIGHBOURHOOD_GROWTH)) { 
+			unsupervisedFitness = UnsupervisedFitnessNeighbourhoodGrowthWholeSet.calculateUnsupervisedFitness(solution, solutionResults, cache);
 		} else {
-			unsupervisedFitness = UnsupervisedFitness.calculateUnsupervisedFitness(solution, solutionResults, cache);
+			unsupervisedFitness = UnsupervisedFitness.calculateUnsupervisedFitness(solutionResults, cache);
 		}
 		log.info("Iteraton: "+iterationNum+", solution: "+solutionNum+", results: "+solutionResults.size());
 		log.info("F1 fitness: "+realFitness.getF1()+", precision: "+realFitness.getPrecision()+", recall: "+realFitness.getRecall());

@@ -30,6 +30,7 @@ public final class ValueMatchingFunctionFactory {
 		IValueMatchingFunction.SMITH_WATERMAN,
 		IValueMatchingFunction.L2_JARO,
 		IValueMatchingFunction.tokenwise_JARO,
+		IValueMatchingFunction.tokenwise_SMITH_WATERMAN,
 		IValueMatchingFunction.L2_JARO_WINKLER,
 		IValueMatchingFunction.L2_LEVENSHTEIN,
 		IValueMatchingFunction.L2_MONGE_ELKAN,
@@ -39,7 +40,7 @@ public final class ValueMatchingFunctionFactory {
 		IValueMatchingFunction.DICE,
 		IValueMatchingFunction.tokenwise_JARO_WINKLER,
 		IValueMatchingFunction.tokenwise_LEVENSHTEIN,
-		IValueMatchingFunction.tokenwise_SMITH_WATERMAN,
+		// IValueMatchingFunction.tokenwise_SMITH_WATERMAN,
 		// IValueMatchingFunction.ABBREVIATION,
 		IValueMatchingFunction.DATE,
 		IValueMatchingFunction.DOUBLE,
@@ -90,31 +91,20 @@ public final class ValueMatchingFunctionFactory {
 		pool.put(function.toString(), function);
 	}
 
-/*	public static IValueMatchingFunction getRandomInstance() {
-		IValueMatchingFunction res;
-
-		int val = (int)(Math.random()*availableFunctionTypes.length);
-
-		res = getInstance(availableFunctionTypes[val]);
-
-		return res;
-	}*/
-
 	public static List<IValueMatchingFunction<? extends Object>> getApplicableFunctionsForAttributes(IAttribute attr1, IAttribute attr2) {
 
 		Set<IValueMatchingFunction<? extends Object>> applicableFunctions = new HashSet<IValueMatchingFunction<? extends Object>>();
 		IValueMatchingFunction<? extends Object> tmp;
 
-		if((attr1 instanceof TransformationAttribute)&&(attr2 instanceof TransformationAttribute)) {
-			log.info("here");
-		}
-
 		for(String key : pool.keySet()) {
 			tmp = pool.get(key);
 			if(tmp.isSuitableForAttributes(attr1, attr2)) {
-				//if(tmp instanceof DoubleValueMatchingFunction) {
-					//System.out.println("here");
-				//}
+				/*if(attr1.writePathAsString().endsWith("#lat")&&(attr2.writePathAsString().endsWith("#long"))) {
+					continue;
+				}
+				if(attr1.writePathAsString().endsWith("#long")&&(attr2.writePathAsString().endsWith("#lat"))) {
+					continue;
+				}*/
 				applicableFunctions.add(tmp);
 			}
 		}

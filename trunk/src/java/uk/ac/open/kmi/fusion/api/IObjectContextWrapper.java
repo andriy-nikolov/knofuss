@@ -9,12 +9,9 @@ import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
 
 public interface IObjectContextWrapper {
 
-	public abstract ObjectContextModel getModel();
+	public abstract IObjectContextModel getModel();
 
-	/* (non-Javadoc)
-	 * @see uk.ac.open.kmi.fusion.api.impl.IObjectWrapper#setModel(uk.ac.open.kmi.fusion.api.IObjectContextModel)
-	 */
-	public abstract void setModel(ObjectContextModel model);
+	public abstract void setModel(IObjectContextModel model);
 
 	public abstract URI getIndividual();
 

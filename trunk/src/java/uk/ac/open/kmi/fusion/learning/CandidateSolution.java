@@ -38,6 +38,8 @@ public class CandidateSolution {
 	
 	Map<Integer, Double> solutions = null;
 	
+	double validPairsRatio = 1.0;
+	
 	Logger log = Logger.getLogger(CandidateSolution.class);
 			
 	public Genotype getGenotype() {
@@ -208,10 +210,12 @@ public class CandidateSolution {
 		if(!isFinal) {
 			if((!useSampling)||(solutions==null)) {
 				
-				if(criterion.equals(GeneticAlgorithmObjectIdentificationMethod.CRITERION_NEIGHBOURHOOD_GROWTH)) {
+				if(criterion.equals(GeneticAlgorithmObjectIdentificationMethod.CRITERION_NEIGHBOURHOOD_GROWTH)
+						||criterion.equals(GeneticAlgorithmObjectIdentificationMethod.CRITERION_UNBIASED_NEIGHBOURHOOD_GROWTH)) {
 					ContextModelMatcherForGeneticNeighborhoodGrowth matcher = new ContextModelMatcherForGeneticNeighborhoodGrowth();
 					matcher.setObjectContextModel(modelSpec);
 					solutions = matcher.execute(modelSpec.getThreshold(), cache, useSampling, isFinal);
+					this.validPairsRatio = matcher.getValidPairsRatio();
 				} else {
 				
 					ObjectContextModelMatcherForGenetic matcher = new ObjectContextModelMatcherForGenetic();
@@ -223,7 +227,8 @@ public class CandidateSolution {
 				log.info(this.toString());
 			}
 		} else {
-			if(criterion.equals(GeneticAlgorithmObjectIdentificationMethod.CRITERION_NEIGHBOURHOOD_GROWTH)) {
+			if(criterion.equals(GeneticAlgorithmObjectIdentificationMethod.CRITERION_NEIGHBOURHOOD_GROWTH)
+					||criterion.equals(GeneticAlgorithmObjectIdentificationMethod.CRITERION_UNBIASED_NEIGHBOURHOOD_GROWTH)) {
 				ContextModelMatcherForGeneticNeighborhoodGrowth matcher = new ContextModelMatcherForGeneticNeighborhoodGrowth();
 				matcher.setObjectContextModel(modelSpec);
 				solutions = matcher.execute(modelSpec.getThreshold(), cache, useSampling, isFinal);
@@ -268,5 +273,10 @@ public class CandidateSolution {
 			this.modelSpec.setThreshold(threshold);
 		}
 	}
+
+	public double getValidPairsRatio() {
+		return validPairsRatio;
+	}
+
 	
 }

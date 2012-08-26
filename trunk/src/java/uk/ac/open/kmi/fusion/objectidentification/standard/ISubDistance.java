@@ -112,7 +112,7 @@ public class ISubDistance extends AbstractStringMetric implements Serializable {
 			System.out.println(s+" : "+t);
 		}
 		
-		return sim;
+		return (sim+1)/2;
 	}
 
 	@Override

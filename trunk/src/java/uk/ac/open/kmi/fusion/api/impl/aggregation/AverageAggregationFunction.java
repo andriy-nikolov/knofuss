@@ -33,50 +33,16 @@ public class AverageAggregationFunction implements IAggregationFunction {
 		
 		for(VariableComparisonSpecification spec : variableComparisons) {
 			
-			/*if(source.getIndividual().toString().equals("http://data.linkedevents.org/event/c7b0cc05-355f-405a-806b-5d5ab38170ff")
-					&&target.getIndividual().toString().equals("http://data.linkedevents.org/event/02d792fa-74aa-4233-9d2c-1b89c0a87209")) {
-				if(spec.getValueMatchingFunction() instanceof EventTimeValueMatchingFunction) {
-					log.info("here: similarity: ");
-				}
-			}*/
-			
 			List<? extends Object> sourceValues = source.getValuesByAttribute(spec.getSourceAttribute());
 			List<? extends Object> targetValues = target.getValuesByAttribute(spec.getTargetAttribute());
 			
-			/*if((sourceValues==null)||(targetValues==null)) {
-				return 0.0;
-			}*/
-			/*if(spec.getSourcePath().contains("tmp")
-					&&spec.getTargetPath().contains("http://xmlns.com/foaf/0.1/name")) {
-				if(sourceValues!=null) {
-				//	log.debug("here");
-				}
-			}*/
-			
-
 			similarity = spec.getSimilarity(
 					sourceValues, targetValues);
-			
-			/*if(spec.getSourcePath().contains("tmp")
-					&&spec.getTargetPath().contains("http://xmlns.com/foaf/0.1/name")
-					&&similarity>0.5) {
-					log.info("Achtung!!! "+sourceValues.toString()+", "+targetValues.toString());
-			}*/
 			
 			if(similarity.isNaN()) {
 				similarity = 0.0;
 			}
 			
-			/*if(spec.getSourceAttribute() instanceof AtomicAttribute) {
-				if(((AtomicAttribute)spec.getSourceAttribute()).getPropertyPath().contains("atPlace")) {
-					if(similarity>=0.6) {
-						log.debug("here");
-					}
-					if(!targetValues.isEmpty()) {
-						log.debug("here");
-					}
-				}
-			}*/
 			
 			result += similarity*spec.getWeight();
 			sumWeights += spec.getWeight();
@@ -85,9 +51,6 @@ public class AverageAggregationFunction implements IAggregationFunction {
 		
 		result = result/sumWeights;
 		
-		if(result>=0.7499999) {
-			log.debug("here");
-		}
 		
 		if(result.isNaN()) {
 			result = 0.0;

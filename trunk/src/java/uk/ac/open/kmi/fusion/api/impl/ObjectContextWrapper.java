@@ -1,34 +1,27 @@
 package uk.ac.open.kmi.fusion.api.impl;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.openrdf.model.Literal;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.Value;
 import org.openrdf.query.BindingSet;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-
 
 import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
 import uk.ac.open.kmi.fusion.api.IAttribute;
+import uk.ac.open.kmi.fusion.api.IObjectContextModel;
 import uk.ac.open.kmi.fusion.api.IObjectContextWrapper;
 import uk.ac.open.kmi.fusion.util.KnoFussUtils;
 
 public class ObjectContextWrapper implements IObjectContextWrapper {
 	
 	protected URI individual;
-	protected ObjectContextModel model;
-	// protected FusionEnvironment ontology;
+	protected IObjectContextModel model;
+
 	public static final String CLASS_URI = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"ObjectContextWrapper";
 	
 	protected Map<IAttribute, List<? extends Object>> valueTable;
@@ -48,7 +41,7 @@ public class ObjectContextWrapper implements IObjectContextWrapper {
 	 * @see uk.ac.open.kmi.fusion.api.impl.IObjectContextWrapper#getModel()
 	 */
 	@Override
-	public ObjectContextModel getModel() {
+	public IObjectContextModel getModel() {
 		return model;
 	}
 
@@ -56,7 +49,7 @@ public class ObjectContextWrapper implements IObjectContextWrapper {
 	 * @see uk.ac.open.kmi.fusion.api.impl.IObjectContextWrapper#setModel(uk.ac.open.kmi.fusion.api.impl.ObjectContextModel)
 	 */
 	@Override
-	public void setModel(ObjectContextModel model) {
+	public void setModel(IObjectContextModel model) {
 		this.model = model;
 		model.addInstance(this);
 	}
@@ -84,10 +77,7 @@ public class ObjectContextWrapper implements IObjectContextWrapper {
 	}
 
 	public boolean getPropertiesFromQueryResult(BindingSet queryResult) {
-		String propertyUri;
-		
-		//Map<String, String> variablePropertyMap = model.getVariablePropertyMapTarget();
-		//variablePropertyMap = model.getVariablePropertyMap();
+
 		if(this.individual==null) {
 			this.individual = (URI)queryResult.getValue("uri");
 		} else if(!this.individual.toString().equals(((URI)queryResult.getValue("uri")).toString())) {
@@ -95,8 +85,6 @@ public class ObjectContextWrapper implements IObjectContextWrapper {
 		}
 		
 		String val;
-		
-		List<String> tmpValueSet;
 		
 		IAttribute attribute;
 		
@@ -134,12 +122,12 @@ public class ObjectContextWrapper implements IObjectContextWrapper {
 		return true;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void addValue(IAttribute attribute, Object value) {
 		List<Object> tmpValueSet;
 		if(this.valueTable.containsKey(attribute)) {
 			tmpValueSet = (List<Object>)this.valueTable.get(attribute);
-			//tmpValueSet = new LinkedList<String>();
 		} else {
 			tmpValueSet = new LinkedList<Object>();
 			this.valueTable.put(attribute, tmpValueSet);

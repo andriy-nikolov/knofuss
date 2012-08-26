@@ -281,12 +281,6 @@ public class ObjectContextModelMatcherThresholdBased {
 							}
 						}
 						
-						/*if(resTarget.getIndividual().toString().equals("http://dbpedia.org/resource/Mike_Figgis")&&
-								resSource.getIndividual().toString().equals("http://data.linkedmdb.org/music_contributor/3282")
-								) {
-							log.info("here");
-						}*/
-						
 						currentTime = System.currentTimeMillis();
 						similarity = instanceModel.getSimilarity(pair);
 						pair.setSimilarity(similarity);
@@ -294,14 +288,8 @@ public class ObjectContextModelMatcherThresholdBased {
 						
 				
 						if(similarity>=threshold) {
-							/*if(FusionEnvironment.debug) {
-								
-								this.writeComparison(writerTestAccepted, resSource, resTarget, similarity);
-								
-							}*/
 					
 							if(!candidatePairs.containsKey(resSource)) {
-								//log.info(sourceLabel + " : " + targetLabel);
 								candList = new ArrayList<ComparisonPair>();
 								candidatePairs.put(resSource, candList);
 							} else {

@@ -177,10 +177,7 @@ public class ObjectContextModelMatcherForGeneticExperimental {
 				Collections.sort(sortedPairIds, comparator);
 				selectedPairId = sortedPairIds.get(0);
 				testPair = cache.getCachedPairById(selectedPairId);
-				if(testPair.getCandidateInstance().getUri().toString().equals("http://data.nytimes.com/N45527707190659418771")) {
-					log.info("here");
-				}
-				
+
 				bestSim = preliminaryResults.get(selectedPairId);
 				// epsilon = 1-sim;
 				results.put(selectedPairId, bestSim);

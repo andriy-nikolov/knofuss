@@ -15,7 +15,8 @@ public class LevenshteinValueMatchingFunction implements IValueMatchingFunction<
 	private static AttributeType[][] supportedTypes = {
 		{ AttributeType.NOMINAL, AttributeType.NOMINAL },
 		{ AttributeType.NOMINAL, AttributeType.NOMINAL_MULTI_TOKEN },
-		{ AttributeType.NOMINAL_MULTI_TOKEN, AttributeType.NOMINAL_MULTI_TOKEN }
+		{ AttributeType.NOMINAL_MULTI_TOKEN, AttributeType.NOMINAL_MULTI_TOKEN }// , 
+		// { AttributeType.INTEGER, AttributeType.DATE }
 	};
 	
 	public LevenshteinValueMatchingFunction() {

@@ -82,6 +82,7 @@ public class FusionMetaVocabulary {
 	public static final String NAME = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"name";
 	public static final String NGRAM = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"ngram";
 	public static final String OBJECT_CONTEXT_MODEL = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"ObjectContextModel";
+	public static final String OBJECT_CONTEXT_MODEL_TREE = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"ObjectContextModelTree";
 	public static final String OBJECT_IDENTIFICATION = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"ObjectIdentification";
 	public static final String ONTOLOGY_MATCHING = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"OntologyMatching";
 	public static final String OPTIONAL = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"optional";
