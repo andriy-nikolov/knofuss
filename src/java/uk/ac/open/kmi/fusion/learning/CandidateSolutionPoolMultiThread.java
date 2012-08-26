@@ -39,6 +39,7 @@ import uk.ac.open.kmi.fusion.learning.genetic.fitness.F1Fitness;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.IFitnessFunction;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitness;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitnessNeighbourhoodGrowth;
+import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitnessNeighbourhoodGrowthWholeSet;
 
 // import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitnessNeighbourhoodGrowth;
 import uk.ac.open.kmi.fusion.learning.genetic.crossover.CrossoverOperatorFactory;
@@ -223,6 +224,10 @@ public class CandidateSolutionPoolMultiThread {
 					realFitness = solutionResultMeasurement.getRealFitness();
 					unsupervisedFitness = solutionResultMeasurement.getUnsupervisedFitness();
 					
+					if(Double.isNaN(unsupervisedFitness.getValue())) {
+						log.error("Fitness is NaN");
+					}
+					
 					if(i==10) {
 						log.info("Top 10");
 					}
@@ -344,8 +349,10 @@ public class CandidateSolutionPoolMultiThread {
 			realFitness = this.evaluateFitness(finalSolution, finalSolutionResults.keySet(), goldStandardSet);
 			if(criterion.equals(GeneticAlgorithmObjectIdentificationMethod.CRITERION_NEIGHBOURHOOD_GROWTH)) {
 				unsupervisedFitness = UnsupervisedFitnessNeighbourhoodGrowth.calculateUnsupervisedFitness(finalSolution, finalSolutionResults, cache);
+			} else if(criterion.equals(GeneticAlgorithmObjectIdentificationMethod.CRITERION_UNBIASED_NEIGHBOURHOOD_GROWTH)) {
+				unsupervisedFitness = UnsupervisedFitnessNeighbourhoodGrowthWholeSet.calculateUnsupervisedFitness(finalSolution, finalSolutionResults, cache);
 			} else {
-				unsupervisedFitness = UnsupervisedFitness.calculateUnsupervisedFitness(finalSolution, finalSolutionResults, cache);
+				unsupervisedFitness = UnsupervisedFitness.calculateUnsupervisedFitness(finalSolutionResults, cache);
 			}
 			// unsupervisedFitness = UnsupervisedFitnessNeighbourhoodGrowth.calculateUnsupervisedFitness(finalSolution, finalSolutionResults, cache);
 			// unsupervisedFitness = UnsupervisedFitnessNeighbourhoodGrowth.calculateUnsupervisedFitness(finalSolution, finalSolutionResults, cache);

@@ -48,19 +48,20 @@ import uk.ac.open.kmi.fusion.learning.genetic.fitness.DefaultFitnessFunction;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.F1Fitness;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.IFitnessFunction;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitness;
+import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitnessNeighbourhoodGrowth;
 
 public class GeneticAlgorithmObjectIdentificationMethod implements
 		IObjectIdentificationMethod {
 
 	public static final String CRITERION_PSEUDO_F_MEASURE = "pseudo-f-measure";
 	public static final String CRITERION_NEIGHBOURHOOD_GROWTH = "neighbourhood growth";
+	public static final String CRITERION_UNBIASED_NEIGHBOURHOOD_GROWTH = "unbiased neighbourhood growth";
 	
 	private FusionMethodWrapper descriptor;
 	private static Logger log = Logger.getLogger(GeneticAlgorithmObjectIdentificationMethod.class);
 	
 	private int depth = 1;
 	
-	// private boolean useUnsupervisedFitness = true;
 	private boolean useUnsupervisedFitness = true;
 	private int maxIterations = 20;
 	private int populationSize = 100;
@@ -68,7 +69,6 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 	private double mutationRate = 0.6;
 	private double crossoverRate = 0.3;
 	
-	// private boolean addMissing = false;
 	private boolean addMissing = false;
 
 	private boolean useSampling = false;
@@ -78,6 +78,8 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 	private int sampleSize = 0;
 	
 	private String criterion = CRITERION_PSEUDO_F_MEASURE;
+	
+	private boolean selectAll = true;
 	
 	public GeneticAlgorithmObjectIdentificationMethod() {
 		
@@ -134,6 +136,19 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 		if(descriptor.getProperties().containsKey(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"beta")) {
 			double beta = Double.parseDouble((descriptor.getProperties().get(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"beta"))); 
 			UnsupervisedFitness.BETA = beta;
+		}
+		if(descriptor.getProperties().containsKey(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"addMissing")) {
+			addMissing = Boolean.parseBoolean((descriptor.getProperties().get(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"addMissing"))); 
+		}
+		if(descriptor.getProperties().containsKey(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"selectBy")) {
+			String selectBy = descriptor.getProperties().get(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"selectBy"); 
+			if(selectBy.toLowerCase().equals("f-measure")) {
+				ContextModelMatcherForGeneticNeighborhoodGrowth.selectionAll = false;
+			}
+		}
+		
+		if(descriptor.getProperties().containsKey(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"discountRareAttributes")) {
+			UnsupervisedFitnessNeighbourhoodGrowth.discountRareAttributes = Boolean.parseBoolean((descriptor.getProperties().get(FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"discountRareAttributes")));
 		}
 		
 	}
@@ -237,10 +252,7 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 			if(!alreadyUsedPropertyPaths.containsKey(attribute.getPropertyPath())) {
 			
 				targetAttributeCounts.put(attribute, targetAttributes.get(key).getMentionedIn());
-				/*if(key.equals(RDFS.LABEL.toString())) {
-					System.out.println("here");
-					targetPropertiesPool.add(attribute);
-				}*/
+				
 				// if(val>=0.95) {
 				if(val>=0.5) {
 					if((!key.equals(Utils.FOAF_NS+"name"))&&(!key.equals("http://oaei.ontologymatching.org/2010/IIMBTBOX/article"))) {
@@ -262,6 +274,9 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 				if(!attr.isAttributeTypeKnown()) {
 					attr.setType(AttributeType.NOMINAL);
 				}
+				/*if(attr.getType().equals(AttributeType.DATE)) {
+					attr.setType(AttributeType.NOMINAL);
+				}*/
 			}
 		}
 		
@@ -341,9 +356,7 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 								(!sourceAttribute.getType().equals(AttributeType.INTEGER))&&
 								(!sourceAttribute.getType().equals(AttributeType.DATE))&&
 								(sourceEntry.getValueTable().containsKey(((AtomicAttribute)sourceAttribute).getPropertyPath()))) {
-							/*if(sourceEntry.getValueTable().get(sourceAttribute.getPropertyPath()).contains("Washington")) {
-								System.out.println("here");
-							}*/
+							
 							tmpList = new LinkedList<String>();
 							searchValues.put(((AtomicAttribute)sourceAttribute).getPropertyPath(), tmpList);
 							tmpObjectList = sourceEntry.getValueTable().get(((AtomicAttribute)sourceAttribute).getPropertyPath());
@@ -359,10 +372,6 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 				tmpList = new ArrayList<String>(1);
 				tmpList.add(sourceEntry.getUri().toString());
 				searchValues.put("uri", tmpList);
-			}
-			
-			if(sourceEntry.getUri().toString().equals("http://data.linkedevents.org/event/f16352aa-7f1b-473c-8a3d-764757d400cc")) {
-				log.debug("");
 			}
 			
 			docs = blocker.findClosestDocuments(searchValues, targetPropertyArray, blocker.getThreshold(), type);
@@ -646,78 +655,6 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 			}
 			
 			
-			/*tmpQueryParser = new MySPARQLParser(context.serializeQuerySPARQLSource());
-			tmpQueryParser.addTriplePattern(Node.createVariable("uri"), Node.createVariable("property1"), Node.createVariable("tmp"));
-			tmpQueryParser.addTriplePattern(Node.createVariable("tmp"), Node.createVariable("property2"), Node.createVariable("obj"));
-			tmpQueryParser.addOutputVariable("property1");
-			tmpQueryParser.addOutputVariable("property2");
-			tmpQueryParser.addOutputVariable("obj");
-			
-			tmpQuery = tmpQueryParser.getFilteredQuery();
-			log.info(tmpQuery);
-			query = FusionEnvironment.getInstance().getFusionRepositoryConnection().prepareTupleQuery(QueryLanguage.SPARQL, tmpQuery);
-			res = query.evaluate();
-			
-			try {
-				
-				Set<String> paths = new HashSet<String>();
-				String path;
-				currentUri = "";
-				previousUri = "";
-				
-				while(res.hasNext()) {
-					bs = res.next();
-					
-					if(!(bs.getValue("uri") instanceof URI)) continue;
-					currentUri = bs.getValue("uri").toString();
-					if(!currentUri.equals(previousUri)) {
-						
-						currentCacheEntry = cache.getSourceCacheEntry((URI)bs.getValue("uri"));
-						tmpSet.clear();
-					}
-					previousUri = currentUri;
-					
-					if((bs.getValue("property1") instanceof URI)
-							&&(bs.getValue("property2") instanceof URI)
-							&&(bs.getValue("obj") instanceof Literal)) {
-						if(bs.getValue("property1").equals(RDF.TYPE)
-								||bs.getValue("property2").equals(RDF.TYPE)) continue;
-						
-						path = "<"+bs.getValue("property1").toString()+">/<"+bs.getValue("property2").toString()+">";
-						paths.add(path);
-						// paths.add();
-						if(sourceAttributeProfiles.containsKey(path)) {
-							currentAttributeProfile = sourceAttributeProfiles.get(path);
-						} else {
-							currentAttributeProfile = new AttributeProfileInDataset(path);
-							sourceAttributeProfiles.put(path, currentAttributeProfile);
-						}
-						if(!tmpSet.contains(path)) {
-							currentAttributeProfile.increaseMentionedIn();
-							tmpSet.add(path);
-						}
-						currentAttributeProfile.increasePropertyCount();
-						val = SesameUtils.cleanSesameLiteralValue((Literal)bs.getValue("obj"));
-						tokens = Utils.splitByStringTokenizer(val, " \t\n\r\f:(),-.");
-						currentAttributeProfile.setAverageNumberOfTokens(currentAttributeProfile.getAverageNumberOfTokens()+tokens.size());
-						currentAttributeProfile.doTypeChecking(val);
-						// sourcePropertiesSet.add(path);
-						currentCacheEntry.addValue(path, val);
-						// log.info(bs.getValue("uri")+" : "+bs.getValue("property1")+" : "+bs.getValue("property2")+" : "+bs.getValue("obj"));
-					}
-					
-				}
-				log.info("Source instances: "+cache.getSourceCachedEntries().size());
-				
-				log.info(paths.size());
-				
-				for(String tmp : paths) {
-					log.info(tmp);
-				}
-				
-			} finally {
-				res.close();
-			}*/
 		}
 		
 		double freq;
@@ -729,6 +666,9 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 			
 			currentAttribute = currentAttributeProfile.createAttribute();
 			if(!alreadyUsedPropertyPaths.containsKey(currentAttribute.getPropertyPath())) {
+				/*if(currentAttribute.getType()==AttributeType.INTEGER) {
+					currentAttribute.setType(AttributeType.NOMINAL);
+				}*/
 				if((currentAttribute.getType()!=AttributeType.INTEGER)&&(freq>0.6)&&(!currentAttribute.getPropertyPath().endsWith("search_api_query"))) {
 					sourcePropertiesSet.add(currentAttribute);
 				}

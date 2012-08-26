@@ -55,7 +55,6 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 	}
 	
 	private static final AtomicMappingSimilarityComparator mappingComparator = new AtomicMappingSimilarityComparator();
-	// private static final double epsilon = 0.000000000001;
 	private static final double epsilon = 0.000000000000001;
 	
 	private Set<String> almostSameSourceInstances;
@@ -156,20 +155,6 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 		
 		int countTmp = 0;
 		
-		for(Set<AtomicMapping> doubtfulSet : doubtfulSetList) {
-			
-			for(AtomicMapping mapping : doubtfulSet) {
-				if( mapping.getTargetIndividual().toString().equals("http://sws.geonames.org/5282825/")&&
-						mapping.getSourceIndividual().toString().equals("http://data.nytimes.com/N71660314463312318041")
-						) {
-					log.info("here: "+doubtfulSet.size());
-					countTmp ++;
-				}
-			}
-		}
-			
-		log.info("Participated in "+countTmp+" doubtful sets");
-		
 		Set<AtomicMapping> mappingsToRemove = new HashSet<AtomicMapping>();
 		DoubtfulSetSimilarityComparator comparator = new DoubtfulSetSimilarityComparator();
 		Collections.sort(doubtfulSetList, comparator);
@@ -179,15 +164,6 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 		countTmp = 0;
 		int countValid = 0;
 		for(Set<AtomicMapping> doubtfulSet : doubtfulSetList) {
-			
-			for(AtomicMapping mapping : doubtfulSet) {
-				if( mapping.getTargetIndividual().toString().equals("http://sws.geonames.org/5282825/")&&
-						mapping.getSourceIndividual().toString().equals("http://data.nytimes.com/N71660314463312318041")
-						) {
-					log.info("here: "+doubtfulSet.size());
-					countTmp ++;
-				}
-			}
 			
 			for(AtomicMapping mapping : doubtfulSet) {
 				if(mapping.isCorrect()) {
@@ -209,9 +185,10 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 			}
 			
 		}
-		log.info("Valid "+countValid+" almost same sets out of "+doubtfulSetList.size());
-		log.info("Participated in "+countTmp+" doubtful sets out of "+doubtfulSetList.size());
 		
+		
+		log.info("Valid "+countValid+" almost same sets out of "+doubtfulSetList.size());
+				
 		log.info("Removed good ones when processing discriminative cases: "+removedGoodOnes);
 		
 		log.info("Processed discriminative cases: "+countDiscriminativeCases);
@@ -297,15 +274,9 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 				j++;
 			}
 			
-			if(mapping.getTargetIndividual().toString().equals("http://sws.geonames.org/5282825/")&&
-					mapping.getSourceIndividual().toString().equals("http://data.nytimes.com/N71660314463312318041")
-					) {
-				log.info("here");
-			}
+			
 		}
-		if(j>1) {
-			log.info(j);
-		}
+
 		
 		if(best.getSimilarity()-secondBest.getSimilarity()>=epsilon) {
 			// Let only the best stay
@@ -316,28 +287,21 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 				if(actuallyCorrect!=null) {
 					countPreferredWorseErrors ++;
 					
-					log.error("Preferred an incorrect mapping over the correct one: ");
-					log.error("Best sim: "+best.getSimilarity()+" : "+best.toString());
-					log.error("Correct sim: "+actuallyCorrect.getSimilarity()+" : "+actuallyCorrect.toString());
+					log.debug("Preferred an incorrect mapping over the correct one: ");
+					log.debug("Best sim: "+best.getSimilarity()+" : "+best.toString());
+					log.debug("Correct sim: "+actuallyCorrect.getSimilarity()+" : "+actuallyCorrect.toString());
 				
 				} else {
 					this.allWrongCases ++;
 				}
 			}
 			
-			/*for(AtomicMapping mapping : mappingsToRemove) {
-				if(mapping.isCorrect()) {
-					log.info("Error: removing an actually correct mapping");
-				}
-			}*/
+			
 			
 		} else {
 			
 			Set<AtomicMapping> almostTheSame = new HashSet<AtomicMapping>();
 			
-			if(!mappingsToRemove.get(mappingsToRemove.size()-1).equals(best)) {
-				log.error("here");
-			}
 			
 			almostTheSame.add(best);
 			mappingsToRemove.remove(best);
@@ -383,10 +347,8 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 	private AtomicMapping findTheBestMapping(Set<AtomicMapping> mappings) {
 		
 
-		// IValueMatchingFunction<String> function = ValueMatchingFunctionFactory.getInstance("l2 levenshtein");
 		IValueMatchingFunction<String> function = (IValueMatchingFunction<String>)ValueMatchingFunctionFactory.getInstance("overlap");
 		countAlmostSame++;
-		//IValueMatchingFunction<String> function = SetDifferenceValueMatchingFunction.getInstance();
 		
 		AtomicMapping bestMapping = null;
 		double bestSim = -1.0;
@@ -400,12 +362,6 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 		
 		boolean useGeoProfiles = true;
 		for(AtomicMapping mapping : mappings) {
-			if(mapping.getTargetIndividual().toString().equals("http://sws.geonames.org/5282825/")&&
-					mapping.getSourceIndividual().toString().equals("http://data.nytimes.com/N71660314463312318041")
-					) {
-				log.info("here");
-			}
-			
 			sourceIndividuals.add(mapping.getSourceIndividual());
 			targetIndividuals.add(mapping.getTargetIndividual());
 			
@@ -457,10 +413,6 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 					denominator = Math.min(set1.size(), set2.size());
 				}
 				
-				// sim = function.getSimilarity(composedAttribute, composedAttribute, 
-				//		profiles.get(mapping.getSourceIndividual().toString()), 
-				//		profiles.get(mapping.getTargetIndividual().toString()));
-				
 				sim = ((double)overlapTokens.size())/denominator;
 				
 				if(useGeoProfiles) {
@@ -477,17 +429,13 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 			} else {
 				log.error("error: ");
 				if(!profiles.containsKey(mapping.getSourceIndividual().toString())) {
-					System.out.println("Source not found: "+mapping.getSourceIndividual().toString());
+					log.error("Source not found: "+mapping.getSourceIndividual().toString());
 				} else if(!profiles.containsKey(mapping.getTargetIndividual().toString())) {
-					System.out.println("Target not found: "+mapping.getTargetIndividual().toString());
+					log.error("Target not found: "+mapping.getTargetIndividual().toString());
 				} 
 			}
 			
 			profileSizes.put(mapping, set1.size()+set2.size());
-			
-			if(sim>=1.0) {
-				System.out.println("here");
-			}
 			
 			if((bestMapping==null)) {
 				bestMapping = mapping;
@@ -503,14 +451,6 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 			}
 		}
 		
-		if(bestSim>=1.0) {
-			System.out.println("here");
-		}
-		
-		if(actuallyCorrect==null) {
-			System.out.println("here");
-		}
-		
 		// Count how many still almost the same
 		int count = 0;
 		for(AtomicMapping mapping : sims.keySet()) {
@@ -520,30 +460,27 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 			}
 			
 		}
-		/*if(count > 1) {
-			return null;
-		}*/
 		
 		if(!bestMapping.isCorrect()) {
 			if(actuallyCorrect!=null) {
 				this.countNonDiscErrors ++;
 			}  
-			log.error("Preferred an incorrect mapping over the correct one: ");
-			log.error("Best sim: "+bestSim);
-			log.error("Correct sim: "+actuallyCorrectSim);
-			log.error(profiles.get(
+			log.debug("Preferred an incorrect mapping over the correct one: ");
+			log.debug("Best sim: "+bestSim);
+			log.debug("Correct sim: "+actuallyCorrectSim);
+			log.debug(profiles.get(
 					bestMapping.getSourceIndividual().toString()));
-			log.error(profiles.get(
+			log.debug(profiles.get(
 					bestMapping.getTargetIndividual().toString()));
 			if(actuallyCorrect!=null) {
-				log.error(
+				log.debug(
 						profiles.get(actuallyCorrect.getSourceIndividual().toString()));
-				log.error(
+				log.debug(
 						profiles.get(actuallyCorrect.getTargetIndividual().toString()));
 			} else {
-				log.error("");
+				log.debug("");
 			}
-			log.error("");
+			log.debug("");
 			
 		}
 		

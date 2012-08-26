@@ -1,7 +1,10 @@
 package uk.ac.open.kmi.fusion.learning.cache;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 
 import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
@@ -77,37 +80,48 @@ public class CachedPair {
 		
 	}
 	
-	public AtomicMapping convertToAtomicMapping(ObjectContextModel modelSpec, double similarity, double confidence) {
+	public AtomicMapping convertToAtomicMapping(Set<ObjectContextModel> modelSpecs, double similarity, double confidence) {
 		AtomicMapping mapping = convertToAtomicMapping(similarity, confidence);
 		
-		List<VariableComparisonSpecification> varSpecs = new ArrayList<VariableComparisonSpecification>();
-		if(modelSpec!=null) {
-			varSpecs.addAll(modelSpec.getVariableComparisonSpecifications());
+		List<String> sourceProperties = new ArrayList<String>();
+		List<String> targetProperties = new ArrayList<String>();
+		
+		Set<String> tmpSet;	
+		
+		for(ObjectContextModel modelSpec : modelSpecs) {
+			if(modelSpec!=null) {
+				for(VariableComparisonSpecification varSpec : modelSpec.getVariableComparisonSpecifications()) {
+					tmpSet = varSpec.getSourceAttribute().getAtomicAttributesByPropertyPath().keySet();
+					for (String tmp : tmpSet) {
+						if(!sourceProperties.contains(tmp)) {
+							sourceProperties.add(tmp);
+						}
+					}
+					
+					tmpSet = varSpec.getTargetAttribute().getAtomicAttributesByPropertyPath().keySet();
+					for(String tmp : tmpSet) {
+						if(!targetProperties.contains(tmp)) {
+							targetProperties.add(tmp);
+						}
+					}
+				}
+			}
 		}
+		
+		
 
-		String sourceProperty, targetProperty;
 		String sourceLabel = "", targetLabel = "";
-		String value;
-		for(VariableComparisonSpecification varSpec : varSpecs) {
-			if(varSpec.getTargetAttribute() instanceof AtomicAttribute) {
-				sourceProperty = ((AtomicAttribute)varSpec.getSourceAttribute()).getPropertyPath();
-				targetProperty = ((AtomicAttribute)varSpec.getTargetAttribute()).getPropertyPath();
-				
-				if(this.candidateInstance.getValueTable().containsKey(sourceProperty)) {
-					sourceLabel = sourceLabel.concat(" "+this.candidateInstance.getValueTable().get(sourceProperty).get(0).toString()+" ");
-				} else {
-				//	log.error("Property value missing: "+this.candidateInstance.getUri().toString()+", "+sourceProperty);
-				}
-				
-				if(this.targetInstance.getValueTable().containsKey(targetProperty)) {
-					value = this.targetInstance.getValueTable().get(targetProperty).get(0).toString().toString();
-					targetLabel = targetLabel.concat(" "+value+" ");
-				} else {
-				//	log.error("Property value missing: "+this.targetInstance.getUri().toString()+", "+targetProperty);
-				}
-				// this.candidateInstance.getValueTable().get(sourceProperty).get(0);
-			} 
-			
+		
+		for(String tmp : sourceProperties) {
+			if(this.candidateInstance.getValueTable().containsKey(tmp)) {
+				sourceLabel = sourceLabel.concat(" "+this.candidateInstance.getValueTable().get(tmp).get(0).toString()+" ");
+			}
+		}
+		
+		for(String tmp : targetProperties) {
+			if(this.targetInstance.getValueTable().containsKey(tmp)) {
+				targetLabel = targetLabel.concat(" "+this.targetInstance.getValueTable().get(tmp).get(0).toString()+" ");
+			}
 		}
 		
 		mapping.setSourceLabel(sourceLabel.trim());
@@ -131,6 +145,14 @@ public class CachedPair {
 
 	public void setGoldStandard(boolean goldStandard) {
 		this.goldStandard = goldStandard;
+	}
+
+	public AtomicMapping convertToAtomicMapping(ObjectContextModel modelSpec,
+			double similarity, double precision) {
+		
+		Set<ObjectContextModel> modelSpecs = new HashSet<ObjectContextModel>();
+		modelSpecs.add(modelSpec);
+		return convertToAtomicMapping(modelSpecs, similarity, precision);
 	}
 	
 	

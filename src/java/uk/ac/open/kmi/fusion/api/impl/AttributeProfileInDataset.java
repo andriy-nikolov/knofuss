@@ -144,9 +144,7 @@ public class AttributeProfileInDataset {
 	}
 	
 	public void doTypeChecking(String val) {
-		if(this.propertyPath.contains("hasBeginning")) {
-			log.debug("here");
-		}
+		
 		if(isInteger()) {
 			try {
 				Integer.parseInt(val);
@@ -168,10 +166,6 @@ public class AttributeProfileInDataset {
 		if(!isDate()) {
 			try {
 				boolean isDate = false;
-				
-				if(this.propertyPath.contains("hasBeginning")) {
-					log.debug("here");
-				}
 				
 				try {
 					KnoFussDateUtils.parseDate(val);

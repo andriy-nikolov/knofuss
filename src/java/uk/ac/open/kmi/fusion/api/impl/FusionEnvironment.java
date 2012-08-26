@@ -48,16 +48,12 @@ public class FusionEnvironment {
 	
 	public static final String FUSION_CONTEXT_URI = "http://kmi.open.ac.uk/fusion/fusion#fusion-environment";
 	public static final String DOMAIN_CONTEXT_URI = "http://kmi.open.ac.uk/fusion/fusion#domain-environment";
-	// public static String TMP_DIR = "D:/Work/Dataset";
-	// public static RDFFormat RDF_LANGUAGE = RDFFormat.TRIX;
-	// public static String wordNetPropertiesPath = "D:/Work/poweraqua/PowerAquaNetBeans/";
+
 	
 	public static String CONFIG_DIR = "config";
-	// public static ILuceneBlocker indexer;
 	public static boolean debug = false;
 	public static boolean isMultiOntologyCase;
 	
-	//public static MultiOntologyUtil multiOntologyUtil;
 	
 	public static boolean saveComparisons = false;
 	public static String comparisonsLogFile = "comparisons.xml";
@@ -89,25 +85,17 @@ public class FusionEnvironment {
 	private List<TransformationFunctionWrapper> transformationFunctionWrappers;
 	private Map<String, String> abbreviations; 
 
-	// private Map<String, FusionMethodWrapper> methodWrapperTable;
-	// private Map<String, ConflictStatementCluster> conflictSetTable;
-	// private RepositoryConnection connection;
-	// private Map<String, String> queryMappings;
-	// private MemoryInstanceCache instanceCache;
-	
+
 	private Set<URI> contentIndividualUris = null;
 	private boolean multiOntologyCase = false;
 	
 	private Map<String, RepositoryManager> repositoryManagerRegistry;
 	
-	//private int sourceSetSize = 0;
-	//private int targetSetSize = 0;
-	
+
 	private static Logger log = Logger.getLogger(FusionEnvironment.class);
 	
 	public void init() {
 		contextModels = new ArrayList<ObjectContextModel>();
-		// contextModelTable = new HashMap<String, ObjectContextModel>();
 		contextWrappers = new ArrayList<ObjectContextWrapper>();
 		namespaceURITable = new HashMap<String, String>();
 		atomicMappings = new ArrayList<AtomicMapping>();
@@ -118,10 +106,7 @@ public class FusionEnvironment {
 		valueMatchingFunctionWrappers = new ArrayList<ValueMatchingFunctionWrapper>();
 		transformationFunctionWrappers = new ArrayList<TransformationFunctionWrapper>();
 		
-		// methodWrapperTable = new HashMap<String, FusionMethodWrapper>();
 		atomicMappingTable = new HashMap<String, AtomicMapping>();
-		// queryMappings = new HashMap<String, String>();
-		// instanceCache = new MemoryInstanceCache();
 		
 		configObjectRegistry = new HashMap<Resource, FusionConfigurationObject>();
 		linkSessions = new LinkedList<ILinkSession>();
@@ -222,12 +207,6 @@ public class FusionEnvironment {
 			if(obj instanceof ValueMatchingFunctionWrapper) continue;
 			if(obj instanceof TransformationFunctionWrapper) continue;
 			obj.readFromRDFIndividual(connection);
-			if(obj.getRDFIndividual().toString().endsWith("EventComparisonFunction")) {
-				System.out.println("here");
-			}
-			/*if(obj instanceof ValueMatchingFunctionWrapper) {
-				ValueMatchingFunctionFactory.addToPool(((ValueMatchingFunctionWrapper) obj).getImplementation());
-			}*/
 		}
 		
 	}
@@ -242,49 +221,6 @@ public class FusionEnvironment {
 		
 		
 	}
-	
-	/*private FusionConfigurationObject createFusionConfigurationObjectFromResource(Resource resource, RepositoryConnection connection) throws FusionException, RepositoryException {
-		RepositoryResult<Statement> types = connection.getStatements(resource, RDF.TYPE, null, true);
-		Statement stmt;
-		String typeUri;
-		try {
-			while(types.hasNext()) {
-				stmt = types.next();
-				if(stmt.getObject() instanceof URI) {
-					typeUri = stmt.getObject().toString();
-					
-					if(typeUri.equals(ApplicationContext.TYPE_URI)) {
-						return new ApplicationContext(resource, this);
-					} else if(typeUri.equals(FusionMethodWrapper.TYPE_URI)) {
-						return new FusionMethodWrapper(resource, this);
-					} else if(typeUri.equals(OWLIMDataSource.TYPE_URI)) {
-						return new OWLIMDataSource(resource, this);
-					} else if(typeUri.equals(FileDump.TYPE_URI)) {
-						return new FileDump(resource, this);
-					} else if(typeUri.equals(LuceneDiskIndexer.TYPE_URI)) {
-						return new LuceneDiskIndexer(resource, this);
-					} else if(typeUri.equals(LuceneDiskIndexerAllFields.TYPE_URI)) {
-						return new LuceneDiskIndexerAllFields(resource, this);
-					} else if(typeUri.equals(LuceneMemoryIndexerAllFields.TYPE_URI)) {
-						return new LuceneMemoryIndexerAllFields(resource, this);
-					} else if(typeUri.equals(LinkSession.TYPE_URI)) {
-						return new LinkSession(resource, this);
-					} else if(typeUri.equals(VariableComparisonSpecification.TYPE_URI)) {
-						return new VariableComparisonSpecification(resource, this);
-					} else if(typeUri.equals(ObjectContextModel.TYPE_URI)) {
-						return new ObjectContextModel(resource, this);
-					}
-					
-				}
-				
-			}
-		} finally {
-			types.close();
-		}
-		
-		throw new FusionException("Resource does not denote a valid fusion configuration object: "+resource.toString());
-	}*/
-	
 	
 	protected void loadConflictSets() throws FusionException {
 	}
@@ -317,34 +253,6 @@ public class FusionEnvironment {
 		return applicationContexts;
 	}
 
-	/*public RepositoryConnection getCandidateKb() {
-		return fusionRepositoryConnection;
-	}
-
-	public RepositoryConnection getMainKB() {
-		// TODO Auto-generated method stub
-		return mainKbRepositoryConnection;
-	}*/
-
-	/*public List<IObjectContextModel> getObjectContextModelsForConcept(URI concept) {
-		List<IObjectContextModel> res = new ArrayList<IObjectContextModel>();
-		for(IApplicationContext context : this.applicationContexts) {
-			if(context.getConcept().equals(concept)) {
-				List<IFusionOntologyObject> connectedObjects = context.getConnectedObjects();
-				for(IFusionOntologyObject obj : connectedObjects) {
-					if(obj instanceof IObjectContextModel) {
-						res.add((IObjectContextModel)obj);
-					}
-				}
-			}
-		}
-		for(IObjectContextModel model : contextModels) {
-			if(((ObjectContextModel)model).getConcept().getUri().equals(concept.getUri())) {
-				res.add(model);
-			}
-		}
-		return res;
-	}*/
 
 	public List<ConflictStatementCluster> getConflicts() {
 		

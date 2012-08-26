@@ -147,9 +147,7 @@ public class LuceneSearchStrategyBigrams extends AbstractLuceneSearchStrategy {
 	    	}
 	    	
 	    	String queryString = LuceneUtils.getTransducedQuery(getConcatenatedString(allFieldValues));
-	    	/*if(queryString.contains("ukraine")) {
-	    		System.out.println("here");
-	    	}*/
+	    	
 	    	Query query = null;
     		QueryParser queryParser = new MultiFieldQueryParser(Version.LUCENE_30, searchFields, analyzer);
     		if(!queryString.isEmpty()) {
@@ -176,13 +174,7 @@ public class LuceneSearchStrategyBigrams extends AbstractLuceneSearchStrategy {
 		    				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
 		    				
 		    				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
-		    				/*if(Math.abs(hits.scoreDocs[i].score-topScore)>0.1) {
-		    					if(label.toLowerCase().equals("bulgaria")) {
-		    						System.out.println("here");
-		    					}
-		    					System.out.println(label+" : "+doc.get("http://www.geonames.org/ontology#name"));
-		    					break;
-		    				}*/
+		    				
 		    				docs.put(doc.get("uri"), doc);
 		    			} else {
 		    				break;

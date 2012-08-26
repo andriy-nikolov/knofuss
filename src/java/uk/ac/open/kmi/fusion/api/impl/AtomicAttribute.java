@@ -35,10 +35,6 @@ public class AtomicAttribute extends AbstractAttribute {
 	public AtomicAttribute(String propertyPath) {
 		super();
 		
-		if(propertyPath.startsWith("(")) {
-			log.info("here");
-		}
-		
 		this.setPropertyPath(propertyPath);
 		this.variableName = "attr"+(attributeNumber++);
 		this.linkedObjects = new HashMap<String, Object>();

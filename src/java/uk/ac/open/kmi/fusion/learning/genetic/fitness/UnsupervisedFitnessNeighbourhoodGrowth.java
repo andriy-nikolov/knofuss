@@ -21,8 +21,11 @@ public class UnsupervisedFitnessNeighbourhoodGrowth implements IFitnessFunction 
 	
 	double value;
 	
-	static final double neighbourhoodFactor = 1.1;
+	// static final double neighbourhoodFactor = 1.1;
 	
+	public static double NEIGHBOURHOOD_FACTOR = 1.1;
+	
+	public static boolean discountRareAttributes = false;
 		
 	private static Logger log = Logger.getLogger(UnsupervisedFitnessNeighbourhoodGrowth.class);
 	
@@ -50,9 +53,11 @@ public class UnsupervisedFitnessNeighbourhoodGrowth implements IFitnessFunction 
 		int selectedPairId, i;
 		double sim, epsilon;
 		
+		double k = 0, max = 0;
+		double mu = 0;
 		int neighbourhoodGrowth;
 		Map<Integer, Integer> mapNeighbourhoodGrowthBySourceId = new HashMap<Integer, Integer>();
-		Map<Integer, Integer> mapNeighbourhoodGrowthByTargetId = new HashMap<Integer, Integer>();
+		Map<Integer, Double> mapNeighbourhoodGrowthWeights = new HashMap<Integer, Double>();
 		
 		for(Integer sourceId : compsBySourceInstance.keySet()) {
 			
@@ -62,17 +67,18 @@ public class UnsupervisedFitnessNeighbourhoodGrowth implements IFitnessFunction 
 			compsBySourceInstance.put(sourceId, pairIds);
 			selectedPairId = pairIds.get(0);
 			testPair = cache.getCachedPairById(selectedPairId);
-			if(testPair.getCandidateInstance().getUri().toString().equals("http://data.nytimes.com/N45527707190659418771")) {
-				log.info("here");
-			}
+
 			
 			sim = solutionResults.get(selectedPairId);
 			epsilon = 1-sim;
+			
+			// mapNeighbourhoodGrowthWeights.put(sourceId, 1.0);
 			neighbourhoodGrowth = 1;
+			
 			for(i = 1;i<pairIds.size();i++) {
 				selectedPairId = pairIds.get(i);
 				sim = solutionResults.get(selectedPairId);
-				if((1-sim)<=neighbourhoodFactor*epsilon) {
+				if((1-sim)<=NEIGHBOURHOOD_FACTOR*epsilon) {
 					neighbourhoodGrowth++;
 					// results.put(selectedPairId, sim);
 				} else {
@@ -80,18 +86,49 @@ public class UnsupervisedFitnessNeighbourhoodGrowth implements IFitnessFunction 
 					break;
 				}
 			}
+			
+			if(neighbourhoodGrowth==1) {
+				k++;
+			}
+			
+			if(neighbourhoodGrowth>=max) {
+				max = neighbourhoodGrowth;
+			}
+			
 			mapNeighbourhoodGrowthBySourceId.put(sourceId, neighbourhoodGrowth);
 		}
 		
-		double std = 0;
-		
 		double average = 0;
+		double weightSum = 0, weight;
 		
 		for(int sourceId : mapNeighbourhoodGrowthBySourceId.keySet()) {
-			average+=mapNeighbourhoodGrowthBySourceId.get(sourceId);
+			//weight = mapNeighbourhoodGrowthWeights.get(sourceId);
+			
+			neighbourhoodGrowth = mapNeighbourhoodGrowthBySourceId.get(sourceId);
+			if(neighbourhoodGrowth>1) {
+				average+=neighbourhoodGrowth;
+				weightSum+=1;
+			}
 		}
 		
-		average = average/mapNeighbourhoodGrowthBySourceId.size();
+		// average = average/mapNeighbourhoodGrowthBySourceId.size();
+		mu = average/weightSum;
+		
+		mu = mu/max;
+		
+		double validPairsRatio = 1.0;
+		if(solution!=null) {
+			if(discountRareAttributes) {
+				validPairsRatio = solution.getValidPairsRatio();
+				log.info("Solution: "+solution.toString());
+			}
+		}
+		
+		log.info("Valid pairs ratio: "+validPairsRatio);
+		log.info("n: "+mapNeighbourhoodGrowthBySourceId.size());
+		log.info("k: "+k);
+		log.info("mu: "+mu);
+		log.info("(n-k)/(n*mu): "+(mapNeighbourhoodGrowthBySourceId.size()-k)/(mu*mapNeighbourhoodGrowthBySourceId.size()));
 		
 		/*double val;
 		for(Integer res : solutionResults.keySet()) {
@@ -103,14 +140,14 @@ public class UnsupervisedFitnessNeighbourhoodGrowth implements IFitnessFunction 
 		
 		
 		
-		return new UnsupervisedFitnessNeighbourhoodGrowth(average);
+		return new UnsupervisedFitnessNeighbourhoodGrowth(mu, k, mapNeighbourhoodGrowthBySourceId.size(), validPairsRatio);
 		
 		
 	}
 	
-	private UnsupervisedFitnessNeighbourhoodGrowth(double averageNeighbourhoodGrowth) {
+	private UnsupervisedFitnessNeighbourhoodGrowth(double mu, double k, double n, double validPairsRatio) {
 		
-		value = 1/averageNeighbourhoodGrowth;
+		value = validPairsRatio/((n-k)/(n*mu)+1);
 		
 	}
 
@@ -118,8 +155,6 @@ public class UnsupervisedFitnessNeighbourhoodGrowth implements IFitnessFunction 
 	public double getValue() {
 		return this.value;
 	}
-	
-	
 
 	@Override
 	public double getPrecision() {

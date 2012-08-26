@@ -253,12 +253,6 @@ public class ObjectContextModelMatcher {
 						
 						pair = new ComparisonPair(resSource, resTarget);
 						
-						if(resTarget.getIndividual().toString().equals("http://sws.geonames.org/5282825/")&&
-								resSource.getIndividual().toString().equals("http://data.nytimes.com/N71660314463312318041")
-								) {
-							log.info("here");
-						}
-						
 						currentTime = System.currentTimeMillis();
 						similarity = instanceModel.getSimilarity(pair);
 						pair.setSimilarity(similarity);
@@ -564,10 +558,6 @@ public class ObjectContextModelMatcher {
 			sortedPairs = new ArrayList<ComparisonPair>(pairs);
 			Collections.sort(sortedPairs, comparator);
 			selectedPair = sortedPairs.get(0);
-			
-			/*if(testPair.getCandidateInstance().getUri().toString().equals("http://data.nytimes.com/N45527707190659418771")) {
-				log.info("here");
-			}*/
 			
 			bestSim = selectedPair.getSimilarity();
 			curAtomicMapping = createAtomicMappingFromInstanceComparator(selectedPair);

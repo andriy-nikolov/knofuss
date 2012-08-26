@@ -50,7 +50,6 @@ public class DefaultMutationOperator implements IMutationOperator {
 		List<Integer> validComponents = new ArrayList<Integer>();
 		List<Integer> potentiallyValidComponents = new ArrayList<Integer>();
 		
-		
 		for(int i=0;i<rows;i++) {
 			for(int j=0;j<columns;j++) {
 				childGenotype.getGenotypeWeights()[i][j] = genotype.getGenotypeWeights()[i][j];
@@ -187,9 +186,6 @@ public class DefaultMutationOperator implements IMutationOperator {
 				threshold = Math.max(threshold-change, 0.0);
 			}
 						
-			if(childGenotype.getThreshold()<0.0000001) {
-				log.info("here");
-			}
 			
 			// Threshold adjustment
 			/*if(original.getFitness() instanceof UnsupervisedFitness) {
@@ -197,9 +193,7 @@ public class DefaultMutationOperator implements IMutationOperator {
 				threshold = Math.max(threshold, fitness.getAverageSimilarity()-3*fitness.getStandardDeviation());
 			}*/
 			childGenotype.setThreshold(threshold);
-			
-			
-			
+
 		} else {
 			IAggregationFunction func = AggregationFunctionFactory.getRandomInstance();
 			while(!genotype.getAggregationFunction().toString().equals(func.toString())) {
@@ -207,8 +201,6 @@ public class DefaultMutationOperator implements IMutationOperator {
 			}
 			childGenotype.setAggregationFunction(func);
 		}
-		
-		
 		
 		return new CandidateSolution(original.getModelSpec().getApplicationContext(), childGenotype, sourceProperties, targetProperties);
 	}

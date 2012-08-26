@@ -210,10 +210,7 @@ public class DummyBlockerOnlyObjectIdentificationMethod implements
 			if(!alreadyUsedPropertyPaths.containsKey(attribute.getPropertyPath())) {
 			
 				targetAttributeCounts.put(attribute, targetAttributes.get(key).getMentionedIn());
-				/*if(key.equals(RDFS.LABEL.toString())) {
-					System.out.println("here");
-					targetPropertiesPool.add(attribute);
-				}*/
+				
 				// if(val>=0.95) {
 				if(val>=0.5) {
 					if((!key.equals(Utils.FOAF_NS+"name"))&&(!key.equals("http://oaei.ontologymatching.org/2010/IIMBTBOX/article"))) {
@@ -314,9 +311,7 @@ public class DummyBlockerOnlyObjectIdentificationMethod implements
 								(!sourceAttribute.getType().equals(AttributeType.INTEGER))&&
 								(!sourceAttribute.getType().equals(AttributeType.DATE))&&
 								(sourceEntry.getValueTable().containsKey(((AtomicAttribute)sourceAttribute).getPropertyPath()))) {
-							/*if(sourceEntry.getValueTable().get(sourceAttribute.getPropertyPath()).contains("Washington")) {
-								System.out.println("here");
-							}*/
+							
 							tmpList = new LinkedList<String>();
 							searchValues.put(((AtomicAttribute)sourceAttribute).getPropertyPath(), tmpList);
 							tmpObjectList = sourceEntry.getValueTable().get(((AtomicAttribute)sourceAttribute).getPropertyPath());

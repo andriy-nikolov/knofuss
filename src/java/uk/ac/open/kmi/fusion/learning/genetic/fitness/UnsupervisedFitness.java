@@ -12,7 +12,7 @@ import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
 
 public class UnsupervisedFitness implements IFitnessFunction {
 	
-	public static double BETA = 0.1;
+	public static double BETA = 0.01;
 	
 	public static double OVERLAP_DEGREE = 1;
 	
@@ -25,12 +25,12 @@ public class UnsupervisedFitness implements IFitnessFunction {
 	double pseudoPrecision, pseudoRecall;
 	double standardDeviation = 0;
 	
-	double threshold;
+	// double threshold;
 	
 		
 	private static Logger log = Logger.getLogger(UnsupervisedFitness.class);
 	
-	public static UnsupervisedFitness calculateUnsupervisedFitness(CandidateSolution solution, Map<Integer, Double> solutionResults, MemoryInstanceCache cache) {
+	public static UnsupervisedFitness calculateUnsupervisedFitness(Map<Integer, Double> solutionResults, MemoryInstanceCache cache) {
 		
 		Map<Integer, Integer> idCachedPairMap = new HashMap<Integer, Integer>();
 		
@@ -55,15 +55,15 @@ public class UnsupervisedFitness implements IFitnessFunction {
 		
 		average = average / idCachedPairMap.size();
 		
-		return new UnsupervisedFitness(average, idCachedPairMap.size(), averageSimilarity, std, solution.getGenotype().getThreshold(), cache);
+		return new UnsupervisedFitness(average, idCachedPairMap.size(), averageSimilarity, std, cache);
 	}
 	
-	private UnsupervisedFitness(double averagePerIndividual, int solutionsSize, double averageSimilarity, double standardDeviation, double threshold, MemoryInstanceCache cache) {
+	private UnsupervisedFitness(double averagePerIndividual, int solutionsSize, double averageSimilarity, double standardDeviation, MemoryInstanceCache cache) {
 		
 		this.averagePerIndividual = averagePerIndividual;
 		this.coveredIndividualsSize = solutionsSize;
 		this.averageSimilarity = averageSimilarity;
-		this.threshold = threshold;
+		// this.threshold = threshold;
 		this.standardDeviation = standardDeviation;
 		calculate(cache);
 	}
@@ -100,7 +100,7 @@ public class UnsupervisedFitness implements IFitnessFunction {
 				log.error("Source instances: "+sourceInstances+", targetInstances: "+targetInstances+", minSetSize: "+minSetSize);
 			}
 			
-			this.value = (1+BETA*BETA)*pseudoPrecision*pseudoRecall / (BETA*BETA*pseudoPrecision + pseudoRecall);
+			this.value = (1+BETA)*pseudoPrecision*pseudoRecall / (BETA*pseudoPrecision + pseudoRecall);
 			double coefficient = (1-Math.pow(1-averageSimilarity, 2));
 			log.info("Coefficient: "+coefficient+", average similarity: "+averageSimilarity);
 			

@@ -254,16 +254,7 @@ public abstract class AbstractLuceneSearchStrategy implements
 							currentProfile.setAverageNumberOfTokens(currentProfile.getAverageNumberOfTokens()+tokens.size());
 							currentProfile.doTypeChecking(val);
 								
-						} else if(f.name().equals("uri")) {
-						
-							if(f.stringValue().toLowerCase().endsWith("isaac_asimov")||
-									f.stringValue().toLowerCase().endsWith("oscar_wilde")) {
-								log.debug("here");
-								log.info(topDocs.scoreDocs[i].score);
-							}
-							
-							
-						}
+						} 
 					}
 					
 					//for(String tmp : tmpSet) {
