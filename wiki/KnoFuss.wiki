@@ -21,16 +21,16 @@ In particular, the architecture contains the following methods:
 
   * Individual matching:
 
-    * Aggregated attribute-based similarity. This method uses the classical approach to individual matching where the similarity between individuals is calculated as an aggregation of similarities between their relevant attributes. The user can select the properties to be compared, similarity functions, weights, and the cut-off threshold.
+    # Aggregated attribute-based similarity. This method uses the classical approach to individual matching where the similarity between individuals is calculated as an aggregation of similarities between their relevant attributes. The user can select the properties to be compared, similarity functions, weights, and the cut-off threshold.
 
-    * Unsupervised attribute-based similarity. This method also implements the aggregated attribute-based similarity. However, instead of relying on the user to choose the parameters of the combined similarity function, it tries to pick them automatically using a genetic algorithm. In the absence of reliable training data, it uses the desired distribution of resulting links to evaluate the fitness of candidate solutions: e.g., the expected number of mappings.
+    # Unsupervised attribute-based similarity. This method also implements the aggregated attribute-based similarity. However, instead of relying on the user to choose the parameters of the combined similarity function, it tries to pick them automatically using a genetic algorithm. In the absence of reliable training data, it uses the desired distribution of resulting links to evaluate the fitness of candidate solutions: e.g., the expected number of mappings.
 
 
   * Dataset matching:
 
-    * Filtering based on ontological constraints. This method uses explicitly defined ontological constraints (class disjointness, functionality and cardinality restrictions) to update the original set of mappings provided by individual matching and filter out those which violate these constraints.
+    # Filtering based on ontological constraints. This method uses explicitly defined ontological constraints (class disjointness, functionality and cardinality restrictions) to update the original set of mappings provided by individual matching and filter out those which violate these constraints.
 
-    * Belief propagation network. This method combines uncertainty reasoning with ontological reasoning to refine the original set of mappings produced by individual matching methods. Confidence degrees of data statements in both repositories and of initial mappings are interpreted as Dempster-Shafer belief functions. Ontological reasoning is used to construct belief propagation networks capturing mutual impact of individual matching decisions. These networks are used to refine the original set of mappings. 
+    # Belief propagation network. This method combines uncertainty reasoning with ontological reasoning to refine the original set of mappings produced by individual matching methods. Confidence degrees of data statements in both repositories and of initial mappings are interpreted as Dempster-Shafer belief functions. Ontological reasoning is used to construct belief propagation networks capturing mutual impact of individual matching decisions. These networks are used to refine the original set of mappings. 
 
 
 = Usage =
