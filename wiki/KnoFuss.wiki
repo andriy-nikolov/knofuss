@@ -2,13 +2,13 @@
 
 = Introduction =
 
-KnoFuss is a system for semantic data fusion. It takes as input two semantic datasets represented in RDF and resolves the data linking problem:
+!KnoFuss is a system for semantic data fusion. It takes as input two semantic datasets represented in RDF and resolves the data linking problem:
 
   * Different datasets often contain information about the same entities but refer to them using different URIs. Such individuals have to be identified and either merged (by replacing URIs) or linked (e.g., using owl:sameAs relations). This problem is similar to the record linkage task studied in the database community.
 
 = Main features =
 
-KnoFuss provides a set of matching methods which can compare descriptions of RDF individuals and decide whether they refer to the same entity. KnoFuss is implemented as a modular and extensible architecture. The generic task of data linking is decomposed into two main subtasks:
+!KnoFuss provides a set of matching methods which can compare descriptions of RDF individuals and decide whether they refer to the same entity. !KnoFuss is implemented as a modular and extensible architecture. The generic task of data linking is decomposed into two main subtasks:
 
   * Individual matching. This subtask compares properties of two individuals to decide whether they are likely to represent the same entity.
   * Dataset matching. At this stage, the whole set of candidate mappings produced by individual matching is analysed and refined. Thus, the system can capture the impact of different mappings on each other as well as the influence of ontological constraints: e.g., that a mapping between two individuals is less likely to be true if it leads to inconsistent data.
