@@ -25,7 +25,6 @@
 	<classpathentry kind="lib" path="lib/lucene-core-3.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/lucene-queries-3.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/openrdf-sesame-onejar.jar"/>
-	<classpathentry kind="lib" path="lib/owlim-big-3.3.2264.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-jdk14-1.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/commons-httpclient-3.1.jar"/>
