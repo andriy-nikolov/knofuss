@@ -28,7 +28,6 @@ package uk.ac.open.kmi.fusion.api.impl.valuematching;
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.AttributeType;
-import uk.ac.open.kmi.fusion.objectidentification.standard.SimMetricsObjectIdentificationUtils;
 import uk.ac.shef.wit.simmetrics.similaritymetrics.JaroWinkler;
 
 public class JaroWinklerValueMatchingFunction implements IValueMatchingFunction<String> {

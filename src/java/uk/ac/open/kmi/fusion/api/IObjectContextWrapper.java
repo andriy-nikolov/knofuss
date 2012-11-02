@@ -25,12 +25,9 @@
  */
 package uk.ac.open.kmi.fusion.api;
 
-import java.util.Date;
 import java.util.List;
 
 import org.openrdf.model.URI;
-
-import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
 
 public interface IObjectContextWrapper {
 

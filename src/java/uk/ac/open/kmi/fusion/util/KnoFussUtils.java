@@ -36,7 +36,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.openrdf.OpenRDFException;
@@ -59,7 +58,6 @@ import uk.ac.open.kmi.common.utils.Utils;
 import uk.ac.open.kmi.common.utils.sparql.SPARQLUtils;
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
-import uk.ac.open.kmi.fusion.learning.genetic.mutation.DefaultMutationOperator;
 import fr.inrialpes.exmo.align.impl.BasicAlignment;
 import fr.inrialpes.exmo.align.parser.AlignmentParser;
 

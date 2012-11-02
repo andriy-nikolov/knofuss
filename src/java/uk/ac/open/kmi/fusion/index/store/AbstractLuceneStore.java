@@ -40,10 +40,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Version;
 import org.openrdf.OpenRDFException;
-import org.openrdf.model.BNode;
 import org.openrdf.model.Literal;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
@@ -55,7 +52,6 @@ import org.openrdf.repository.RepositoryException;
 import uk.ac.open.kmi.common.utils.Utils;
 import uk.ac.open.kmi.fusion.util.FusionException;
 import uk.ac.open.kmi.fusion.util.KnoFussUtils;
-import uk.ac.open.kmi.fusion.util.OAEIUtils;
 import uk.ac.open.kmi.fusion.util.SesameUtils;
 
 public abstract class AbstractLuceneStore implements

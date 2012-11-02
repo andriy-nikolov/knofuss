@@ -25,18 +25,11 @@
  */
 package uk.ac.open.kmi.fusion.api.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 import java.util.HashSet;
-
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.openrdf.model.URI;
-
-
-import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
 
 public abstract class FusionSet extends FusionMethodResult {
 	

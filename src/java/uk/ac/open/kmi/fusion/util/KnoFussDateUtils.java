@@ -26,7 +26,6 @@
 package uk.ac.open.kmi.fusion.util;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.commons.lang.time.DateUtils;

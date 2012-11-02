@@ -30,24 +30,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QueryFactory;
-import com.hp.hpl.jena.query.QueryParseException;
 
 import uk.ac.open.kmi.common.utils.sparql.MySPARQLParser;
-import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IObjectContextModel;
 import uk.ac.open.kmi.fusion.api.IObjectContextWrapper;
-import uk.ac.open.kmi.fusion.api.impl.aggregation.AggregationFunctionFactory;
-import uk.ac.open.kmi.fusion.util.FusionException;
-import uk.ac.open.kmi.fusion.util.KnoFussUtils;
+
+import com.hp.hpl.jena.query.Query;
 
 public abstract class AbstractObjectContextModel extends
 		FusionConfigurationObject implements IObjectContextModel {

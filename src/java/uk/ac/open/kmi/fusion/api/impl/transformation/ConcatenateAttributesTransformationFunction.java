@@ -31,7 +31,6 @@ import java.util.Map;
 
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.ITransformationFunction;
-import uk.ac.open.kmi.fusion.api.impl.CompositeAttributeValue;
 import uk.ac.open.kmi.fusion.api.impl.TransformationAttribute;
 
 public class ConcatenateAttributesTransformationFunction implements

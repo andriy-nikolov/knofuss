@@ -25,8 +25,6 @@
  */
 package uk.ac.open.kmi.fusion.learning.test;
 
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,15 +35,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openrdf.model.vocabulary.RDFS;
-import org.openrdf.repository.RepositoryException;
 
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
 import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
 import uk.ac.open.kmi.fusion.api.impl.AttributeType;
-import uk.ac.open.kmi.fusion.api.impl.valuematching.JaroValueMatchingFunction;
-import uk.ac.open.kmi.fusion.api.impl.valuematching.JaroWinklerValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.valuematching.ValueMatchingFunctionFactory;
 import uk.ac.open.kmi.fusion.learning.CandidateSolution;
 import uk.ac.open.kmi.fusion.learning.Genotype;

@@ -25,43 +25,29 @@
  */
 package uk.ac.open.kmi.fusion.learning;
 
-import java.util.*;
-import java.io.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Fieldable;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
-
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.*;
-import org.openrdf.model.*;
-import org.openrdf.model.vocabulary.RDF;
-
 
 import uk.ac.open.kmi.common.utils.Utils;
-import uk.ac.open.kmi.common.utils.sparql.MySPARQLParser;
-import uk.ac.open.kmi.fusion.api.*;
-import uk.ac.open.kmi.fusion.api.impl.*;
+import uk.ac.open.kmi.fusion.api.IObjectContextWrapper;
+import uk.ac.open.kmi.fusion.api.impl.ComparisonPair;
+import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
+import uk.ac.open.kmi.fusion.learning.cache.CachedPair;
+import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
+import uk.ac.open.kmi.fusion.objectidentification.LuceneBackedObjectContextWrapper;
 // import uk.ac.open.kmi.fusion.index.LuceneDiskIndexer;
 // import uk.ac.open.kmi.fusion.index.LuceneMemoryIndexer;
 // import uk.ac.open.kmi.fusion.index.LuceneMemoryIndexerAllFields;
-import uk.ac.open.kmi.fusion.learning.cache.CachedPair;
-import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
-import uk.ac.open.kmi.fusion.objectidentification.*;
-import uk.ac.open.kmi.fusion.objectidentification.standard.*;
-import uk.ac.open.kmi.fusion.util.*;
 
 public class ObjectContextModelMatcherForGeneticExperimental {
 	ObjectContextModel instanceModel;

@@ -28,8 +28,6 @@ package uk.ac.open.kmi.fusion.learning.tree;
 import java.util.ArrayList;
 import java.util.List;
 
-import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
-
 public abstract class TreeNode {
 
 	// GenotypeTree genotype;

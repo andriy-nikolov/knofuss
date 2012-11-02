@@ -27,12 +27,8 @@ package uk.ac.open.kmi.fusion.api;
 
 import java.util.List;
 
-import org.openrdf.model.URI;
-
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
 import uk.ac.open.kmi.fusion.api.impl.AtomicMapping;
-import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
-import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
 import uk.ac.open.kmi.fusion.util.FusionException;
 
 /**

@@ -31,14 +31,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import uk.ac.open.kmi.common.utils.Utils;
 import uk.ac.open.kmi.fusion.api.IAttribute;
-import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.AttributeType;
-import uk.ac.shef.wit.simmetrics.similaritymetrics.AbstractStringMetric;
 
 public class L2EventMetaMatchingFunction extends TokenBasedSimilarityValueMatchingFunction {
 

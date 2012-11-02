@@ -25,33 +25,45 @@
  */
 package uk.ac.open.kmi.fusion.objectidentification.standard;
 
-import java.util.*;
-import java.io.*;
-
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-
+import org.openrdf.model.URI;
+import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
-import org.openrdf.repository.*;
-import org.openrdf.model.*;
-import org.openrdf.model.vocabulary.RDF;
-
+import org.openrdf.repository.RepositoryConnection;
 
 import uk.ac.open.kmi.common.utils.Utils;
-import uk.ac.open.kmi.common.utils.sparql.MySPARQLParser;
-import uk.ac.open.kmi.fusion.api.*;
-import uk.ac.open.kmi.fusion.api.impl.*;
+import uk.ac.open.kmi.fusion.api.IAttribute;
+import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
+import uk.ac.open.kmi.fusion.api.IObjectContextWrapper;
+import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
+import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
+import uk.ac.open.kmi.fusion.api.impl.AtomicMapping;
+import uk.ac.open.kmi.fusion.api.impl.ComparisonPair;
+import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
+import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
+import uk.ac.open.kmi.fusion.api.impl.ObjectContextWrapper;
+import uk.ac.open.kmi.fusion.objectidentification.LuceneBackedObjectContextWrapper;
+import uk.ac.open.kmi.fusion.objectidentification.SearchResult;
+import uk.ac.open.kmi.fusion.util.KnoFussDateUtils;
 // import uk.ac.open.kmi.fusion.index.LuceneDiskIndexer;
 // import uk.ac.open.kmi.fusion.index.LuceneDiskIndexerAllFields;
-import uk.ac.open.kmi.fusion.objectidentification.*;
-import uk.ac.open.kmi.fusion.objectidentification.standard.*;
-import uk.ac.open.kmi.fusion.util.*;
 
 public class ObjectContextModelMatcherThresholdBased {
 	ObjectContextModel instanceModel;

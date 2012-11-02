@@ -26,20 +26,17 @@
 package uk.ac.open.kmi.fusion.learning.tree;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.learning.CandidateSolutionFitnessResult;
 import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.F1Fitness;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.IFitnessFunction;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitness;
-import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitnessNeighbourhoodGrowth;
 
 public class CandidateSolutionPoolEvaluatorRunnableTreeBased implements Callable<CandidateSolutionFitnessResult> {
 

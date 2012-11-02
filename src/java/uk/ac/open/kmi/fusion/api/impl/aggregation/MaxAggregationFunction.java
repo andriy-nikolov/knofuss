@@ -26,14 +26,12 @@
 package uk.ac.open.kmi.fusion.api.impl.aggregation;
 
 import java.util.List;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.open.kmi.fusion.api.IAggregationFunction;
 import uk.ac.open.kmi.fusion.api.IObjectContextWrapper;
 import uk.ac.open.kmi.fusion.api.impl.VariableComparisonSpecification;
-import uk.ac.open.kmi.fusion.learning.CandidateSolutionPool;
 
 public class MaxAggregationFunction implements IAggregationFunction {
 

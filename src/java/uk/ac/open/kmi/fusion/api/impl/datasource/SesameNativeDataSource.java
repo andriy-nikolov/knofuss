@@ -26,25 +26,15 @@
 package uk.ac.open.kmi.fusion.api.impl.datasource;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Fieldable;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.manager.RepositoryManager;
 
 import uk.ac.open.kmi.common.utils.sesame.owlim.SesameConnectionProfile;
 import uk.ac.open.kmi.fusion.FusionMetaVocabulary;

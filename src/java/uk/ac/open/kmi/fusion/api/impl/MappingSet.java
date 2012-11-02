@@ -25,16 +25,15 @@
  */
 package uk.ac.open.kmi.fusion.api.impl;
 
-import java.util.List;
-import java.util.Set;
 import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.HashMap;
-
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.openrdf.model.Resource;
@@ -45,7 +44,6 @@ import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 
-import uk.ac.open.kmi.fusion.*;
 import uk.ac.open.kmi.fusion.util.SesameUtils;
 
 

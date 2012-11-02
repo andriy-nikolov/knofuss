@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import uk.ac.open.kmi.fusion.api.IAggregationFunction;
-import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 
 public final class AggregationFunctionFactory {
 
@@ -46,7 +45,7 @@ public final class AggregationFunctionFactory {
 	}
 	
 	private AggregationFunctionFactory() {
-		// TODO Auto-generated constructor stub
+
 	}
 	
 	public static IAggregationFunction getInstance(String name) {

@@ -27,30 +27,24 @@ package uk.ac.open.kmi.fusion.learning;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.openjena.atlas.logging.Log;
 
-
-import uk.ac.open.kmi.common.utils.Utils;
-import uk.ac.open.kmi.common.utils.sparql.SPARQLUtils;
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
-// import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
 import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
 import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
-import uk.ac.open.kmi.fusion.api.impl.TransformationAttribute;
 import uk.ac.open.kmi.fusion.api.impl.VariableComparisonSpecification;
 import uk.ac.open.kmi.fusion.api.impl.aggregation.AggregationFunctionFactory;
 import uk.ac.open.kmi.fusion.api.impl.valuematching.ValueMatchingFunctionFactory;
 import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.IFitnessFunction;
+// import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
 
 public class CandidateSolution {
 
@@ -76,8 +70,6 @@ public class CandidateSolution {
 	}
 	
 	public CandidateSolution(ApplicationContext context, Genotype genotype, List<IAttribute> sourceProperties, List<IAttribute> targetProperties) {
-		String currentSourceVarName, currentTargetVarName;
-		int currentSourceVarIndex = 0, currentTargetVarIndex = 0;
 		
 		Double[][] genotypeWeights = genotype.getGenotypeWeights();
 		
@@ -103,11 +95,6 @@ public class CandidateSolution {
 		VariableComparisonSpecification specification;
 		IAttribute sourceProperty, targetProperty;
 		
-		Map<Integer, String> sourceVariableByProperty = new HashMap<Integer, String>();
-		Map<Integer, String> targetVariableByProperty = new HashMap<Integer, String>();
-		
-		String str;
-		int tmpIndex = 0;
 		for(int i=0;i<sourceProperties.size();i++) {
 			sourceProperty = sourceProperties.get(i);
 			for(int j=0;j<targetProperties.size();j++) {
@@ -145,22 +132,6 @@ public class CandidateSolution {
 
 	public void setFitness(IFitnessFunction fitness) {
 		this.fitness = fitness;
-	}
-
-	private Double[][] getGenotypeWeights() {
-		return genotype.getGenotypeWeights();
-	}
-
-	private void setGenotypeWeights(Double[][] genotypeWeights) {
-		this.genotype.setGenotypeWeights(genotypeWeights);
-	}
-
-	private IValueMatchingFunction[][] getGenotypeFunctions() {
-		return genotype.getGenotypeFunctions();
-	}
-
-	private void setGenotypeFunctions(IValueMatchingFunction[][] genotypeFunctions) {
-		this.genotype.setGenotypeFunctions(genotypeFunctions);
 	}
 
 	public static CandidateSolution createRandom(ApplicationContext applicationContext, List<IAttribute> sourceProperties, List<IAttribute> targetProperties, Map<IAttribute, Map<IAttribute, List<IValueMatchingFunction<? extends Object>>>> mapApplicableFunctions, boolean aligned) {

@@ -32,9 +32,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
 import uk.ac.open.kmi.fusion.api.impl.AtomicMapping;
-import uk.ac.open.kmi.fusion.api.impl.CompositeAttribute;
 import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
 import uk.ac.open.kmi.fusion.api.impl.VariableComparisonSpecification;
 

@@ -27,16 +27,14 @@ package uk.ac.open.kmi.fusion.api.impl.valuematching;
 
 import java.util.List;
 
-import com.wcohen.ss.MongeElkan;
-
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.ICustomValueMatchingFunction;
-import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.AttributeType;
 import uk.ac.open.kmi.fusion.api.impl.CompositeAttribute;
 import uk.ac.open.kmi.fusion.api.impl.CompositeAttributeValue;
 import uk.ac.open.kmi.fusion.api.impl.ValueMatchingFunctionWrapper;
-import uk.ac.open.kmi.fusion.objectidentification.standard.SimMetricsObjectIdentificationUtils;
+
+import com.wcohen.ss.MongeElkan;
 
 public class TestEventValueMatchingFunction implements ICustomValueMatchingFunction<CompositeAttributeValue> {
 

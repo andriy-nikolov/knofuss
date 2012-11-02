@@ -30,12 +30,11 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 
 import uk.ac.open.kmi.fusion.api.impl.datasource.FileDump;
-import uk.ac.open.kmi.fusion.api.impl.datasource.SesameDataSource;
 import uk.ac.open.kmi.fusion.api.impl.datasource.RemoteSPARQLDataSource;
+import uk.ac.open.kmi.fusion.api.impl.datasource.SesameDataSource;
 import uk.ac.open.kmi.fusion.api.impl.datasource.SesameMemoryDataSource;
 import uk.ac.open.kmi.fusion.api.impl.datasource.SesameNativeDataSource;
 import uk.ac.open.kmi.fusion.index.LuceneBlockedDiskIndexer;
@@ -47,7 +46,7 @@ import uk.ac.open.kmi.fusion.util.FusionException;
 public class FusionConfigurationObjectFactory {
 
 	private FusionConfigurationObjectFactory() {
-		// TODO Auto-generated constructor stub
+		
 	}
 	
 	public static FusionConfigurationObject createFromResource(Resource resource, FusionEnvironment environment, RepositoryConnection connection) throws FusionException {

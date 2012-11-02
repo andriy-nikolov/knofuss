@@ -25,35 +25,20 @@
  */
 package uk.ac.open.kmi.fusion.learning.tree;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.openjena.atlas.logging.Log;
 
-
-import uk.ac.open.kmi.common.utils.Utils;
-import uk.ac.open.kmi.common.utils.sparql.SPARQLUtils;
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
-// import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
-import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
 import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
-import uk.ac.open.kmi.fusion.api.impl.TransformationAttribute;
-import uk.ac.open.kmi.fusion.api.impl.VariableComparisonSpecification;
-import uk.ac.open.kmi.fusion.api.impl.aggregation.AggregationFunctionFactory;
-import uk.ac.open.kmi.fusion.api.impl.valuematching.ValueMatchingFunctionFactory;
-import uk.ac.open.kmi.fusion.learning.ContextModelMatcherForGeneticNeighborhoodGrowth;
 import uk.ac.open.kmi.fusion.learning.GeneticAlgorithmObjectIdentificationMethod;
-import uk.ac.open.kmi.fusion.learning.ObjectContextModelMatcherForGenetic;
 import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.IFitnessFunction;
+// import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
 
 public class CandidateSolutionTree {
 

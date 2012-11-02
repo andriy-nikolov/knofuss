@@ -29,7 +29,6 @@ import uk.ac.open.kmi.common.utils.LuceneUtils;
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.AttributeType;
-import uk.ac.open.kmi.fusion.objectidentification.standard.SimMetricsObjectIdentificationUtils;
 
 public class AbbreviationValueMatchingFunction implements IValueMatchingFunction<String> {
 

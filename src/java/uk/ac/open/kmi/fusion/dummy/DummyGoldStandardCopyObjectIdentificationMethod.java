@@ -26,11 +26,9 @@
 package uk.ac.open.kmi.fusion.dummy;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,21 +36,13 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.openrdf.OpenRDFException;
-import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
-import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 
-import com.hp.hpl.jena.graph.Node;
-
-import uk.ac.open.kmi.common.utils.CountMapKeyByValueSizeComparator;
 import uk.ac.open.kmi.common.utils.OIComparison;
-import uk.ac.open.kmi.common.utils.Utils;
-import uk.ac.open.kmi.common.utils.sesame.SesameUtils;
-import uk.ac.open.kmi.common.utils.sparql.MySPARQLParser;
 import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
 import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
 import uk.ac.open.kmi.fusion.api.IObjectIdentificationMethod;
@@ -60,13 +50,10 @@ import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
 import uk.ac.open.kmi.fusion.api.impl.AtomicMapping;
 import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
 import uk.ac.open.kmi.fusion.api.impl.FusionMethodWrapper;
-import uk.ac.open.kmi.fusion.util.FusionException;
 import uk.ac.open.kmi.fusion.learning.cache.CacheEntry;
 import uk.ac.open.kmi.fusion.learning.cache.CachedPair;
 import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
-import uk.ac.open.kmi.fusion.learning.genetic.fitness.DefaultFitnessFunction;
-import uk.ac.open.kmi.fusion.learning.genetic.fitness.F1Fitness;
-import uk.ac.open.kmi.fusion.learning.genetic.fitness.IFitnessFunction;
+import uk.ac.open.kmi.fusion.util.FusionException;
 
 /**
  * A dummy object identification method for debugging purposes. Merely copies the gold standard mappings as its output.

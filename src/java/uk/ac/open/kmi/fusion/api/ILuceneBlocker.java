@@ -26,15 +26,12 @@
 package uk.ac.open.kmi.fusion.api;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.search.IndexSearcher;
 
 import uk.ac.open.kmi.fusion.index.search.ILuceneSearchStrategy;
 import uk.ac.open.kmi.fusion.index.store.ILuceneStore;

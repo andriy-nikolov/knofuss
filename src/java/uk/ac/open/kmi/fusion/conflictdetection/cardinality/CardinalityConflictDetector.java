@@ -25,12 +25,11 @@
  */
 package uk.ac.open.kmi.fusion.conflictdetection.cardinality;
 
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Set;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Resource;
@@ -47,8 +46,7 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 
 import uk.ac.open.kmi.common.utils.Utils;
-import uk.ac.open.kmi.fusion.*;
-import uk.ac.open.kmi.fusion.api.*;
+import uk.ac.open.kmi.fusion.api.IConflictDetectionMethod;
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
 import uk.ac.open.kmi.fusion.api.impl.ConflictStatementCluster;
 import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;

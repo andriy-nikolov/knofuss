@@ -33,8 +33,6 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.search.IndexSearcher;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -47,7 +45,6 @@ import uk.ac.open.kmi.fusion.api.impl.FusionConfigurationObject;
 import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
 import uk.ac.open.kmi.fusion.index.search.ILuceneSearchStrategy;
 import uk.ac.open.kmi.fusion.index.store.ILuceneStore;
-import uk.ac.open.kmi.fusion.learning.GeneticAlgorithmObjectIdentificationMethod;
 import uk.ac.open.kmi.fusion.util.FusionException;
 
 public abstract class LuceneIndexer extends FusionConfigurationObject implements ILuceneBlocker {

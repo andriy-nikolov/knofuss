@@ -27,7 +27,6 @@ package uk.ac.open.kmi.fusion.learning.genetic.mutation;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;

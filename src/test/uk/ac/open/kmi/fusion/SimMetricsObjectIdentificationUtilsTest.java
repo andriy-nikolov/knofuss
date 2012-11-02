@@ -25,13 +25,10 @@
  */
 package uk.ac.open.kmi.fusion;
 
-import static org.junit.Assert.*;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
-import uk.ac.open.kmi.fusion.api.impl.valuematching.JaccardValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.valuematching.ValueMatchingFunctionFactory;
 import uk.ac.open.kmi.fusion.objectidentification.standard.SimMetricsObjectIdentificationUtils;
 

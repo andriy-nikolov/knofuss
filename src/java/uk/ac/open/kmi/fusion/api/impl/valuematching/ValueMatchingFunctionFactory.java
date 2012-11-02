@@ -34,15 +34,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.openjena.atlas.logging.Log;
 
-import uk.ac.open.kmi.common.utils.Utils;
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.ICustomValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
-import uk.ac.open.kmi.fusion.api.impl.AttributeType;
-import uk.ac.open.kmi.fusion.api.impl.TransformationAttribute;
-import uk.ac.open.kmi.fusion.learning.GeneticAlgorithmObjectIdentificationMethod;
 
 public final class ValueMatchingFunctionFactory {
 

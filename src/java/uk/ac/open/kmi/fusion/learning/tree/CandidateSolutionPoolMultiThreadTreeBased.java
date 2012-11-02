@@ -28,7 +28,6 @@ package uk.ac.open.kmi.fusion.learning.tree;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -44,36 +43,22 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
-import org.openrdf.model.vocabulary.RDFS;
 
 import uk.ac.open.kmi.common.utils.Utils;
-
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
 import uk.ac.open.kmi.fusion.api.impl.AtomicMapping;
-import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
-import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
-import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
-import uk.ac.open.kmi.fusion.api.impl.valuematching.JaroWinklerValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.valuematching.ValueMatchingFunctionFactory;
 import uk.ac.open.kmi.fusion.learning.CandidateSolutionFitnessResult;
 import uk.ac.open.kmi.fusion.learning.ChartPoint2D;
 import uk.ac.open.kmi.fusion.learning.cache.CachedPair;
 import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
-import uk.ac.open.kmi.fusion.learning.genetic.fitness.DefaultFitnessFunction;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.F1Fitness;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.IFitnessFunction;
-import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitness;
-import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitnessNeighbourhoodGrowth;
-
-// import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitnessNeighbourhoodGrowth;
-import uk.ac.open.kmi.fusion.learning.genetic.crossover.CrossoverOperatorFactory;
-import uk.ac.open.kmi.fusion.learning.genetic.crossover.ICrossoverOperator;
-import uk.ac.open.kmi.fusion.learning.genetic.mutation.IMutationOperator;
-import uk.ac.open.kmi.fusion.learning.genetic.mutation.MutationOperatorFactory;
 import uk.ac.open.kmi.fusion.learning.tree.genetic.crossover.TreeBasedCrossoverOperator;
 import uk.ac.open.kmi.fusion.learning.tree.genetic.mutation.TreeBasedMutationOperator;
+// import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitnessNeighbourhoodGrowth;
 
 public class CandidateSolutionPoolMultiThreadTreeBased {
 

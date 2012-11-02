@@ -26,12 +26,12 @@
 package uk.ac.open.kmi.fusion.api.impl.aggregation;
 
 import java.util.List;
+
 import org.apache.log4j.Logger;
+
 import uk.ac.open.kmi.fusion.api.IAggregationFunction;
 import uk.ac.open.kmi.fusion.api.IObjectContextWrapper;
-import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
 import uk.ac.open.kmi.fusion.api.impl.VariableComparisonSpecification;
-import uk.ac.open.kmi.fusion.api.impl.valuematching.EventTimeValueMatchingFunction;
 
 public class AverageAggregationFunction implements IAggregationFunction {
 

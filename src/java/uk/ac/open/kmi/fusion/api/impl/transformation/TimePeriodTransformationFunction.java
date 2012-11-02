@@ -38,16 +38,13 @@ import org.apache.log4j.Logger;
 
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.ICustomTransformationFunction;
-import uk.ac.open.kmi.fusion.api.ITransformationFunction;
 import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
 import uk.ac.open.kmi.fusion.api.impl.AttributeType;
 import uk.ac.open.kmi.fusion.api.impl.CompositeAttribute;
 import uk.ac.open.kmi.fusion.api.impl.CompositeAttributeValue;
-import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
 import uk.ac.open.kmi.fusion.api.impl.TransformationAttribute;
 import uk.ac.open.kmi.fusion.api.impl.TransformationFunctionWrapper;
 import uk.ac.open.kmi.fusion.util.KnoFussDateUtils;
-import uk.ac.open.kmi.fusion.util.KnoFussUtils;
 
 public class TimePeriodTransformationFunction implements
 		ICustomTransformationFunction<CompositeAttributeValue> {
