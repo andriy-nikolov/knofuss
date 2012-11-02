@@ -27,15 +27,12 @@ package uk.ac.open.kmi.fusion.index.search;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.Directory;
 
-import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
 import uk.ac.open.kmi.fusion.api.impl.AttributeProfileInDataset;

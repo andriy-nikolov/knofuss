@@ -27,13 +27,10 @@ package uk.ac.open.kmi.fusion.learning.genetic.crossover;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import uk.ac.open.kmi.fusion.api.IAttribute;
-import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
-import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
 import uk.ac.open.kmi.fusion.learning.CandidateSolution;
 import uk.ac.open.kmi.fusion.learning.Genotype;
 

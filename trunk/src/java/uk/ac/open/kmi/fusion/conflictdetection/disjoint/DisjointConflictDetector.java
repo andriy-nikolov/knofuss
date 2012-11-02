@@ -25,22 +25,19 @@
  */
 package uk.ac.open.kmi.fusion.conflictdetection.disjoint;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
-import org.semanticweb.owl.align.Alignment;
-import org.semanticweb.owl.align.Cell;
 
-import uk.ac.open.kmi.fusion.*;
-import uk.ac.open.kmi.fusion.api.*;
+import uk.ac.open.kmi.fusion.api.IConflictDetectionMethod;
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
 import uk.ac.open.kmi.fusion.api.impl.ConflictStatementCluster;
 import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;

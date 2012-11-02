@@ -31,7 +31,6 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import uk.ac.open.kmi.common.utils.Utils;
-import uk.ac.open.kmi.fusion.learning.CandidateSolution;
 import uk.ac.open.kmi.fusion.learning.cache.CachedPair;
 import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
 

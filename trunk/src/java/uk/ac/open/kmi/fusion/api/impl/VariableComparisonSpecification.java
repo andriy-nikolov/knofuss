@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -37,14 +36,12 @@ import org.openrdf.model.Statement;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 
-
 import uk.ac.open.kmi.common.utils.sparql.SPARQLUtils;
 import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.valuematching.ValueMatchingFunctionFactory;
 import uk.ac.open.kmi.fusion.util.FusionException;
-import uk.ac.open.kmi.fusion.util.SesameUtils;
 
 public class VariableComparisonSpecification extends FusionConfigurationObject {
 

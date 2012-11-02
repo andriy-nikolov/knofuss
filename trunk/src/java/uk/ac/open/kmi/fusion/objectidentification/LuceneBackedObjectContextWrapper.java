@@ -25,18 +25,16 @@
  */
 package uk.ac.open.kmi.fusion.objectidentification;
 
-import java.util.*;
+import java.util.Map;
 
-
-import org.openrdf.model.BNode;
-import org.openrdf.model.Literal;
-import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import uk.ac.open.kmi.fusion.api.*;
-import uk.ac.open.kmi.fusion.api.impl.*;
-import uk.ac.open.kmi.fusion.index.LuceneDiskIndexer;
+import org.openrdf.model.URI;
+
+import uk.ac.open.kmi.fusion.api.IAttribute;
+import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
+import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
+import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
+import uk.ac.open.kmi.fusion.api.impl.ObjectContextWrapper;
 
 
 public class LuceneBackedObjectContextWrapper extends ObjectContextWrapper {

@@ -132,9 +132,6 @@ public class LuceneEnhancedStoreStrategy implements
 		
 		List<Fieldable> fields = doc.getFields();
 		
-		Field f;
-		String val;
-		Set<String> tokens;
 		for(Fieldable field : fields) {
 			if((field.name().equals("uri"))||(field.name().equals(RDF.TYPE.toString()))) {
 				internalDoc.add(new Field(field.name(), field.stringValue(), Field.Store.YES, Field.Index.NOT_ANALYZED));
@@ -194,7 +191,6 @@ public class LuceneEnhancedStoreStrategy implements
 		Document doc = indexIndividual(ind, con);
 		
 		List<Statement> stmts = SesameUtils.getStatements(ind, null, null, con);
-		URI obj;
 		Field f;
 		
 		String value;
@@ -340,7 +336,6 @@ public class LuceneEnhancedStoreStrategy implements
 		try {
 			openIndexWriter();
 			this.indexWriter.deleteAll();
-			int i = 0;
 			log.info("Indexing started");
 			Set<Resource> res = SesameUtils.findAllIndividuals(embeddingDataSource.getConnection());
 			abbreviations = 0;

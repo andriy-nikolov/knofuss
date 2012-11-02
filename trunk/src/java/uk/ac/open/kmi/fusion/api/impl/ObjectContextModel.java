@@ -26,35 +26,26 @@
 package uk.ac.open.kmi.fusion.api.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
+
+import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
+import uk.ac.open.kmi.fusion.api.IAggregationFunction;
+import uk.ac.open.kmi.fusion.api.IAttribute;
+import uk.ac.open.kmi.fusion.api.IObjectContextModel;
+import uk.ac.open.kmi.fusion.api.impl.aggregation.AggregationFunctionFactory;
+import uk.ac.open.kmi.fusion.util.FusionException;
+import uk.ac.open.kmi.fusion.util.KnoFussUtils;
 
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.query.QueryParseException;
-
-
-import uk.ac.open.kmi.common.utils.sparql.SPARQLUtils;
-import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
-import uk.ac.open.kmi.fusion.api.IAggregationFunction;
-import uk.ac.open.kmi.fusion.api.IAttribute;
-import uk.ac.open.kmi.fusion.api.IDump;
-import uk.ac.open.kmi.fusion.api.IObjectContextModel;
-import uk.ac.open.kmi.fusion.api.IObjectContextWrapper;
-import uk.ac.open.kmi.fusion.api.impl.aggregation.AggregationFunctionFactory;
-import uk.ac.open.kmi.fusion.util.FusionException;
-import uk.ac.open.kmi.fusion.util.KnoFussUtils;
-import uk.ac.open.kmi.fusion.util.SesameUtils;
 
 public class ObjectContextModel extends AbstractObjectContextModel implements IObjectContextModel {
 
@@ -147,7 +138,6 @@ public class ObjectContextModel extends AbstractObjectContextModel implements IO
 	@Override
 	protected void fillAttributeMaps() {
 		IAttribute attr;
-		String varName;
 		
 		for(VariableComparisonSpecification spec : this.variableComparisonSpecifications) {
 			

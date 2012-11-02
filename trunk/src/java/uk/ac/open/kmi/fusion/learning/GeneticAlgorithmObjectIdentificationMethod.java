@@ -46,8 +46,6 @@ import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
 
-import com.hp.hpl.jena.graph.Node;
-
 import uk.ac.open.kmi.common.utils.CountMapKeyByValueSizeComparator;
 import uk.ac.open.kmi.common.utils.OIComparison;
 import uk.ac.open.kmi.common.utils.Utils;
@@ -58,13 +56,12 @@ import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
 import uk.ac.open.kmi.fusion.api.IObjectIdentificationMethod;
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
-import uk.ac.open.kmi.fusion.api.impl.AtomicMapping;
 import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
+import uk.ac.open.kmi.fusion.api.impl.AtomicMapping;
 import uk.ac.open.kmi.fusion.api.impl.AttributeProfileInDataset;
 import uk.ac.open.kmi.fusion.api.impl.AttributeType;
 import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
 import uk.ac.open.kmi.fusion.api.impl.FusionMethodWrapper;
-import uk.ac.open.kmi.fusion.util.FusionException;
 import uk.ac.open.kmi.fusion.index.LuceneBlockedDiskIndexer;
 import uk.ac.open.kmi.fusion.learning.cache.CacheEntry;
 import uk.ac.open.kmi.fusion.learning.cache.CachedPair;
@@ -74,6 +71,9 @@ import uk.ac.open.kmi.fusion.learning.genetic.fitness.F1Fitness;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.IFitnessFunction;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitness;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.UnsupervisedFitnessNeighbourhoodGrowth;
+import uk.ac.open.kmi.fusion.util.FusionException;
+
+import com.hp.hpl.jena.graph.Node;
 
 public class GeneticAlgorithmObjectIdentificationMethod implements
 		IObjectIdentificationMethod {

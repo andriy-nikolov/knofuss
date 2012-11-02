@@ -28,9 +28,7 @@ package uk.ac.open.kmi.fusion.api.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
 import org.openrdf.repository.RepositoryException;
 
 

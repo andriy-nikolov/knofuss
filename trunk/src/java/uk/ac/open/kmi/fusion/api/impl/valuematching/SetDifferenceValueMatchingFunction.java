@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Set;
 
 import uk.ac.open.kmi.fusion.api.IAttribute;
-import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.AttributeType;
 
 public class SetDifferenceValueMatchingFunction extends TokenBasedSimilarityValueMatchingFunction {

@@ -25,8 +25,6 @@
  */
 package uk.ac.open.kmi.fusion.index.search;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
@@ -41,30 +39,20 @@ import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Fieldable;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.index.IndexReader.FieldOption;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.FuzzyQuery;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermsFilter;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.SimpleFSDirectory;
 import org.apache.lucene.util.Version;
 import org.openrdf.model.vocabulary.RDF;
 
 import uk.ac.open.kmi.common.utils.LuceneUtils;
-import uk.ac.open.kmi.common.utils.Utils;
-import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
-import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
 import uk.ac.open.kmi.fusion.objectidentification.SearchResult;
-import uk.ac.open.kmi.fusion.util.FusionException;
 
 public class LuceneAllFieldsSearchStrategyNGrams extends AbstractLuceneSearchStrategy {
 

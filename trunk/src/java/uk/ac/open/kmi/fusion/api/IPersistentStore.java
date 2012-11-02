@@ -25,10 +25,7 @@
  */
 package uk.ac.open.kmi.fusion.api;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
 import uk.ac.open.kmi.fusion.api.impl.AttributeProfileInDataset;

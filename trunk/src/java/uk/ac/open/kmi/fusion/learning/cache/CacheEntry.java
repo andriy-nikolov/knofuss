@@ -36,10 +36,8 @@ import org.apache.lucene.document.Fieldable;
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.RDF;
 
-
 import uk.ac.open.kmi.fusion.api.IObjectContextModel;
 import uk.ac.open.kmi.fusion.api.IObjectContextWrapper;
-import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
 import uk.ac.open.kmi.fusion.learning.CacheEntryBackedObjectContextWrapper;
 import uk.ac.open.kmi.fusion.util.KnoFussUtils;
 

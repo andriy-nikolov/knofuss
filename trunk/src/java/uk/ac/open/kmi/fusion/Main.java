@@ -35,7 +35,6 @@ import org.openrdf.OpenRDFException;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFParser;
 import org.openrdf.sail.inferencer.fc.ForwardChainingRDFSInferencer;
 import org.openrdf.sail.memory.MemoryStore;
 
@@ -45,7 +44,6 @@ import uk.ac.open.kmi.fusion.util.FusionException;
 import uk.ac.open.kmi.fusion.util.SesameUtils;
 
 public class Main {
-
 
 	private Logger log = Logger.getLogger(Main.class);
 	

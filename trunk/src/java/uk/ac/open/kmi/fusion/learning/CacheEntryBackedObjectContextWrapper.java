@@ -25,10 +25,7 @@
  */
 package uk.ac.open.kmi.fusion.learning;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.openrdf.model.URI;
 
@@ -36,8 +33,6 @@ import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IObjectContextModel;
 import uk.ac.open.kmi.fusion.api.IObjectContextWrapper;
 import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
-import uk.ac.open.kmi.fusion.api.impl.CompositeAttribute;
-import uk.ac.open.kmi.fusion.api.impl.CompositeAttributeValue;
 import uk.ac.open.kmi.fusion.learning.cache.CacheEntry;
 
 public class CacheEntryBackedObjectContextWrapper implements

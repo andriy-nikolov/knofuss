@@ -25,12 +25,7 @@
  */
 package uk.ac.open.kmi.fusion.learning.tree;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import uk.ac.open.kmi.fusion.api.impl.ComparisonPair;
-import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
 
 public class OrNode extends LogicalNode {
 	

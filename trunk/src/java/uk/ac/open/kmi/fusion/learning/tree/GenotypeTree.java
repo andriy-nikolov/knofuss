@@ -33,13 +33,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.openjena.atlas.logging.Log;
 
-import uk.ac.open.kmi.fusion.api.IAggregationFunction;
-import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.IAttribute;
+import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
-import uk.ac.open.kmi.fusion.api.impl.VariableComparisonSpecification;
 import uk.ac.open.kmi.fusion.api.impl.aggregation.AggregationFunctionFactory;
 import uk.ac.open.kmi.fusion.api.impl.valuematching.ValueMatchingFunctionFactory;
 

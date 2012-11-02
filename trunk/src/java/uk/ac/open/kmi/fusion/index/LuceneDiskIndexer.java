@@ -26,28 +26,16 @@
 package uk.ac.open.kmi.fusion.index;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Fieldable;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 
-import uk.ac.open.kmi.common.utils.Utils;
 import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
 import uk.ac.open.kmi.fusion.api.IDataSource;
 import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
@@ -62,9 +50,7 @@ import uk.ac.open.kmi.fusion.index.search.LuceneAllFieldsSearchStrategy;
 import uk.ac.open.kmi.fusion.index.search.LuceneAllFieldsSearchStrategyFuzzy;
 import uk.ac.open.kmi.fusion.index.store.ILuceneStore;
 import uk.ac.open.kmi.fusion.index.store.LuceneDiskStoreStrategy;
-import uk.ac.open.kmi.fusion.index.store.LuceneEnhancedStoreStrategy;
 import uk.ac.open.kmi.fusion.util.FusionException;
-import uk.ac.open.kmi.fusion.util.SesameUtils;
 
 public class LuceneDiskIndexer extends LuceneIndexer implements IPersistentStore {
 

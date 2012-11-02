@@ -26,21 +26,19 @@
 package uk.ac.open.kmi.fusion.objectidentification.standard;
 
 import java.util.ArrayList;
-import java.util.Set;
 import java.util.HashSet;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
-
 
 import uk.ac.shef.wit.simmetrics.similaritymetrics.AbstractStringMetric;
 import uk.ac.shef.wit.simmetrics.similaritymetrics.Jaro;
 import uk.ac.shef.wit.simmetrics.similaritymetrics.JaroWinkler;
-import uk.ac.shef.wit.simmetrics.similaritymetrics.QGramsDistance;
-//import uk.ac.shef.wit.simmetrics.similaritymetrics.MongeElkan;
 import uk.ac.shef.wit.simmetrics.similaritymetrics.Levenshtein;
 import uk.ac.shef.wit.simmetrics.similaritymetrics.SmithWaterman;
+
 import com.wcohen.ss.MongeElkan;
+//import uk.ac.shef.wit.simmetrics.similaritymetrics.MongeElkan;
 
 public abstract class SimMetricsObjectIdentificationUtils {
 

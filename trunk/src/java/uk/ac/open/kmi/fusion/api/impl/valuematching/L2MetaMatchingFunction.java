@@ -27,13 +27,11 @@ package uk.ac.open.kmi.fusion.api.impl.valuematching;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.AttributeType;
-import uk.ac.shef.wit.simmetrics.similaritymetrics.AbstractStringMetric;
 
 public class L2MetaMatchingFunction extends TokenBasedSimilarityValueMatchingFunction {
 

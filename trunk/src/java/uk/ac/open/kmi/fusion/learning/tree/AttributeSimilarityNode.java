@@ -31,7 +31,6 @@ import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
 import uk.ac.open.kmi.fusion.api.impl.VariableComparisonSpecification;
-import uk.ac.open.kmi.fusion.learning.tree.genetic.mutation.TreeBasedMutationOperatorVisitor;
 
 public class AttributeSimilarityNode extends TreeNode {
 

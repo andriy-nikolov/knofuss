@@ -25,8 +25,6 @@
  */
 package uk.ac.open.kmi.fusion.index;
 
-import java.io.File;
-
 import org.apache.lucene.store.Directory;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -39,8 +37,6 @@ import uk.ac.open.kmi.fusion.index.search.ILuceneSearchStrategy;
 import uk.ac.open.kmi.fusion.index.search.LuceneAlignedFieldsSearchStrategy;
 import uk.ac.open.kmi.fusion.index.search.LuceneAllFieldsSearchStrategy;
 import uk.ac.open.kmi.fusion.index.search.LuceneAllFieldsSearchStrategyFuzzy;
-import uk.ac.open.kmi.fusion.index.store.ILuceneStore;
-import uk.ac.open.kmi.fusion.index.store.LuceneDiskStoreStrategy;
 import uk.ac.open.kmi.fusion.index.store.LuceneMemoryStoreStrategy;
 import uk.ac.open.kmi.fusion.util.FusionException;
 

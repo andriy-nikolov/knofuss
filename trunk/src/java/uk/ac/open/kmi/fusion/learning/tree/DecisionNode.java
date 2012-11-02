@@ -25,7 +25,6 @@
  */
 package uk.ac.open.kmi.fusion.learning.tree;
 
-import java.util.List;
 import java.util.Set;
 
 import uk.ac.open.kmi.fusion.api.IAttribute;

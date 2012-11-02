@@ -38,9 +38,7 @@ import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.repository.RepositoryException;
 
 import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
-import uk.ac.open.kmi.fusion.api.IAbstractFusionMethod;
 import uk.ac.open.kmi.fusion.api.ICustomValueMatchingFunction;
-import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 
 public class ValueMatchingFunctionWrapper extends FusionConfigurationObject {
 

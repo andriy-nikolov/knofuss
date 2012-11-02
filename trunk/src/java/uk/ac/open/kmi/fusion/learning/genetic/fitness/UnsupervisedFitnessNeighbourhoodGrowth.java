@@ -25,17 +25,14 @@
  */
 package uk.ac.open.kmi.fusion.learning.genetic.fitness;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 
 import uk.ac.open.kmi.common.utils.Utils;
-import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
 import uk.ac.open.kmi.fusion.learning.CandidateSolution;
 import uk.ac.open.kmi.fusion.learning.SimilarityComparator;
 import uk.ac.open.kmi.fusion.learning.cache.CacheEntry;

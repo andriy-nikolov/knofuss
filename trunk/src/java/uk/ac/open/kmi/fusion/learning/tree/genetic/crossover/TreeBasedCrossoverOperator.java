@@ -32,24 +32,14 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import uk.ac.open.kmi.fusion.api.IAggregationFunction;
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
-import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
-import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
-import uk.ac.open.kmi.fusion.learning.CandidateSolution;
-import uk.ac.open.kmi.fusion.learning.Genotype;
-import uk.ac.open.kmi.fusion.learning.genetic.crossover.ICrossoverOperator;
-import uk.ac.open.kmi.fusion.learning.tree.AggregationNode;
 import uk.ac.open.kmi.fusion.learning.tree.AtomicDecisionNode;
-import uk.ac.open.kmi.fusion.learning.tree.AttributeSimilarityNode;
 import uk.ac.open.kmi.fusion.learning.tree.CandidateSolutionTree;
 import uk.ac.open.kmi.fusion.learning.tree.DecisionNode;
 import uk.ac.open.kmi.fusion.learning.tree.GenotypeTree;
-import uk.ac.open.kmi.fusion.learning.tree.LogicalNode;
 import uk.ac.open.kmi.fusion.learning.tree.OrNode;
 import uk.ac.open.kmi.fusion.learning.tree.TreeNode;
-import uk.ac.open.kmi.fusion.learning.tree.genetic.mutation.TreeBasedMutationOperatorVisitor;
 
 public class TreeBasedCrossoverOperator {
 

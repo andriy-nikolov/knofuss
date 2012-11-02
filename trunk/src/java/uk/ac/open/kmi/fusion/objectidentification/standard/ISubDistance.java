@@ -26,7 +26,6 @@
 package uk.ac.open.kmi.fusion.objectidentification.standard;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 

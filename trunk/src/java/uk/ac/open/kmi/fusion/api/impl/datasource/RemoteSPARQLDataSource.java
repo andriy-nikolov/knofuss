@@ -25,55 +25,26 @@
  */
 package uk.ac.open.kmi.fusion.api.impl.datasource;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Fieldable;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.manager.RepositoryManager;
 
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.query.Query;
-
-import uk.ac.open.kmi.common.utils.Utils;
-import uk.ac.open.kmi.common.utils.sesame.SesameUtils;
 import uk.ac.open.kmi.common.utils.sesame.http.SesameRemoteConnectionProfile;
-import uk.ac.open.kmi.common.utils.sesame.owlim.SesameConnectionProfile;
-import uk.ac.open.kmi.common.utils.sparql.MySPARQLParser;
 import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
-import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IDataSource;
-import uk.ac.open.kmi.fusion.api.IDump;
 import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
 import uk.ac.open.kmi.fusion.api.IPersistentStore;
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
-import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
 import uk.ac.open.kmi.fusion.api.impl.AttributeProfileInDataset;
 import uk.ac.open.kmi.fusion.api.impl.FusionConfigurationObject;
 import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
-import uk.ac.open.kmi.fusion.learning.cache.CacheEntry;
 import uk.ac.open.kmi.fusion.util.FusionException;
 
 public class RemoteSPARQLDataSource extends FusionConfigurationObject implements IDataSource {

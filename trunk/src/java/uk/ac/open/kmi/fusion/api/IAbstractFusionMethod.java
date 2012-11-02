@@ -25,7 +25,6 @@
  */
 package uk.ac.open.kmi.fusion.api;
 
-import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
 import uk.ac.open.kmi.fusion.api.impl.FusionMethodWrapper;
 
 /**

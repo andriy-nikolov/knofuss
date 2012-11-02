@@ -34,38 +34,28 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.openrdf.OpenRDFException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.RDFS;
-import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.manager.RepositoryManager;
-import org.openrdf.rio.RDFFormat;
 
-// 
-import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
-//import uk.ac.open.kmi.fusion.MultiOntologyUtil;
 import uk.ac.open.kmi.fusion.api.ILinkSession;
-import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
 import uk.ac.open.kmi.fusion.api.IPersistentStore;
-import uk.ac.open.kmi.fusion.api.impl.datasource.FileDump;
-import uk.ac.open.kmi.fusion.api.impl.datasource.SesameDataSource;
 import uk.ac.open.kmi.fusion.api.impl.transformation.TransformationFunctionFactory;
 import uk.ac.open.kmi.fusion.api.impl.valuematching.ValueMatchingFunctionFactory;
+import uk.ac.open.kmi.fusion.util.FusionException;
+// 
+//import uk.ac.open.kmi.fusion.MultiOntologyUtil;
 //import uk.ac.open.kmi.fusion.index.LuceneDiskIndexer;
 //import uk.ac.open.kmi.fusion.index.LuceneDiskIndexerAllFields;
 //import uk.ac.open.kmi.fusion.index.LuceneMemoryIndexerAllFields;
-import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
 //import uk.ac.open.kmi.fusion.index.LuceneMemoryIndexerNGrams;
-import uk.ac.open.kmi.fusion.util.FusionException;
-import uk.ac.open.kmi.fusion.util.SesameUtils;
 
 public class FusionEnvironment {
 	

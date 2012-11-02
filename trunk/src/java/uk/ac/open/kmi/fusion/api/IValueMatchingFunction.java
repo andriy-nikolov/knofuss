@@ -26,7 +26,6 @@
 package uk.ac.open.kmi.fusion.api;
 
 import uk.ac.open.kmi.fusion.api.impl.AttributeType;
-import uk.ac.open.kmi.fusion.objectidentification.standard.SimMetricsObjectIdentificationUtils;
 
 public interface IValueMatchingFunction<T> {
 

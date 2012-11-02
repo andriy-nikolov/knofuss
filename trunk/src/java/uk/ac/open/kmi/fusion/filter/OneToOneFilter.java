@@ -36,7 +36,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
-import org.openrdf.OpenRDFException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.query.BindingSet;
@@ -50,12 +49,11 @@ import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.IDatasetMatchingMethod;
 import uk.ac.open.kmi.fusion.api.IValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
-import uk.ac.open.kmi.fusion.api.impl.AtomicMapping;
 import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
+import uk.ac.open.kmi.fusion.api.impl.AtomicMapping;
 import uk.ac.open.kmi.fusion.api.impl.AttributeType;
 import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
 import uk.ac.open.kmi.fusion.api.impl.FusionMethodWrapper;
-import uk.ac.open.kmi.fusion.api.impl.valuematching.SetDifferenceValueMatchingFunction;
 import uk.ac.open.kmi.fusion.api.impl.valuematching.ValueMatchingFunctionFactory;
 import uk.ac.open.kmi.fusion.util.KnoFussUtils;
 

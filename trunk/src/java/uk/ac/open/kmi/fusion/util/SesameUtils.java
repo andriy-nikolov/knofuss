@@ -25,13 +25,10 @@
  */
 package uk.ac.open.kmi.fusion.util;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Literal;
@@ -43,7 +40,6 @@ import org.openrdf.model.ValueFactory;
 import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
-import org.openrdf.model.vocabulary.XMLSchema;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;

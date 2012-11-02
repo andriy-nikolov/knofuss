@@ -25,20 +25,14 @@
  */
 package uk.ac.open.kmi.fusion.api;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import org.openrdf.model.URI;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryException;
 import org.semanticweb.owl.align.Alignment;
 
-
-//import uk.ac.open.kmi.fusion.MultiOntologyUtil;
 import uk.ac.open.kmi.fusion.api.impl.AtomicMapping;
 import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
 import uk.ac.open.kmi.fusion.util.FusionException;
+//import uk.ac.open.kmi.fusion.MultiOntologyUtil;
 
 public interface ILinkSession {
 
