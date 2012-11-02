@@ -454,11 +454,7 @@ public class ObjectContextModelMatcherTestNeighbourhoodGrowth {
 		
 		Map<Integer, List<Integer>> compsBySourceInstance = new HashMap<Integer, List<Integer>>();
 		Map<Integer, List<Integer>> compsByTargetInstance = new HashMap<Integer, List<Integer>>();
-		
-		Map<Integer, Integer> idCachedPairMap = new HashMap<Integer, Integer>();
-		
 		CachedPair pair;
-		CacheEntry entry;
 		
 		for(Integer res : solutionResults.keySet()) {
 			pair = cache.getCachedPairById(res);

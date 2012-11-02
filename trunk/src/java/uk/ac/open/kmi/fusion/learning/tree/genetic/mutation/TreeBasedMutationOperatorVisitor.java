@@ -230,7 +230,7 @@ public class TreeBasedMutationOperatorVisitor implements
 					// Flip the bit
 					List<IValueMatchingFunction<? extends Object>> functionsList = mapApplicableFunctions.get(sourceProperties.get(x)).get(targetProperties.get(y));
 					
-					IValueMatchingFunction vmFunction = functionsList.get((int)Math.random()*functionsList.size());
+					IValueMatchingFunction vmFunction = functionsList.get((int)(Math.random()*functionsList.size()));
 					
 					AttributeSimilarityNode toAdd = new AttributeSimilarityNode();
 					toAdd.setValueMatchingFunction(vmFunction);

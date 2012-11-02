@@ -134,8 +134,7 @@ public class LuceneBlockedSearchStrategy extends AbstractLuceneSearchStrategy {
 			String type) throws IOException {
 		
 		Map<String, Document> docs = new HashMap<String, Document>();
-	    Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_30);
-    
+	        
 	    String uri = searchFieldValues.get("uri").get(0);
 		
 		Term term = new Term("http://kmi.open.ac.uk/fusion/fusion#blockFor", uri);

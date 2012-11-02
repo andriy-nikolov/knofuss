@@ -57,8 +57,7 @@ public class UnsupervisedFitnessNeighbourhoodGrowthWholeSet implements IFitnessF
 		Map<Integer, List<Integer>> compsBySourceInstance = new HashMap<Integer, List<Integer>>();
 		Map<Integer, List<Integer>> compsByTargetInstance = new HashMap<Integer, List<Integer>>();
 		
-		Map<Integer, Integer> idCachedPairMap = new HashMap<Integer, Integer>();
-		
+	
 		CachedPair pair;
 		CacheEntry entry;
 		
@@ -69,7 +68,6 @@ public class UnsupervisedFitnessNeighbourhoodGrowthWholeSet implements IFitnessF
 		}
 		
 		List<Integer> pairIds;
-		CachedPair testPair;
 		SimilarityComparator comparator = new SimilarityComparator(solutionResults);
 		int selectedPairId, i;
 		double sim, epsilon;
@@ -86,8 +84,6 @@ public class UnsupervisedFitnessNeighbourhoodGrowthWholeSet implements IFitnessF
 			Collections.sort(pairIds, comparator);
 			compsBySourceInstance.put(sourceId, pairIds);
 			selectedPairId = pairIds.get(0);
-			testPair = cache.getCachedPairById(selectedPairId);
-
 			
 			sim = solutionResults.get(selectedPairId);
 			epsilon = 1-sim;

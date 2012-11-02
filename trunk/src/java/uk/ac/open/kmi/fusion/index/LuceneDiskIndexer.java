@@ -101,6 +101,8 @@ public class LuceneDiskIndexer extends LuceneIndexer implements IPersistentStore
 				case ENHANCED:
 					this.searchStrategy = new LuceneAlignedFieldsEnhancedSearchStrategy(directory);
 					break;
+				default:
+					log.error("Cannot determine the search policy: " + this.searchPolicy);
 				}
 			} catch(FusionException e) {
 				

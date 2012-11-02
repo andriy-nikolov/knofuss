@@ -101,7 +101,9 @@ public class LuceneBigramDiskIndexer extends LuceneIndexer implements IPersisten
 					this.searchStrategy = new LuceneAlignedFieldsEnhancedSearchStrategy(directory);
 					break;
 				case BIGRAM:
-					
+					break;
+				default:
+					log.error("Cannot determine the search policy: " + this.searchPolicy);
 				}
 			} catch(FusionException e) {
 				

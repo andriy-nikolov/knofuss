@@ -61,7 +61,7 @@ import uk.ac.open.kmi.fusion.learning.genetic.mutation.MutationOperatorFactory;
 
 public class CandidateSolutionPool {
 
-	private class CandidateSolutionComparator implements
+	private static class CandidateSolutionComparator implements
 			Comparator<CandidateSolution> {
 
 		@Override

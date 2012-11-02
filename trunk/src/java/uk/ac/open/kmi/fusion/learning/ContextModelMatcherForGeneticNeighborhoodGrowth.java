@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -184,9 +185,9 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 					
 					CachedPair testPair;
 					
-					for(Integer sourceId : compsBySourceInstance.keySet()) {
+					for(Entry<Integer, Set<Integer>> entry : compsBySourceInstance.entrySet()) {
 						
-						pairIds = compsBySourceInstance.get(sourceId);
+						pairIds = entry.getValue();
 						sortedPairIds = new ArrayList<Integer>(pairIds);
 						Collections.sort(sortedPairIds, comparator);
 						selectedPairId = sortedPairIds.get(0);
@@ -234,9 +235,9 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 					
 					double beta = UnsupervisedFitness.BETA;
 					
-					for(Integer sourceId : compsBySourceInstance.keySet()) {
+					for(Entry<Integer, Set<Integer>> entry : compsBySourceInstance.entrySet()) {
 						
-						pairIds = compsBySourceInstance.get(sourceId);
+						pairIds = entry.getValue();
 						sortedPairIds = new ArrayList<Integer>(pairIds);
 						Collections.sort(sortedPairIds, comparator);
 						selectedPairId = sortedPairIds.get(0);
@@ -291,9 +292,9 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 					log.info("Best threshold: "+bestThreshold);
 					
 					
-					for(Integer key : preliminaryResults.keySet()) {
-						if(preliminaryResults.get(key)>=bestThreshold) {
-							results.put(key, preliminaryResults.get(key));
+					for(Entry<Integer, Double> entry : preliminaryResults.entrySet()) {
+						if(entry.getValue()>=bestThreshold) {
+							results.put(entry.getKey(), entry.getValue());
 						}
 					}
 					
@@ -329,17 +330,17 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 		try {
 			PrintWriter writer = Utils.openPrintFileWriter(fileName);
 			
-			for(Integer sourceId : compsBySourceInstance.keySet()) {
-				pairIds = compsBySourceInstance.get(sourceId);
+			for(Entry<Integer, Set<Integer>> entry : compsBySourceInstance.entrySet()) {
+				pairIds = entry.getValue();
 				sortedPairIds.clear();
 				sortedPairIds.addAll(pairIds);
 				Collections.sort(sortedPairIds, comparator);
 				selectedPairId = sortedPairIds.get(0);
 				pair = cache.getCachedPairById(selectedPairId);
 				sim = preliminaryResults.get(selectedPairId);
-				writer.print(sourceId+",");
+				writer.print(entry.getKey()+",");
 				writer.print(pair.getCandidateInstance().getUri().toString()+":"+pair.getTargetInstance().getUri().toString()+",");
-				bestSimBySourceId.put(sourceId, sim);
+				bestSimBySourceId.put(entry.getKey(), sim);
 				writer.print(sim+",");
 				epsilon = 1-sim;
 				neighbourhoodGrowth = 1;
@@ -355,7 +356,7 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 				}
 				writer.print(neighbourhoodGrowth+",");
 				writer.println(pair.isGoldStandard());
-				mapNeighbourhoodGrowthBySourceId.put(sourceId, neighbourhoodGrowth);
+				mapNeighbourhoodGrowthBySourceId.put(entry.getKey(), neighbourhoodGrowth);
 				
 			}
 			
@@ -404,9 +405,8 @@ public class ContextModelMatcherForGeneticNeighborhoodGrowth {
 		
 		int growth = 0;
 		
-		for(Integer pairId : mapSimilarities.keySet()) {
-			currentSimilarity = mapSimilarities.get(pairId);
-			if(currentSimilarity>=threshold) {
+		for(Entry<Integer, Double> entry : mapSimilarities.entrySet()) {
+			if(entry.getValue()>=threshold) {
 				growth++;
 			}
 		}

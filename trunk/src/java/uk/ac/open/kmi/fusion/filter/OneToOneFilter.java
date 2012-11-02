@@ -396,9 +396,9 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 		}
 		
 		if(sourceIndividuals.size()==1) {
-			sourceIndividualIsACommonOne = new Boolean(true);
+			sourceIndividualIsACommonOne = Boolean.valueOf(true);
 		} else if(targetIndividuals.size()==1) {
-			sourceIndividualIsACommonOne = new Boolean(false);
+			sourceIndividualIsACommonOne = Boolean.valueOf(false);
 		} 
 		
 		Set<String> set1 = new HashSet<String>();
@@ -562,11 +562,12 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 		
 		alternatives.add(value);
 		
-		newVal = "";
+		StringBuilder newValBuilder = new StringBuilder();
 		for(String tmp : alternatives) {
-			newVal = newVal + " " +tmp;
+			newValBuilder.append(" ");
+			newValBuilder.append(tmp);
 		}
-		newVal = newVal.trim();
+		newVal = newValBuilder.toString().trim();
 		if(this.profiles.containsKey(uri)) {
 			newVal = profiles.get(uri)+" "+newVal;
 		} 

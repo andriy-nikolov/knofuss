@@ -67,8 +67,6 @@ public class FusionEnvironment {
 	
 	public static String CONFIG_DIR = "config";
 	public static boolean debug = false;
-	public static boolean isMultiOntologyCase;
-	
 	
 	public static boolean saveComparisons = false;
 	public static String comparisonsLogFile = "comparisons.xml";

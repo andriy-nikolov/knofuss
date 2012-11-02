@@ -82,7 +82,6 @@ public class StandardObjectIdentificationMethod implements IObjectIdentification
 				contextModelMatcher.setGoldStandard(context.getGoldStandard().keySet());
 			}
 			
-			contextModelMatcher.setMultiOntologyCase(FusionEnvironment.isMultiOntologyCase);
 			for(FusionConfigurationObject object : context.getObjectModels()) {
 				if(object instanceof ObjectContextModel) {
 					objectContextModel = (ObjectContextModel)object;
