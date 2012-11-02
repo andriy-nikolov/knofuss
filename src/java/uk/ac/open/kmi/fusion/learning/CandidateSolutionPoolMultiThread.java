@@ -65,7 +65,7 @@ import uk.ac.open.kmi.fusion.learning.genetic.mutation.MutationOperatorFactory;
 
 public class CandidateSolutionPoolMultiThread {
 
-	private class CandidateSolutionComparator implements
+	private static class CandidateSolutionComparator implements
 			Comparator<CandidateSolution> {
 
 		@Override
@@ -178,10 +178,9 @@ public class CandidateSolutionPoolMultiThread {
 				
 		initializePopulation();
 		// run
-		Map<Integer, Double> solutionResults;
 		
 		double averageUnsupervisedFitness = 0, previousAverageUnsupervisedFitness = 0;
-		double averageRealFitness = 0, previousAverageRealFitness = 0;
+		double averageRealFitness = 0;
 		double epsilon = 0.000001;
 		int numberOfIterations = 0;
 		F1Fitness realFitness;
@@ -192,21 +191,15 @@ public class CandidateSolutionPoolMultiThread {
 		// UnsupervisedFitnessNeighbourhoodGrowth unsupervisedFitness;
 	
 		int iterations = 0;
-		int solutions;
 		CandidateSolution bestSolution = null;
 		double bestRealFitnessValue = 0;
 		F1Fitness bestRealFitness = null;
 		F1Fitness chosenMaxRealFitness = null;
 		double bestUnsupervisedFitness = 0;
 		
-		double previousBestFitness = 0;
-		
-		double originalMutationRate = mutationRate;
-		
 		List<CandidateSolution> crossoverResults, mutationResults;
 		int currentIndex;
 		
-		Map<Integer, CandidateSolutionFitnessResult> mapResults = new HashMap<Integer, CandidateSolutionFitnessResult>();
 		List<Future<CandidateSolutionFitnessResult>> futureResults = new ArrayList<Future<CandidateSolutionFitnessResult>>(population.size());
 		
 		Future<CandidateSolutionFitnessResult> futureResult;
@@ -261,7 +254,6 @@ public class CandidateSolutionPoolMultiThread {
 					}
 					if(realFitness.getValue() >= bestRealFitnessValue) {
 						if(!useUnsupervisedFitness) {
-							previousBestFitness = bestRealFitnessValue;
 							bestSolution = solution;
 						}
 						bestRealFitnessValue = realFitness.getValue();
@@ -270,7 +262,6 @@ public class CandidateSolutionPoolMultiThread {
 					
 					if(unsupervisedFitness.getValue() >= bestUnsupervisedFitness) {
 						if(useUnsupervisedFitness) {
-							previousBestFitness = bestUnsupervisedFitness;
 							bestSolution = solution;
 						}
 						chosenMaxRealFitness = realFitness;
@@ -309,7 +300,6 @@ public class CandidateSolutionPoolMultiThread {
 			if(averageUnsupervisedFitness > previousAverageUnsupervisedFitness) {
 				previousAverageUnsupervisedFitness = averageUnsupervisedFitness;
 			}
-			previousAverageRealFitness = averageRealFitness;
 			
 			this.unsupervisedFitnessPoints.add(new ChartPoint2D((double)iterations, averageUnsupervisedFitness));
 			this.realFitnessPoints.add(new ChartPoint2D((double)iterations, averageRealFitness));
@@ -669,12 +659,9 @@ public class CandidateSolutionPoolMultiThread {
 		try {
 			PrintWriter writer = Utils.openPrintFileWriter(filePath);
 			try {
-				double averageX = 0, averageY = 0;
+				
 				for(ChartPoint2D point : list) {
 					point.writeToDat(writer);
-					
-					averageX += point.getLeft();
-					averageY += point.getRight();
 				}
 			} finally {
 				writer.close();

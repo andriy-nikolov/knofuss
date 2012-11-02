@@ -157,7 +157,6 @@ public class DummyGoldStandardCopyObjectIdentificationMethod implements
 			goldStandard = context.getGoldStandard();
 			missedKeys = new HashSet<String>(goldStandard.keySet());
 		} else {
-			goldStandard = new HashMap<String, OIComparison>(0);
 			missedKeys = new HashSet<String>(0);
 		}
 		String type = context.getRestrictedTypesTarget().get(0);
@@ -169,7 +168,6 @@ public class DummyGoldStandardCopyObjectIdentificationMethod implements
 		log.info("Caching starts");
 		i=0;
 		
-		Map<String, List<String>> searchValues = new HashMap<String, List<String>>();
 		CachedPair pair;
 		String[] uris;
 			

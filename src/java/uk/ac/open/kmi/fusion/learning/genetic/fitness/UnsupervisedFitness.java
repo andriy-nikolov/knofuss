@@ -27,6 +27,7 @@ package uk.ac.open.kmi.fusion.learning.genetic.fitness;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
@@ -62,9 +63,9 @@ public class UnsupervisedFitness implements IFitnessFunction {
 		
 		double averageSimilarity = 0;
 		
-		for(Integer res : solutionResults.keySet()) {
-			pair = cache.getCachedPairById(res);
-			averageSimilarity += solutionResults.get(res);
+		for(Entry<Integer, Double> entry : solutionResults.entrySet()) {
+			pair = cache.getCachedPairById(entry.getKey());
+			averageSimilarity += entry.getValue();
 			Utils.increaseCounter(pair.getCandidateInstance().getId(), idCachedPairMap);		
 		}
 		

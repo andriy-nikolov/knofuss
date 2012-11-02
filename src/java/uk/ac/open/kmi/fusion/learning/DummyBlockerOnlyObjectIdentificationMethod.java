@@ -777,7 +777,6 @@ public class DummyBlockerOnlyObjectIdentificationMethod implements
 		Map<String, IFitnessFunction> fitnessByType = processFitnessByType(cache, results);
 		
 		Set<String> dominantClasses = new HashSet<String>();
-		double highestRecallPercentage = 0.0;
 		double totalRecall = resultingFitness.getRecall();
 		double recallPercentage;
 		for(String type : fitnessByType.keySet()) {

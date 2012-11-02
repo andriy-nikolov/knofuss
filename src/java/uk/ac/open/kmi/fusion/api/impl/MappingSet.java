@@ -367,13 +367,6 @@ public class MappingSet extends FusionSet {
 						if(stmt.getPredicate().toString().equals(RDF.TYPE.toString())) {
 							continue;
 						}
-						if(stmt.getSubject() instanceof Resource) {
-							calendarBefore = new GregorianCalendar();
-							
-							calendarAfter = new GregorianCalendar();
-							log.info("Statement insertion time cost: "+(calendarAfter.getTimeInMillis()-calendarBefore.getTimeInMillis()));
-						}
-						
 						
 						i++;
 					}

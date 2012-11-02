@@ -86,8 +86,6 @@ public class CandidateSolutionPoolEvaluatorRunnableTreeBased implements Callable
 		F1Fitness realFitness;
 		IFitnessFunction unsupervisedFitness;
 		
-		Map<Integer, CandidateSolutionFitnessResult> result = new HashMap<Integer, CandidateSolutionFitnessResult>();
-		
 		CandidateSolutionFitnessResult tmp; 
 		
 		solutionResults = solution.applySolution(cache, useSampling, false, criterion);

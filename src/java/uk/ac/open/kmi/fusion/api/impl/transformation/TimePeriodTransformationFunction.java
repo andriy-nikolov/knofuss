@@ -68,7 +68,6 @@ public class TimePeriodTransformationFunction implements
 
 	@Override
 	public synchronized List<CompositeAttributeValue> getTransformationResult(TransformationAttribute top, Map<IAttribute, List<? extends Object>> operands) {
-		StringBuffer result = new StringBuffer();
 		
 		List<CompositeAttributeValue> res = new ArrayList<CompositeAttributeValue>(1);
 		CompositeAttributeValue val;

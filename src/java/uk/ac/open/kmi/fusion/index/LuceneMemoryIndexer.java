@@ -25,6 +25,7 @@
  */
 package uk.ac.open.kmi.fusion.index;
 
+import org.apache.log4j.Logger;
 import org.apache.lucene.store.Directory;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -43,6 +44,8 @@ import uk.ac.open.kmi.fusion.util.FusionException;
 public class LuceneMemoryIndexer extends LuceneIndexer {
 
 	public static final String TYPE_URI = FusionMetaVocabulary.LUCENE_MEMORY_BLOCKER;
+	
+	private static Logger log = Logger.getLogger(LuceneMemoryIndexer.class);
 	
 	public LuceneMemoryIndexer() {
 		super();
@@ -78,6 +81,8 @@ public class LuceneMemoryIndexer extends LuceneIndexer {
 		case FUZZY:
 			this.searchStrategy = new LuceneAllFieldsSearchStrategyFuzzy(directory);
 			break;
+		default:
+			log.error("Cannot determine the search policy: " + this.searchPolicy);
 		}
 		this.searchStrategy.setThreshold(threshold);
 		this.storeStrategy.setPropertyPathDepth(propertyPathDepth);

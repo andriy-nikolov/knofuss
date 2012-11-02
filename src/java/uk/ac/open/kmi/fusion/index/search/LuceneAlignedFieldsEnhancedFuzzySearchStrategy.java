@@ -95,18 +95,23 @@ public class LuceneAlignedFieldsEnhancedFuzzySearchStrategy extends
 	    		if(queryStringTmp.equals("")) continue;
 	    		Query tmpquery = null;
 	    		
-	    		String queryString = "";
 	    		StringTokenizer tokenizer = new StringTokenizer(queryStringTmp, " ");
 			    String token;
+			    StringBuilder queryStringBuilder = new StringBuilder();
+			    
 			    while(tokenizer.hasMoreTokens()) {
 			    	token = tokenizer.nextToken();
 			    	if(!(token.toLowerCase().equals("and")||token.toLowerCase().equals("or"))) {
-				   		queryString+=token;
-				   		queryString+="~"+Double.toString(this.fuzzyThreshold)+" ";
+			    		queryStringBuilder.append(token);
+			    		queryStringBuilder.append("~");
+			    		queryStringBuilder.append(Double.toString(this.fuzzyThreshold));
+			    		queryStringBuilder.append(" ");
 			    	}
 			    }
 
 	    		QueryParser queryParser = new QueryParser(Version.LUCENE_30, key, analyzer);
+	    		
+	    		String queryString = queryStringBuilder.toString();
 	    		
 	    		tmpquery = queryParser.parse(queryString);
 	    		

@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -720,9 +721,9 @@ public class GeneticAlgorithmObjectIdentificationMethod implements
 		List<AtomicMapping> mappings = new ArrayList<AtomicMapping>(resultsEncoded.size());
 		AtomicMapping mapping;
 		CachedPair pair;
-		for(Integer id : resultsEncoded.keySet()) {
-			pair = cache.getCachedPairById(id);
-			mapping = pair.convertToAtomicMapping(solution.getModelSpec(), resultsEncoded.get(id), solution.getFitness().getPrecision());
+		for(Entry<Integer, Double> entry : resultsEncoded.entrySet()) {
+			pair = cache.getCachedPairById(entry.getKey());
+			mapping = pair.convertToAtomicMapping(solution.getModelSpec(), entry.getValue(), solution.getFitness().getPrecision());
 			mapping.setAccepted(true);
 			mappings.add(mapping);
 		}

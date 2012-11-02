@@ -235,6 +235,8 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 		case RESULTS_FORMAT_CUSTOM_XML:
 			writeResultsToXML(resultMappings, this.resultsFilePath);
 			break;
+		default:
+			log.error("Could not write results: unknown results file format (" + this.resultsFileFormat + ")");
 		}
 		
 		if(this.goldStandard!=null) {
@@ -431,7 +433,6 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 
 	public void setMultiOntology(boolean multiOntology) {
 		this.multiOntology = multiOntology;
-		FusionEnvironment.isMultiOntologyCase = multiOntology;
 	}
 
 	/*public MultiOntologyUtil getMultiOntologyUtil() {

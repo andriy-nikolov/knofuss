@@ -58,8 +58,6 @@ public class UnsupervisedFitnessNeighbourhoodGrowth implements IFitnessFunction 
 		Map<Integer, List<Integer>> compsBySourceInstance = new HashMap<Integer, List<Integer>>();
 		Map<Integer, List<Integer>> compsByTargetInstance = new HashMap<Integer, List<Integer>>();
 		
-		Map<Integer, Integer> idCachedPairMap = new HashMap<Integer, Integer>();
-		
 		CachedPair pair;
 		CacheEntry entry;
 		
@@ -70,7 +68,6 @@ public class UnsupervisedFitnessNeighbourhoodGrowth implements IFitnessFunction 
 		}
 		
 		List<Integer> pairIds;
-		CachedPair testPair;
 		SimilarityComparator comparator = new SimilarityComparator(solutionResults);
 		int selectedPairId, i;
 		double sim, epsilon;
@@ -79,7 +76,6 @@ public class UnsupervisedFitnessNeighbourhoodGrowth implements IFitnessFunction 
 		double mu = 0;
 		int neighbourhoodGrowth;
 		Map<Integer, Integer> mapNeighbourhoodGrowthBySourceId = new HashMap<Integer, Integer>();
-		Map<Integer, Double> mapNeighbourhoodGrowthWeights = new HashMap<Integer, Double>();
 		
 		for(Integer sourceId : compsBySourceInstance.keySet()) {
 			
@@ -88,9 +84,7 @@ public class UnsupervisedFitnessNeighbourhoodGrowth implements IFitnessFunction 
 			Collections.sort(pairIds, comparator);
 			compsBySourceInstance.put(sourceId, pairIds);
 			selectedPairId = pairIds.get(0);
-			testPair = cache.getCachedPairById(selectedPairId);
-
-			
+		
 			sim = solutionResults.get(selectedPairId);
 			epsilon = 1-sim;
 			
@@ -121,7 +115,7 @@ public class UnsupervisedFitnessNeighbourhoodGrowth implements IFitnessFunction 
 		}
 		
 		double average = 0;
-		double weightSum = 0, weight;
+		double weightSum = 0;
 		
 		for(int sourceId : mapNeighbourhoodGrowthBySourceId.keySet()) {
 			//weight = mapNeighbourhoodGrowthWeights.get(sourceId);

@@ -75,7 +75,7 @@ public class ObjectContextModelMatcherThresholdBased {
 	ILuceneBlocker indexer;
 	double threshold;
 	List<AtomicMapping> mappings;
-	boolean multiOntologyCase = false;
+	// boolean multiOntologyCase = false;
 	
 	String sourceQuery = null;
 	
@@ -183,10 +183,6 @@ public class ObjectContextModelMatcherThresholdBased {
 		double fn = 0;
 		
 		Set<String> missedGoldStandardUris = new HashSet<String>();
-		
-		List<LuceneBackedObjectContextWrapper> notFound = new ArrayList<LuceneBackedObjectContextWrapper>();
-		
-		Map<String, Set<String>> mapSimilarities = new HashMap<String, Set<String>>();
 		
 		try {
 			
@@ -569,7 +565,11 @@ public class ObjectContextModelMatcherThresholdBased {
 						
 						values = wrapper.getValues();
 						for(IAttribute key : values.keySet()) {
-							if(key.equals("uri")) continue;
+							
+							if(key instanceof AtomicAttribute 
+									&& ((AtomicAttribute)key).getVariableName().equals("uri"))
+								continue;
+							
 							valList = values.get(key);
 							for(Object val : valList) {
 								label = label+" "+val.toString();
@@ -674,14 +674,6 @@ public class ObjectContextModelMatcherThresholdBased {
 
 	public void setThreshold(double threshold) {
 		this.threshold = threshold;
-	}
-
-	public boolean isMultiOntologyCase() {
-		return multiOntologyCase;
-	}
-
-	public void setMultiOntologyCase(boolean multiOntologyCase) {
-		this.multiOntologyCase = multiOntologyCase;
 	}
 
 	public ApplicationContext getApplicationContext() {
