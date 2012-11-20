@@ -61,9 +61,6 @@ import uk.ac.open.kmi.fusion.util.SesameUtils;
 public class CardinalityConflictDetector implements IConflictDetectionMethod {
 
 	
-	FusionEnvironment environment;
-	String descriptorURI;
-	Set<URI> restrictedProperties;
 	ApplicationContext context;
 	
 	/**

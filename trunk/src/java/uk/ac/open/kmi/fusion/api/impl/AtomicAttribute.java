@@ -149,7 +149,10 @@ public class AtomicAttribute extends AbstractAttribute {
 	
 	@Override
 	public boolean equals(Object obj) {
-		return this.samePropertyPathAs(obj);
+		if(obj instanceof AtomicAttribute)
+			return this.samePropertyPathAs(obj);
+		
+		return false;
 	}
 
 	public double getMin() {

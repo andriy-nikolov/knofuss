@@ -94,11 +94,7 @@ public class LuceneBlockedSearchStrategy extends AbstractLuceneSearchStrategy {
 	    	queryParser = new MultiFieldQueryParser(Version.LUCENE_30, queryFields, analyzer);
 	    	
 	    	
-	    	String queryString = "";
-	    	
-	    	for(String key : fields.keySet()) {
-	    		queryString += (fields.get(key).trim()+" "); 
-	    	}
+	    	String queryString = formQueryString(fields);
 	    	Query query = null;
 
     		query = queryParser.parse(LuceneUtils.getTransducedQuery(queryString));

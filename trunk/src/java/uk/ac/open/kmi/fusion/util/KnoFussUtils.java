@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -58,7 +59,6 @@ import uk.ac.open.kmi.common.utils.Utils;
 import uk.ac.open.kmi.common.utils.sparql.SPARQLUtils;
 import uk.ac.open.kmi.fusion.api.IAttribute;
 import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
-import fr.inrialpes.exmo.align.impl.BasicAlignment;
 import fr.inrialpes.exmo.align.parser.AlignmentParser;
 
 public class KnoFussUtils {
@@ -100,7 +100,7 @@ public class KnoFussUtils {
 	public static Map<String, OIComparison> loadGoldStandardFromAlignAPIRDFFile(String file) throws FusionException {
 		
 		Map<String, OIComparison> goldStandard = new HashMap<String, OIComparison>();
-		Alignment goldStandardAlignment = new BasicAlignment();
+		Alignment goldStandardAlignment;
 		try {
 			AlignmentParser parser = new AlignmentParser(0);
 			File fileFrom = new File(file);
@@ -187,12 +187,11 @@ public class KnoFussUtils {
 			Map<String, OIComparison> goldStandard = new HashMap<String, OIComparison>();
 			Map<String, List<OIComparison>> compById = OIComparisonUtils.loadComparisonsFromFile(new File(file));
 			List<OIComparison> comparisons;
-			StringBuffer signature;
 			
 			String itemkey;
 			
-			for(String key : compById.keySet()) {
-				comparisons = compById.get(key);
+			for(Entry<String, List<OIComparison>> entry : compById.entrySet()) {
+				comparisons = entry.getValue();
 				for(OIComparison comp : comparisons) {
 					itemkey = comp.getCandidateURI()+" : "+comp.getTargetURI();
 					goldStandard.put(itemkey, comp);
@@ -290,7 +289,7 @@ public class KnoFussUtils {
 			queryBuffer.append("\n");
 		}
 		String expandedPath;
-		int tmpIndex = 0;
+
 		for(IAttribute attribute : attributes) {
 			expandedPath = attribute.writeSPARQLWhereClause(namespaceMap);
 			queryBuffer.append(expandedPath);

@@ -30,6 +30,7 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -166,12 +167,7 @@ public class LuceneAlignedFieldsEnhancedSearchStrategy extends
 	    	
 	    	queryParser = new MultiFieldQueryParser(Version.LUCENE_30, queryFields, analyzer);
 	    	
-	    	
-	    	String queryString = "";
-	    	
-	    	for(String key : fields.keySet()) {
-	    		queryString += (fields.get(key).trim()+" "); 
-	    	}
+	    	String queryString = formQueryString(fields);
 	    	Query query = null;
 	    	//try {
     		//	query = queryParser.parse(getTransduced(queryString));

@@ -352,7 +352,7 @@ public class ObjectContextModelMatcherTestNeighbourhoodGrowth {
 				double recall = 1-((double)missedGoldStandardUris.size())/goldStandardPairs.size();
 				log.info("Blocking recall: "+recall);
 				
-				recall = tp/goldStandardPairs.size();
+				recall = ((double)tp)/goldStandardPairs.size();
 				log.info("Blocking recall: "+recall);
 			}
 		} catch(Exception e) {
