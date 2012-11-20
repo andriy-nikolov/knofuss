@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -103,11 +104,8 @@ public class LuceneAllFieldsSearchStrategyNGrams extends AbstractLuceneSearchStr
 	    	queryParser = new MultiFieldQueryParser(Version.LUCENE_30, queryFields, analyzer);
 	    	
 	    	
-	    	String queryString = "";
+	    	String queryString = formQueryString(fields);
 	    	
-	    	for(String key : fields.keySet()) {
-	    		queryString += (fields.get(key).trim()+" "); 
-	    	}
 	    	Query query = null;
 
     		query = queryParser.parse(LuceneUtils.getTransducedQuery(queryString));
@@ -147,19 +145,20 @@ public class LuceneAllFieldsSearchStrategyNGrams extends AbstractLuceneSearchStr
     
 	    try {
 	    	List<String> allFieldValues = new LinkedList<String>();
-	    	for(String key : searchFieldValues.keySet()) {
-	    		allFieldValues.addAll(searchFieldValues.get(key));
+	    	for(Entry<String, List<String>> entry : searchFieldValues.entrySet()) {
+	    		allFieldValues.addAll(entry.getValue());
 	    	}
 	    	
 	    	String queryStringTmp = LuceneUtils.getTransducedQuery(getConcatenatedString(allFieldValues));
-	    	String queryString = "";
+	    	StringBuilder queryStringBuilder = new StringBuilder();
 	    	StringTokenizer tokenizer = new StringTokenizer(queryStringTmp, " ");
 	    	
 	    	while(tokenizer.hasMoreTokens()) {
-	    		queryString+=tokenizer.nextToken();
-	    		queryString+="~0.7 ";
+	    		queryStringBuilder.append(tokenizer.nextToken());
+	    		queryStringBuilder.append("~0.7 ");
 	    	}
 	    	
+	    	String queryString = queryStringBuilder.toString();
 	    	Query query = null;
     		QueryParser queryParser = new MultiFieldQueryParser(Version.LUCENE_30, searchFields, analyzer);
     		query = queryParser.parse(queryString);

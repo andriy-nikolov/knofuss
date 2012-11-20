@@ -104,9 +104,6 @@ public abstract class AbstractLuceneStore implements
 		
 		List<Fieldable> fields = doc.getFields();
 		
-		Field f;
-		String val;
-		Set<String> tokens;
 		for(Fieldable field : fields) {
 			if((field.name().equals("uri"))||(field.name().equals(RDF.TYPE.toString()))) {
 				internalDoc.add(new Field(field.name(), field.stringValue(), Field.Store.YES, Field.Index.NOT_ANALYZED));
@@ -181,16 +178,16 @@ public abstract class AbstractLuceneStore implements
 							lit = (Literal)bs.getValue("obj");
 							
 							if(i>1) {
-							
-								path = "<"+bs.getValue("prop0").toString()+">";
+								StringBuilder pathBuilder = new StringBuilder("<"+bs.getValue("prop0").toString()+">");
 								for(int j=1;j<i;j++) {
-									path+="/";
-									path+="<";
+									pathBuilder.append("/");
+									pathBuilder.append("<");
 									currentProperty = bs.getValue("prop"+j).toString();
 									
-									path+=currentProperty;
-									path+=">";
+									pathBuilder.append(currentProperty);
+									pathBuilder.append(">");
 								}
+								path = pathBuilder.toString();
 							} else {
 								path = bs.getValue("prop0").toString();
 							}

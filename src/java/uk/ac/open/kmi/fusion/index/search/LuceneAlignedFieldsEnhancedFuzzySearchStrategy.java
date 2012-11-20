@@ -30,6 +30,7 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -66,8 +67,6 @@ public class LuceneAlignedFieldsEnhancedFuzzySearchStrategy extends
 	public LuceneAlignedFieldsEnhancedFuzzySearchStrategy(Directory directory) {
 		super(directory);
 	}
-	
-	
 
 	@Override
 	public Map<String, Document> findClosestDocuments(
@@ -88,10 +87,10 @@ public class LuceneAlignedFieldsEnhancedFuzzySearchStrategy extends
 	    	
  	    	BooleanQuery query = new BooleanQuery();
  	    	String val;
-	    	for(String key : fields.keySet()) {
-	    		if(key.equals(OAEIUtils.IIMB_TBOX_NS+"gender")) continue;
-	    		if(fields.get(key).isEmpty()) continue;
-	    		String queryStringTmp = LuceneUtils.getTransducedQuery(getConcatenatedString(fields.get(key)));
+	    	for(Entry<String, List<String>> entry : fields.entrySet()) {
+	    		if(entry.getKey().equals(OAEIUtils.IIMB_TBOX_NS+"gender")) continue;
+	    		if(entry.getValue().isEmpty()) continue;
+	    		String queryStringTmp = LuceneUtils.getTransducedQuery(getConcatenatedString(entry.getValue()));
 	    		if(queryStringTmp.equals("")) continue;
 	    		Query tmpquery = null;
 	    		
@@ -109,7 +108,7 @@ public class LuceneAlignedFieldsEnhancedFuzzySearchStrategy extends
 			    	}
 			    }
 
-	    		QueryParser queryParser = new QueryParser(Version.LUCENE_30, key, analyzer);
+	    		QueryParser queryParser = new QueryParser(Version.LUCENE_30, entry.getKey(), analyzer);
 	    		
 	    		String queryString = queryStringBuilder.toString();
 	    		
@@ -117,7 +116,7 @@ public class LuceneAlignedFieldsEnhancedFuzzySearchStrategy extends
 	    		
 	    		query.add(tmpquery, Occur.SHOULD);
 	    		
-	    		if(key.equals(OAEIUtils.IIMB_TBOX_NS+"name")) {
+	    		if(entry.getKey().equals(OAEIUtils.IIMB_TBOX_NS+"name")) {
 	    			queryParser = new QueryParser(Version.LUCENE_30, OAEIUtils.IIMB_TBOX_NS+"article", analyzer);
 		    		
 		    		tmpquery = queryParser.parse(queryString);
@@ -125,9 +124,8 @@ public class LuceneAlignedFieldsEnhancedFuzzySearchStrategy extends
 		    		query.add(tmpquery, Occur.SHOULD);
 	    			
 	    			if(abbreviatedNames) {
-		    			val = LuceneUtils.getAbbreviation(fields.get(key).get(0));
-		    			// tmpquery = queryParser.parse(val);
-		    			tmpquery = new TermQuery(new Term(key, val));
+		    			val = LuceneUtils.getAbbreviation(entry.getValue().get(0));
+		    			tmpquery = new TermQuery(new Term(entry.getKey(), val));
 		    			query.add(tmpquery, Occur.SHOULD);
 	    			}
 	    		}
@@ -185,12 +183,8 @@ public class LuceneAlignedFieldsEnhancedFuzzySearchStrategy extends
 	    	
 	    	queryParser = new MultiFieldQueryParser(Version.LUCENE_30, queryFields, analyzer);
 	    	
+	    	String queryString = formQueryString(fields);
 	    	
-	    	String queryString = "";
-	    	
-	    	for(String key : fields.keySet()) {
-	    		queryString += (fields.get(key).trim()+" "); 
-	    	}
 	    	Query query = null;
 	    	//try {
     		//	query = queryParser.parse(getTransduced(queryString));

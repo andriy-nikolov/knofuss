@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -841,13 +842,13 @@ public class DummyBlockerOnlyObjectIdentificationMethod implements
 		double average = 0;
 		int numberOfRelevantPairs = 0;
 
-		for(Integer pairId : solutionResults.keySet()) {
-			pair = cache.getCachedPairById(pairId);
+		for(Entry<Integer, Double> entry : solutionResults.entrySet()) {
+			pair = cache.getCachedPairById(entry.getKey());
 			if(targetEntryIDs.contains(pair.getTargetInstance().getId())) {
 				coveredSourceIndividuals.add(pair.getCandidateInstance().getId());
 				numberOfRelevantPairs++;
 				average += 1;
-				averageSimilarity += solutionResults.get(pairId);
+				averageSimilarity += entry.getValue();
 			}
 		}
 		

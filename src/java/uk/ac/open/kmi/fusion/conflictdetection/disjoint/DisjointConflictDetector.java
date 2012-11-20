@@ -52,9 +52,6 @@ import uk.ac.open.kmi.fusion.util.SesameUtils;
 public class DisjointConflictDetector implements IConflictDetectionMethod {
 
 	
-	FusionEnvironment environment;
-	String descriptorURI;
-	Set<URI> restrictedProperties;
 	ApplicationContext context;
 	
 	/**

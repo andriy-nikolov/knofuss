@@ -142,11 +142,8 @@ public class LuceneAlignedFieldsSearchStrategy extends
 	    	queryParser = new MultiFieldQueryParser(Version.LUCENE_30, queryFields, analyzer);
 	    	
 	    	
-	    	String queryString = "";
+	    	String queryString = formQueryString(fields);
 	    	
-	    	for(String key : fields.keySet()) {
-	    		queryString += (fields.get(key).trim()+" "); 
-	    	}
 	    	Query query = null;
 	    	//try {
     		//	query = queryParser.parse(getTransduced(queryString));

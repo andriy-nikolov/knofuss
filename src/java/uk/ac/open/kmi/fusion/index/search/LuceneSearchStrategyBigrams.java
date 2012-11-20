@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -102,11 +103,7 @@ public class LuceneSearchStrategyBigrams extends AbstractLuceneSearchStrategy {
 	    	queryParser = new MultiFieldQueryParser(Version.LUCENE_30, queryFields, analyzer);
 	    	
 	    	
-	    	String queryString = "";
-	    	
-	    	for(String key : fields.keySet()) {
-	    		queryString += (fields.get(key).trim()+" "); 
-	    	}
+	    	String queryString = formQueryString(fields);
 	    	Query query = null;
 
     		query = queryParser.parse(LuceneUtils.getTransducedQuery(queryString));
@@ -149,10 +146,10 @@ public class LuceneSearchStrategyBigrams extends AbstractLuceneSearchStrategy {
 	    	
 	    	String label = null;
 	    	
-	    	for(String key : searchFieldValues.keySet()) {
-	    		allFieldValues.addAll(searchFieldValues.get(key));
-	    		if(key.toLowerCase().endsWith("label")&&(searchFieldValues.get(key).size()==1)) {
-	    			label = searchFieldValues.get(key).get(0);
+	    	for(Entry<String, List<String>> entry : searchFieldValues.entrySet()) {
+	    		allFieldValues.addAll(entry.getValue());
+	    		if(entry.getKey().toLowerCase().endsWith("label")&&(entry.getValue().size()==1)) {
+	    			label = entry.getValue().get(0);
 	    		}
 	    	}
 	    	

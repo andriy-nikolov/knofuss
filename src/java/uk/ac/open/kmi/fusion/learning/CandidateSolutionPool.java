@@ -527,7 +527,7 @@ public class CandidateSolutionPool {
 			
 			double runningSum = 0;
 			for(int i = 0 ; i<population.size();i++) {
-				runningSum+=1/population.size();
+				runningSum+=1.0/population.size();
 				rouletteWheel.put(i, runningSum);
 			}
 		} else {

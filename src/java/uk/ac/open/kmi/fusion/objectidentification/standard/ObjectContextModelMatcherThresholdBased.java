@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -60,7 +61,6 @@ import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
 import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
 import uk.ac.open.kmi.fusion.api.impl.ObjectContextWrapper;
 import uk.ac.open.kmi.fusion.objectidentification.LuceneBackedObjectContextWrapper;
-import uk.ac.open.kmi.fusion.objectidentification.SearchResult;
 import uk.ac.open.kmi.fusion.util.KnoFussDateUtils;
 // import uk.ac.open.kmi.fusion.index.LuceneDiskIndexer;
 // import uk.ac.open.kmi.fusion.index.LuceneDiskIndexerAllFields;
@@ -124,16 +124,13 @@ public class ObjectContextModelMatcherThresholdBased {
 			TupleQueryResult rsSource = query.evaluate();
 			
 			try {
-				String curUri;
 				resource = new LuceneBackedObjectContextWrapper(instanceModel);
 				
-				int tuples = 0;
 				int resources = 0;
 				
 				BindingSet tuple;
 				while(rsSource.hasNext()) {
 					tuple = rsSource.next();
-					tuples++;
 					if(resList==this.sourceResources) {
 						if(!(tuple.getValue("uri") instanceof URI)) {
 							continue;
@@ -171,8 +168,6 @@ public class ObjectContextModelMatcherThresholdBased {
 		
 		List<ComparisonPair> candList;
 		double similarity;
-		Set<String> candidateURIs;
-		Map<String, SearchResult> searchResults;
 		Map<String, Document> candidateDocs;
 		Map<String, List<String>> valuesByPropertyPath = new HashMap<String, List<String>>();
 
@@ -180,7 +175,6 @@ public class ObjectContextModelMatcherThresholdBased {
 		ComparisonPair pair;
 		
 		double tp = 0;
-		double fn = 0;
 		
 		Set<String> missedGoldStandardUris = new HashSet<String>();
 		
@@ -190,8 +184,6 @@ public class ObjectContextModelMatcherThresholdBased {
 				missedGoldStandardUris.addAll(this.goldStandardPairs);
 			}
 			
-			PrintWriter writerTest = new PrintWriter(System.out);
-			PrintWriter writerTestAccepted = null;
 			String type = null;
 			
 			if(!instanceModel.getRestrictedTypesTarget().isEmpty()) {
@@ -273,9 +265,9 @@ public class ObjectContextModelMatcherThresholdBased {
 						log.debug("Not found: "+resSource.getIndividual().toString());
 					}
 
-					for(String tmp : candidateDocs.keySet()) {
+					for(Entry<String, Document> entry : candidateDocs.entrySet()) {
 
-						Document doc = candidateDocs.get(tmp);
+						Document doc = entry.getValue();
 						
 						targetTypes.clear();
 						
@@ -288,7 +280,7 @@ public class ObjectContextModelMatcherThresholdBased {
 						}
 						
 						
-						resTarget = getTargetFromLuceneDocument(tmp, doc);
+						resTarget = getTargetFromLuceneDocument(entry.getKey(), doc);
 						
 						for(String tmpType : types) {
 							if(tmpType.startsWith(Utils.DBPEDIA_ONTOLOGY_NS)) {
@@ -540,7 +532,7 @@ public class ObjectContextModelMatcherThresholdBased {
 	}
 	
 	private void writeNotFoundOnes() {
-		Map<IAttribute, List<? extends Object>> values = new HashMap<IAttribute, List<? extends Object>>();
+		Map<IAttribute, List<? extends Object>> values;
 		List<? extends Object> valList;
 		
 		String fileOut = "not-found.xml";
@@ -561,21 +553,21 @@ public class ObjectContextModelMatcherThresholdBased {
 						writer.print("\t<uri>");
 						writer.print(StringEscapeUtils.escapeXml(wrapper.getIndividual().toString()));
 						writer.println("</uri>");
-						label = "";
+						StringBuilder labelBuilder = new StringBuilder();
 						
 						values = wrapper.getValues();
-						for(IAttribute key : values.keySet()) {
+						for(Entry<IAttribute, List<? extends Object>> entry : values.entrySet()) {
 							
-							if(key instanceof AtomicAttribute 
-									&& ((AtomicAttribute)key).getVariableName().equals("uri"))
+							if(entry.getKey() instanceof AtomicAttribute 
+									&& ((AtomicAttribute)entry.getKey()).getVariableName().equals("uri"))
 								continue;
 							
-							valList = values.get(key);
+							valList = entry.getValue();
 							for(Object val : valList) {
-								label = label+" "+val.toString();
+								labelBuilder.append(" ").append(val.toString());
 							}
 						}
-						label = label.trim();
+						label = labelBuilder.toString().trim();
 						writer.print("\t<label>");
 						writer.print(StringEscapeUtils.escapeXml(label));
 						writer.println("</label>");

@@ -32,6 +32,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -318,6 +319,17 @@ public abstract class AbstractLuceneSearchStrategy implements
 		} catch(IOException e) {
 			throw new FusionException("Error when copying relevant instances to the indexer", e);
 		}
+	}
+	
+	protected static String formQueryString(Map<String, String> fields) {
+		StringBuilder queryStringBuilder = new StringBuilder();
+    	
+    	for(Entry<String, String> entry : fields.entrySet()) {
+    		queryStringBuilder.append(entry.getValue().trim());
+    		queryStringBuilder.append(" "); 
+    	}
+    	
+    	return queryStringBuilder.toString();
 	}
 	
 	

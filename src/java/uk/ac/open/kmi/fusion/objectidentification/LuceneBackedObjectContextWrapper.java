@@ -26,6 +26,7 @@
 package uk.ac.open.kmi.fusion.objectidentification;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.lucene.document.Document;
 import org.openrdf.model.URI;
@@ -53,8 +54,8 @@ public class LuceneBackedObjectContextWrapper extends ObjectContextWrapper {
 		Map<String, IAttribute> variablePropertyMap = model.getTargetAttributesByVarName();
 		this.individual = FusionEnvironment.getInstance().getMainKbValueFactory().createURI(doc.get("uri"));
 		IAttribute attribute;
-		for(String var : variablePropertyMap.keySet()) {
-			attribute = ((AtomicAttribute) variablePropertyMap.get(var));
+		for(Entry<String, IAttribute> entry : variablePropertyMap.entrySet()) {
+			attribute = ((AtomicAttribute) entry.getValue());
 				
 			String[] values = doc.getValues(((AtomicAttribute)attribute).getPropertyPath());
 				

@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -105,11 +106,8 @@ public class LuceneAllFieldsSearchStrategyFuzzy extends AbstractLuceneSearchStra
 	    	queryParser = new MultiFieldQueryParser(Version.LUCENE_30, queryFields, analyzer);
 	    	
 	    	
-	    	String queryString = "";
+	    	String queryString = formQueryString(fields);
 	    	
-	    	for(String key : fields.keySet()) {
-	    		queryString += (fields.get(key).trim()+" "); 
-	    	}
 	    	Query query = null;
 
     		query = queryParser.parse(LuceneUtils.getTransducedQuery(queryString));
@@ -149,25 +147,28 @@ public class LuceneAllFieldsSearchStrategyFuzzy extends AbstractLuceneSearchStra
     
 	    
 	    List<String> allFieldValues = new LinkedList<String>();
-	    for(String key : searchFieldValues.keySet()) {
-	    	allFieldValues.addAll(searchFieldValues.get(key));
+	    for(Entry<String, List<String>> entry : searchFieldValues.entrySet()) {
+	    	allFieldValues.addAll(entry.getValue());
 	    }
 	    
 	    String queryStringTmp = LuceneUtils.getTransducedQuery(getConcatenatedString(allFieldValues));
 	    
 	    if(!queryStringTmp.isEmpty()) {
 	    
-		    String queryString = "";
-		    
+		    StringBuilder queryStringBuilder = new StringBuilder();
 		    StringTokenizer tokenizer = new StringTokenizer(queryStringTmp, " ");
 		    String token;
 		    while(tokenizer.hasMoreTokens()) {
 		    	token = tokenizer.nextToken();
 		    	if(!(token.toLowerCase().equals("and")||token.toLowerCase().equals("or"))) {
-			   		queryString+=token;
-			   		queryString+="~"+Double.toString(this.fuzzyThreshold)+" ";
+			   		queryStringBuilder.append(token);
+			   		queryStringBuilder.append("~");
+			   		queryStringBuilder.append(Double.toString(this.fuzzyThreshold));
+			   		queryStringBuilder.append(" ");
 		    	}
 		    }
+		    
+		    String queryString = queryStringBuilder.toString();
 		    	
 		    Query query = null;
 	    	QueryParser queryParser = new MultiFieldQueryParser(Version.LUCENE_30, searchFields, analyzer);
