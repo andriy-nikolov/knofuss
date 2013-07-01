@@ -441,4 +441,11 @@ public class FusionEnvironment {
 		}
 	}
 	
+	public FusionConfigurationObject getConfigObjectByURI(String uri) {
+		return this.configObjectRegistry.get(getFusionKbValueFactory().createURI(uri));
+	}
+	
+	public FusionConfigurationObject getConfigObjectByURI(Resource uri) {
+		return this.configObjectRegistry.get(uri);
+	}
 }

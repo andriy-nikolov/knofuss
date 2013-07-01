@@ -437,7 +437,12 @@ Co, Corp, Corporation, Co
         <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#TransformationAttribute"/>
     </owl:DatatypeProperty>
     
+	<!-- http://kmi.open.ac.uk/fusion/fusion#idFieldName -->
 
+    <owl:DatatypeProperty rdf:about="http://kmi.open.ac.uk/fusion/fusion#idFieldName">
+        <rdfs:comment>Provides the name of the Lucene index field storing the URI of the instance. Default value: "uri".</rdfs:comment>
+        <rdfs:domain rdf:resource="http://kmi.open.ac.uk/fusion/fusion#LuceneDiskBlocker"/>
+    </owl:DatatypeProperty>
 
     <!-- http://kmi.open.ac.uk/fusion/fusion#maxIterations -->
 

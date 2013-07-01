@@ -26,15 +26,19 @@
 package uk.ac.open.kmi.fusion.index.store;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.store.Directory;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.query.BindingSet;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 
 import uk.ac.open.kmi.fusion.api.IDataSource;
+import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
 import uk.ac.open.kmi.fusion.util.FusionException;
 
 public interface ILuceneStore {
@@ -49,6 +53,11 @@ public interface ILuceneStore {
 
 	void addDocument(Document doc, String type) throws CorruptIndexException,
 			IOException;
+	
+	public void indexStatements(List<Statement> statements, ApplicationContext context, String type) throws FusionException;
+	
+	public void indexBindingSets(List<BindingSet> bindingSets, ApplicationContext context, String type)
+			throws FusionException;
 	
 	public void commit() throws FusionException;
 	

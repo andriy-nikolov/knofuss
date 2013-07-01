@@ -27,7 +27,12 @@ package uk.ac.open.kmi.fusion.index.store;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -36,12 +41,18 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Version;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Literal;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
+import org.openrdf.model.Value;
+import org.openrdf.model.impl.StatementImpl;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
 import org.openrdf.query.BindingSet;
@@ -50,6 +61,8 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 
 import uk.ac.open.kmi.common.utils.Utils;
+import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
+import uk.ac.open.kmi.fusion.index.LuceneIndexer;
 import uk.ac.open.kmi.fusion.util.FusionException;
 import uk.ac.open.kmi.fusion.util.KnoFussUtils;
 import uk.ac.open.kmi.fusion.util.SesameUtils;
@@ -73,7 +86,7 @@ public abstract class AbstractLuceneStore implements
 	protected Document indexIndividual(URI ind, RepositoryConnection con) throws RepositoryException {
 		Document doc = new Document();
 		
-		doc.add(new Field("uri", ind.toString(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+		doc.add(new Field(LuceneIndexer.ID_FIELD_NAME, ind.toString(), Field.Store.YES, Field.Index.NOT_ANALYZED));
 		
 		addTypesList(ind, con, doc);
 		return doc;
@@ -105,7 +118,7 @@ public abstract class AbstractLuceneStore implements
 		List<Fieldable> fields = doc.getFields();
 		
 		for(Fieldable field : fields) {
-			if((field.name().equals("uri"))||(field.name().equals(RDF.TYPE.toString()))) {
+			if((field.name().equals(LuceneIndexer.ID_FIELD_NAME))||(field.name().equals(RDF.TYPE.toString()))) {
 				internalDoc.add(new Field(field.name(), field.stringValue(), Field.Store.YES, Field.Index.NOT_ANALYZED));
 			} else {
 				internalDoc.add(new Field(field.name(), field.stringValue(), Field.Store.YES, Field.Index.ANALYZED));
@@ -118,6 +131,141 @@ public abstract class AbstractLuceneStore implements
 		
 	}
 	
+	
+	
+	@Override
+	public synchronized void indexBindingSets(List<BindingSet> bindingSets, ApplicationContext context, String type)
+			throws FusionException {
+		List<Statement> stmts = new ArrayList<Statement>(bindingSets.size());
+		Value subj, pred, obj;
+		for(BindingSet bs : bindingSets) {
+			subj = bs.getValue("uri");
+			pred = bs.getValue("predicate");
+			obj = bs.getValue("object");
+			if((subj instanceof URI) && (pred instanceof URI) && (obj instanceof Value))
+				stmts.add(new StatementImpl((Resource)subj, (URI)pred, obj));
+		}
+		
+		indexStatements(stmts, context, type);
+	}
+
+	@Override
+	public synchronized void indexStatements(List<Statement> statements, ApplicationContext context, String type)
+			throws FusionException {
+		Map<String, Map<String, Set<String>>> mapTriples = new HashMap<String, Map<String, Set<String>>>();
+		
+		for(Statement statement : statements) {
+			if(isIndexable(statement, context))
+				addToMapBySubject(mapTriples, statement);
+		}
+		
+		if(this.indexWriter==null) {
+			this.openIndexWriter();
+		}
+		
+		int updated = 0;
+		int added = 0;
+		try {
+			IndexReader reader = IndexReader.open(directory);
+			
+			log.debug("Opening the reader, "+reader.numDocs()+" stored");
+			Document oldDoc, newDoc;
+			URI uri;
+			
+			Map<String, Set<String>> fieldsToIndex;
+			Term idTerm;
+			
+			try {
+				for(Entry<String, Map<String, Set<String>>> entryBySubject : mapTriples.entrySet()) {
+					newDoc = new Document();
+					oldDoc = LuceneIndexer.getDocumentByURI(reader, entryBySubject.getKey());
+					fieldsToIndex = new HashMap<String, Set<String>>();
+					idTerm = new Term(LuceneIndexer.ID_FIELD_NAME, entryBySubject.getKey());
+					
+					if(oldDoc!=null) {
+						for(Fieldable field : oldDoc.getFields()) {
+							Utils.addToSetMap(field.name(), field.stringValue(), fieldsToIndex);
+						}
+					} else {
+						newDoc.add(new Field(LuceneIndexer.ID_FIELD_NAME, entryBySubject.getKey(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+					}
+					
+					if(type!=null)
+						Utils.addToSetMap(RDF.TYPE.toString(), type, fieldsToIndex);
+					
+					for(Entry<String, Set<String>> entryByProperty : entryBySubject.getValue().entrySet()) {
+						Utils.addAllToSetMap(entryByProperty.getKey(), entryByProperty.getValue(), fieldsToIndex);
+					}
+	
+					for(Entry<String, Set<String>> entryByProperty : fieldsToIndex.entrySet()) {
+						if(entryByProperty.getKey().equals(RDF.TYPE.toString()) || entryByProperty.getKey().equals("uri")) {
+							for(String value : entryByProperty.getValue())
+								newDoc.add(new Field(entryByProperty.getKey(), value, Field.Store.YES, Field.Index.NOT_ANALYZED));
+						} else {
+							for(String value : entryByProperty.getValue())
+								addFieldsToDoc(entryByProperty.getKey(), value, newDoc);
+						}
+					}
+					
+					if(oldDoc!=null) {
+						indexWriter.updateDocument(idTerm, newDoc);
+						updated++;
+					} else {
+						indexWriter.addDocument(newDoc);
+						added++;
+					}
+					
+				}
+			} finally {
+				reader.close();
+			}
+			
+			this.commit();
+			
+			log.debug("Finished indexing, added: " + added + ", updated: " + updated);
+		} catch(Exception e) {
+			throw new FusionException("Could not index statements: ", e);
+		} finally {
+			this.closeIndexWriter();
+		}
+	}
+	
+	private boolean isIndexable(Statement statement, ApplicationContext context) {
+		if(statement.getSubject() instanceof URI) {
+			if(statement.getPredicate().equals(RDF.TYPE))
+				return true;
+			
+			if(statement.getObject() instanceof Literal) {
+				Literal lit = (Literal)statement.getObject();
+				if(context==null || lit.getLanguage()==null || (context!=null && context.getLanguages().contains(lit.getLanguage())))
+					return true;
+			}
+				
+		}
+		
+		return false;
+	}
+	
+	private void addToMapBySubject(Map<String, Map<String, Set<String>>> mapTriples, Statement statement) {
+		
+		Map<String, Set<String>> mapByPredicate;
+		Set<String> valueSet;
+		
+		mapByPredicate = mapTriples.get(statement.getSubject().stringValue());
+		if(mapByPredicate==null) {
+			mapByPredicate = new HashMap<String, Set<String>>();
+			mapTriples.put(statement.getSubject().stringValue(), mapByPredicate);
+		}
+			
+		valueSet = mapByPredicate.get(statement.getPredicate().stringValue());
+		if(valueSet==null) {
+			valueSet = new HashSet<String>();
+			mapByPredicate.put(statement.getPredicate().stringValue(), valueSet);
+		}
+			
+		valueSet.add(statement.getObject().stringValue());
+	}
+
 	@Override
 	public Directory getDirectory() {
 		if(this.directory==null) {
@@ -128,7 +276,7 @@ public abstract class AbstractLuceneStore implements
 	}
 
 	@Override
-	public void openIndexWriter() throws FusionException {
+	public synchronized void openIndexWriter() throws FusionException {
 		if(!this.writerOpen) {
 			try {
 				try {
@@ -146,10 +294,16 @@ public abstract class AbstractLuceneStore implements
 	}
 
 	@Override
-	public void clearIndex() throws FusionException {
+	public synchronized void clearIndex() throws FusionException {
 		try {
+			if(indexWriter==null) {
+				this.openIndexWriter();
+			}
+			
 			this.indexWriter.deleteAll();
 			this.indexWriter.commit();
+			
+			this.closeIndexWriter();
 		} catch(Exception e) {
 			throw new FusionException("Could not clear a Lucene indexer: ", e);
 		}
@@ -161,8 +315,6 @@ public abstract class AbstractLuceneStore implements
 	public void addIndividual(URI ind, RepositoryConnection con) throws RepositoryException {
 		
 		Document doc = indexIndividual(ind, con);
-		
-		Set<String> alternativeValues;
 		
 		for(int i=1;i<propertyPathDepth+1;i++) {
 			String sparqlQuery = getAttributeSelectSPARQLQuery(ind.toString(), i);
@@ -192,16 +344,7 @@ public abstract class AbstractLuceneStore implements
 								path = bs.getValue("prop0").toString();
 							}
 							
-							doc.add(new Field(path, lit.stringValue(), Field.Store.YES, Field.Index.ANALYZED));
-							
-							addAlternatives(path, lit.stringValue(), doc);
-							
-							alternativeValues = KnoFussUtils.getAlternativeStringValues(lit.stringValue());
-							for(String val : alternativeValues) {
-								doc.add(new Field(path, val, Field.Store.YES, Field.Index.ANALYZED));
-								
-								addAlternatives(path, val, doc);
-							}
+							addFieldsToDoc(path, lit.stringValue(), doc);
 							
 							
 						}
@@ -329,16 +472,26 @@ public abstract class AbstractLuceneStore implements
 			e.printStackTrace();
 		}
 	}
+	
+	private static void addFieldsToDoc(String path, String value, Document doc) {
+		Set<String> values = new HashSet<String>();
+		values.add(value);
+		values.addAll(KnoFussUtils.getAlternativeStringValues(value));
+		for(String val : values) {
+			doc.add(new Field(path, val, Field.Store.YES, Field.Index.ANALYZED));
+			addAlternatives(path, val, doc);
+		}
+	}
 
 	@Override
-	public void closeIndexWriter() throws FusionException
+	public synchronized void closeIndexWriter() throws FusionException
 	{
 		if(this.writerOpen) {
 			try {
 		
 				if(this.indexWriter!=null) {
-					this.indexWriter.optimize();
 					this.indexWriter.close();
+					this.indexWriter = null;
 				}
 				this.writerOpen = false;
 			} catch(IOException e) {
@@ -348,7 +501,7 @@ public abstract class AbstractLuceneStore implements
 	}
 
 	@Override
-	public void commit() throws FusionException {
+	public synchronized void commit() throws FusionException {
 		try {
 			this.indexWriter.commit();
 		} catch(IOException e) {
@@ -401,7 +554,7 @@ public abstract class AbstractLuceneStore implements
 		
 	}
 	
-	private void addAlternatives(String path, String val, Document doc) {
+	private static void addAlternatives(String path, String val, Document doc) {
 		if(path.contains("http://www.w3.org/2004/02/skos/core#altLabel")) {
 			doc.add(new Field(path.replace("http://www.w3.org/2004/02/skos/core#altLabel", RDFS.LABEL.toString()), val, Field.Store.YES, Field.Index.ANALYZED));
 		} else

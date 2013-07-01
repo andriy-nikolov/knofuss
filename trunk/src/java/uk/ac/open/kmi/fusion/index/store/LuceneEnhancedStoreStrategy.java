@@ -49,11 +49,14 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.URI;
 import org.openrdf.model.vocabulary.RDF;
 import org.openrdf.model.vocabulary.RDFS;
+import org.openrdf.query.BindingSet;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 
 import uk.ac.open.kmi.common.utils.LuceneUtils;
 import uk.ac.open.kmi.fusion.api.IDataSource;
+import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
+import uk.ac.open.kmi.fusion.index.LuceneIndexer;
 import uk.ac.open.kmi.fusion.util.FusionException;
 import uk.ac.open.kmi.fusion.util.OAEIUtils;
 import uk.ac.open.kmi.fusion.util.SesameUtils;
@@ -86,7 +89,7 @@ public class LuceneEnhancedStoreStrategy implements
 	protected Document indexIndividual(URI ind, RepositoryConnection con) throws RepositoryException {
 		Document doc = new Document();
 		
-		doc.add(new Field("uri", ind.toString(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+		doc.add(new Field(LuceneIndexer.ID_FIELD_NAME, ind.toString(), Field.Store.YES, Field.Index.NOT_ANALYZED));
 		
 		addTypesList(ind, con, doc);
 		return doc;
@@ -133,7 +136,7 @@ public class LuceneEnhancedStoreStrategy implements
 		List<Fieldable> fields = doc.getFields();
 		
 		for(Fieldable field : fields) {
-			if((field.name().equals("uri"))||(field.name().equals(RDF.TYPE.toString()))) {
+			if((field.name().equals(LuceneIndexer.ID_FIELD_NAME))||(field.name().equals(RDF.TYPE.toString()))) {
 				internalDoc.add(new Field(field.name(), field.stringValue(), Field.Store.YES, Field.Index.NOT_ANALYZED));
 			} else {
 				internalDoc.add(new Field(field.name(), field.stringValue(), Field.Store.YES, Field.Index.ANALYZED));
@@ -380,7 +383,19 @@ public class LuceneEnhancedStoreStrategy implements
 	public boolean isDeletedClasses() {
 		return deletedClasses;
 	}
-	
-	
 
+	@Override
+	public void indexStatements(List<Statement> statements, ApplicationContext context, String type)
+			throws FusionException {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("indexStatements not implemented yet");
+		
+	}
+
+	@Override
+	public void indexBindingSets(List<BindingSet> bindingSets, ApplicationContext context, String type)
+			throws FusionException {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("indexStatements not implemented yet");
+	}
 }

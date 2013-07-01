@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -267,11 +268,11 @@ public class ObjectContextModelMatcherTestNeighbourhoodGrowth {
 				
 				valsByPath = sourceEntry.getValueTable();
 				
-				for(String path : valsByPath.keySet()) {
-					vals = valsByPath.get(path);
+				for(Entry<String, List<? extends Object>> entry : valsByPath.entrySet()) {
+					vals = entry.getValue();
 					tmpStringList = new ArrayList<String>(vals.size());
 					
-					valuesByPropertyPath.put(path, tmpStringList);
+					valuesByPropertyPath.put(entry.getKey(), tmpStringList);
 					
 					for(Object val : vals) {
 						if(val instanceof String) {
@@ -305,9 +306,9 @@ public class ObjectContextModelMatcherTestNeighbourhoodGrowth {
 						log.debug("Not found: "+resSource.getIndividual().toString());
 					}
 
-					for(String tmp : candidateDocs.keySet()) {
+					for(Entry<String, Document> entry : candidateDocs.entrySet()) {
 
-						Document doc = candidateDocs.get(tmp);
+						Document doc = entry.getValue();
 						
 						targetTypes.clear();
 						
@@ -321,21 +322,21 @@ public class ObjectContextModelMatcherTestNeighbourhoodGrowth {
 						
 						
 						
-						URI ind = FusionEnvironment.getInstance().getMainKbValueFactory().createURI(tmp);
+						URI ind = FusionEnvironment.getInstance().getMainKbValueFactory().createURI(entry.getKey());
 						
 						targetEntry = cache.getTargetCacheEntry(ind);
 						
 						targetEntry.readPropertiesFromLuceneDocument(doc); 
 						
 
-						if(tmp.equals(sourceEntry.getUri().toString())) {
+						if(entry.getKey().equals(sourceEntry.getUri().toString())) {
 							continue;
 						}
 						
 						isGoldStandard = false;
 						
 						if(goldStandardAvailable) {
-							if(missedGoldStandardUris.remove(resSource.getIndividual().toString()+" : "+tmp)) {
+							if(missedGoldStandardUris.remove(resSource.getIndividual().toString()+" : "+entry.getKey())) {
 								isGoldStandard = true;
 								tp++;
 							}
@@ -362,7 +363,7 @@ public class ObjectContextModelMatcherTestNeighbourhoodGrowth {
 	}
 	
 	protected int calculateSimilarities() {
-		int i, j;
+		int j;
 		IObjectContextWrapper resTarget;
 		
 		double similarity;
@@ -380,7 +381,6 @@ public class ObjectContextModelMatcherTestNeighbourhoodGrowth {
 				type = instanceModel.getRestrictedTypesTarget().get(0).toString();
 			}
 			
-			i=0;
 			j=0;
 			long currentTime;
 			long initTime = System.currentTimeMillis();
@@ -412,14 +412,8 @@ public class ObjectContextModelMatcherTestNeighbourhoodGrowth {
 				
 				Utils.addToSetMap(cachedPair.getCandidateInstance().getId(), cachedPair.getId(), this.compsBySourceInstance);
 				
-/*				if(similarity>=threshold) {
-					Utils.addToListMap(resSource, pair, candidatePairs);
-				}*/
 			}
 				
-			i++;
-			
-
 			log.info("Actually compared: "+j);
 			
 			log.info("Total time: "+(System.currentTimeMillis()-initTime));

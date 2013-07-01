@@ -27,9 +27,11 @@ package uk.ac.open.kmi.fusion.api.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -84,6 +86,8 @@ public class ApplicationContext extends FusionConfigurationObject {
 	private LinkSession linkSession;
 	
 	private ILuceneBlocker blocker;
+	
+	private Set<String> languages = new HashSet<String>();
 	
 	public ApplicationContext() {
 		super();
@@ -158,6 +162,8 @@ public class ApplicationContext extends FusionConfigurationObject {
 			this.blocker = (ILuceneBlocker)environment.findConfigurationObjectByID(linkIndividual);
 		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.GOLD_STANDARD)) {
 			this.goldStandardPath = ((Literal)statement.getObject()).stringValue().trim();
+		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.LANG)) {
+			this.addLanguage(((Literal)statement.getObject()).stringValue().trim());
 		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.SOURCE_ATTRIBUTE)) {
 			if(statement.getObject() instanceof Resource) {
 				Resource res = (Resource)statement.getObject();
@@ -170,7 +176,7 @@ public class ApplicationContext extends FusionConfigurationObject {
 				IAttribute attr = (IAttribute)FusionEnvironment.getInstance().findConfigurationObjectByID(res);
 				this.additionalTargetAttributes.add(attr);
 			}
-		}else {
+		} else {
 			String key = statement.getPredicate().toString();
 			if(!(key.startsWith(RDF.NAMESPACE)||key.startsWith(RDFS.NAMESPACE))) {
 				Value res = statement.getObject();
@@ -347,8 +353,14 @@ public class ApplicationContext extends FusionConfigurationObject {
 	public List<IAttribute> getAdditionalTargetAttributes() {
 		return additionalTargetAttributes;
 	}
+
+
+	public Set<String> getLanguages() {
+		return languages;
+	}
 	
-	
-	
+	public void addLanguage(String language) {
+		languages.add(language);
+	}
 	
 }

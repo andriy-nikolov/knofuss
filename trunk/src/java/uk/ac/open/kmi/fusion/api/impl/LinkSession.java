@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -98,7 +99,7 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 	
 	private List<AtomicMapping> resultMappings;
 	private String resultsFilePath;
-	private int resultsFileFormat;
+	private int resultsFileFormat = -1; // NOT WRITE
 	
 	private static Logger log = Logger.getLogger(LinkSession.class);
 	
@@ -164,6 +165,12 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 
 	public void setTargetDataset(IDataSource targetDataset) {
 		this.targetDataset = targetDataset;
+	}
+
+	
+	
+	public List<AtomicMapping> getResultMappings() {
+		return resultMappings;
 	}
 
 	public synchronized void run() throws FusionException {
@@ -236,7 +243,7 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 			writeResultsToXML(resultMappings, this.resultsFilePath);
 			break;
 		default:
-			log.error("Could not write results: unknown results file format (" + this.resultsFileFormat + ")");
+			log.warn("Could not write results: unknown results file format (" + this.resultsFileFormat + ")");
 		}
 		
 		if(this.goldStandard!=null) {
@@ -527,9 +534,9 @@ public class LinkSession extends FusionConfigurationObject implements ILinkSessi
 				}
 				writer.println("<?xml version=\"1.0\" encoding=\"windows-1251\"?>");
 				writer.println("<DocElement>");
-				for(String key : mappingsByContext.keySet()) {
-					writer.println("<ResultSet id=\""+key+"\">");
-					for(AtomicMapping mapping : mappingsByContext.get(key)) {
+				for(Entry<String, List<AtomicMapping>> entry : mappingsByContext.entrySet()) {
+					writer.println("<ResultSet id=\""+entry.getKey()+"\">");
+					for(AtomicMapping mapping : entry.getValue()) {
 						try {
 							((AtomicMapping)mapping).writeToXML(writer);
 							i++;

@@ -38,8 +38,7 @@ import uk.ac.open.kmi.fusion.util.SesameUtils;
 public abstract class FusionConfigurationObject {
 
 	protected Resource rdfIndividual;
-	protected String comment;
-	protected String uri;
+	protected String comment = "";
 	public FusionEnvironment environment;
 	
 	public static final String TYPE_URI = FusionMetaVocabulary.FUSION_CONFIGURATION_OBJECT;
@@ -55,14 +54,13 @@ public abstract class FusionConfigurationObject {
 		}
 	}
 	
-	public FusionConfigurationObject() {
-		this.comment = "";
-	}
-	
 	public FusionConfigurationObject(Resource rdfIndividual, FusionEnvironment environment) {
-		this();
 		this.setRDFIndividual(rdfIndividual);
 		this.setEnvironment(environment);
+	}
+
+	public FusionConfigurationObject() {
+
 	}
 
 	public Resource getRDFIndividual() {

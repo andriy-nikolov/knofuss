@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
@@ -178,10 +179,10 @@ public class CompositeAttribute extends AbstractAttribute {
 		CompositeAttribute res = new CompositeAttribute();
 		AtomicAttribute tmp;
 		String path;
-		for(String var : propertyPathsByVariables.keySet()) {
-			path = propertyPathsByVariables.get(var);
+		for(Entry<String, String> entry : propertyPathsByVariables.entrySet()) {
+			path = entry.getValue();
 			tmp = new AtomicAttribute(path);
-			tmp.setVariableName(var);
+			tmp.setVariableName(entry.getKey());
 			res.addAttribute(tmp);
 		}
 		

@@ -24,7 +24,6 @@
 	<classpathentry kind="lib" path="lib/procalign.jar"/>
 	<classpathentry kind="lib" path="lib/lucene-core-3.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/lucene-queries-3.0.3.jar"/>
-	<classpathentry kind="lib" path="lib/openrdf-sesame-onejar.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-jdk14-1.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/commons-httpclient-3.1.jar"/>
@@ -46,8 +45,9 @@
 	<classpathentry kind="lib" path="lib/wstx-asl-3.2.9.jar"/>
 	<classpathentry kind="lib" path="lib/xercesImpl-2.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/jena-2.6.4.jar"/>
-	<classpathentry kind="lib" path="lib/an-utils.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="lib/mappingapilite.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/an-utils"/>
+	<classpathentry kind="lib" path="lib/openrdf-sesame-2.6.10-onejar.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

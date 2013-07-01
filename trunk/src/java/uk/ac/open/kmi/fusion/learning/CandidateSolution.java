@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -46,6 +47,12 @@ import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
 import uk.ac.open.kmi.fusion.learning.genetic.fitness.IFitnessFunction;
 // import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
 
+/**
+ * Represents a candidate solution for the genetic algorithm: wraps the decision rule (genotype) and stores its measured fitness.
+ * 
+ * @author andriy.nikolov
+ *
+ */
 public class CandidateSolution {
 
 	private static final double pPropertyPairCompare = 0.5;
@@ -73,7 +80,7 @@ public class CandidateSolution {
 		
 		Double[][] genotypeWeights = genotype.getGenotypeWeights();
 		
-		IValueMatchingFunction[][] genotypeFunctions = genotype.getGenotypeFunctions();
+		IValueMatchingFunction<?>[][] genotypeFunctions = genotype.getGenotypeFunctions();
 		double threshold = genotype.getThreshold();
 		
 		//genotype = new Genotype(sourceProperties.size(), targetProperties.size());
@@ -146,9 +153,7 @@ public class CandidateSolution {
 		Set<Integer> alreadyUsedTargetProperties = new HashSet<Integer>();
 		
 		Double[][] genotypeWeightsCurrent = new Double[sourceProperties.size()][targetProperties.size()];
-		IValueMatchingFunction[][] genotypeFunctionsCurrent = new IValueMatchingFunction[sourceProperties.size()][targetProperties.size()];
-		
-		Map<IAttribute, List<IValueMatchingFunction>> validFunctionsMap;
+		IValueMatchingFunction<?>[][] genotypeFunctionsCurrent = new IValueMatchingFunction[sourceProperties.size()][targetProperties.size()];
 		
 		int k, l;
 		for(int i = 0; i < sourceProperties.size(); i++) {
@@ -249,16 +254,16 @@ public class CandidateSolution {
 		double threshold = this.modelSpec.getThreshold();
 		double averageSimilarity = 0;
 		if(solutionResults.size()>0) {
-			for(Integer res : solutionResults.keySet()) {
-				averageSimilarity += solutionResults.get(res);
+			for(Entry<Integer, Double> entry : solutionResults.entrySet()) {
+				averageSimilarity += entry.getValue();
 			}
 			
 			averageSimilarity = averageSimilarity / solutionResults.size();
 			
 			double std = 0;
 			double val;
-			for(Integer res : solutionResults.keySet()) {
-				val = averageSimilarity - solutionResults.get(res);
+			for(Entry<Integer, Double> entry : solutionResults.entrySet()) {
+				val = averageSimilarity - entry.getValue();
 				std += val*val;
 			}
 			

@@ -30,6 +30,11 @@ import java.util.Map;
 
 import uk.ac.open.kmi.fusion.api.impl.AttributeType;
 
+/**
+ * 
+ * @author andriy.nikolov
+ *
+ */
 public class FusionMetaVocabulary {
 	
 	private FusionMetaVocabulary() {
@@ -85,10 +90,11 @@ public class FusionMetaVocabulary {
 	public static final String HAS_SELECT_QUERY = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"hasSelectQuery";
 	public static final String HAS_TOTAL_RESOURCES_PROCESSED = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"hasTotalResourcesProcessed";
 	public static final String HAS_TRANSFORMATION_FUNCTION = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"hasTransformationFunction";
-	
+	public static final String ID_FIELD_NAME = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"idFieldName";
 	public static final String INCONSISTENCY_RESOLUTION = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"InconsistencyResolution";
 	public static final String INSTANCE_MATCHING_SPEC = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"instanceMatchingSpec";
 	public static final String INTERMEDIATE_STORE = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"intermediateStore";
+	public static final String LANG = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"lang";
 	public static final String LINK_SESSION = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"LinkSession";
 	
 	public static final String LOAD_FROM = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"loadFrom";
@@ -111,6 +117,7 @@ public class FusionMetaVocabulary {
 	public static final String OBJECT_IDENTIFICATION = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"ObjectIdentification";
 	public static final String ONTOLOGY_MATCHING = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"OntologyMatching";
 	public static final String OPTIONAL = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"optional";
+	public static final String PAGE_SIZE = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"pageSize";
 	public static final String PATH = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"path";
 	public static final String PRODUCED_BY = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"producedBy";
 	public static final String PROPERTY_PATH = FusionMetaVocabulary.FUSION_ONTOLOGY_NS+"propertyPath";

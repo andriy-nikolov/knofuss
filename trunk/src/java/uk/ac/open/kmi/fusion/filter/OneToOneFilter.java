@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -141,8 +142,8 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 		
 		Set<AtomicMapping> doubtfulMappings;
 		
-		for(String sourceUri : mappingsByUri.keySet()) {
-			doubtfulMappings = mappingsByUri.get(sourceUri);
+		for(Entry<String, Set<AtomicMapping>> entry : mappingsByUri.entrySet()) {
+			doubtfulMappings = entry.getValue();
 			if(doubtfulMappings.size()>1) {
 				doubtfulSetList.add(doubtfulMappings);
 				/*almostSameMappingSets.add(doubtfulMappings);
@@ -370,7 +371,7 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 	private AtomicMapping findTheBestMapping(Set<AtomicMapping> mappings) {
 		
 
-		IValueMatchingFunction<String> function = (IValueMatchingFunction<String>)ValueMatchingFunctionFactory.getInstance("overlap");
+		// IValueMatchingFunction<String> function = (IValueMatchingFunction<String>)ValueMatchingFunctionFactory.getInstance("overlap");
 		countAlmostSame++;
 		
 		AtomicMapping bestMapping = null;
@@ -476,8 +477,8 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 		
 		// Count how many still almost the same
 		int count = 0;
-		for(AtomicMapping mapping : sims.keySet()) {
-			sim = sims.get(mapping);
+		for(Entry<AtomicMapping, Double> entry : sims.entrySet()) {
+			sim = entry.getValue();
 			if(Math.abs(bestSim-sim)<epsilon) {
 				count ++;
 			}
@@ -593,7 +594,7 @@ public class OneToOneFilter implements IDatasetMatchingMethod {
 				sim = 1-diff/2;
 				
 			} catch(Exception s) {
-				
+				// That's how it should be.
 			}
 			
 			// sim = 

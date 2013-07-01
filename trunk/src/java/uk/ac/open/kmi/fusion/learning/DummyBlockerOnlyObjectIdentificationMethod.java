@@ -70,6 +70,7 @@ import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
 import uk.ac.open.kmi.fusion.util.FusionException;
 import uk.ac.open.kmi.fusion.util.LoggingUtils;
 import uk.ac.open.kmi.fusion.index.LuceneBlockedDiskIndexer;
+import uk.ac.open.kmi.fusion.index.LuceneIndexer;
 import uk.ac.open.kmi.fusion.learning.cache.CacheEntry;
 import uk.ac.open.kmi.fusion.learning.cache.CachedPair;
 import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
@@ -352,7 +353,7 @@ public class DummyBlockerOnlyObjectIdentificationMethod implements
 			} else {
 				tmpList = new ArrayList<String>(1);
 				tmpList.add(sourceEntry.getUri().toString());
-				searchValues.put("uri", tmpList);
+				searchValues.put(LuceneIndexer.ID_FIELD_NAME, tmpList);
 			}
 			
 			if(sourceEntry.getUri().toString().equals("http://data.linkedevents.org/event/f16352aa-7f1b-473c-8a3d-764757d400cc")) {

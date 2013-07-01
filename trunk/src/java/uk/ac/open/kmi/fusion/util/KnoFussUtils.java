@@ -208,7 +208,7 @@ public class KnoFussUtils {
 		Set<String> result = new HashSet<String>();
 		// Remove non-english characters
 		
-		String cleaned = removeDiacriticalMarks(initialValue);
+		String cleaned = removeDiacriticalMarks(initialValue).trim();
 		if(!cleaned.equals(initialValue)) {
 			result.add(cleaned);
 		}

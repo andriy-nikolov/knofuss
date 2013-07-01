@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.openrdf.model.URI;
@@ -182,13 +183,13 @@ public class DifferentIndividualsConflictDetector implements
 		this.descriptor = descriptor;
 		String val;
 		Map<String, String> properties = this.descriptor.getProperties();
-		for(String key : properties.keySet()) {
-			val = properties.get(key);
-			if(key.equals("http://kmi.open.ac.uk/fusion/conflictdetector#allDifferentSource")) {
+		for(Entry<String, String> entry : properties.entrySet()) {
+			val = entry.getValue();
+			if(entry.getKey().equals("http://kmi.open.ac.uk/fusion/conflictdetector#allDifferentSource")) {
 				 if(Boolean.parseBoolean(val)) {
 					 this.allSourceDifferent = true;
 				 }
-			} else if(key.equals("http://kmi.open.ac.uk/fusion/conflictdetector#allDifferentTarget")) {
+			} else if(entry.getKey().equals("http://kmi.open.ac.uk/fusion/conflictdetector#allDifferentTarget")) {
 				if(Boolean.parseBoolean(val)) {
 					 this.allTargetDifferent = true;
 				 }

@@ -25,18 +25,37 @@
  */
 package uk.ac.open.kmi.fusion.api.impl.datasource;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Queue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQuery;
+import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 
+import com.hp.hpl.jena.graph.Node;
+
 import uk.ac.open.kmi.common.utils.sesame.http.SesameRemoteConnectionProfile;
+import uk.ac.open.kmi.common.utils.sesame.http.SesameSPARQLConnectionProfile;
+import uk.ac.open.kmi.common.utils.sparql.MySPARQLParser;
 import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
 import uk.ac.open.kmi.fusion.api.IDataSource;
 import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
@@ -45,11 +64,15 @@ import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
 import uk.ac.open.kmi.fusion.api.impl.AttributeProfileInDataset;
 import uk.ac.open.kmi.fusion.api.impl.FusionConfigurationObject;
 import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
+import uk.ac.open.kmi.fusion.learning.GeneticAlgorithmObjectIdentificationMethod;
 import uk.ac.open.kmi.fusion.util.FusionException;
 
 public class RemoteSPARQLDataSource extends FusionConfigurationObject implements IDataSource {
 	
-	SesameRemoteConnectionProfile connectionProfile;
+	public static final String TYPE_URI = FusionMetaVocabulary.REMOTE_SPARQL_DATA_SOURCE;
+	public static final int DEFAULT_PAGE_SIZE = 1000;
+	
+	SesameSPARQLConnectionProfile connectionProfile;
 	
 	String repositoryURL;
 	
@@ -60,14 +83,19 @@ public class RemoteSPARQLDataSource extends FusionConfigurationObject implements
 	
 	IPersistentStore intermediateStore = null;
 	
-	int pageSize = 1000;
+	int pageSize = DEFAULT_PAGE_SIZE;
 	
-	Logger log = Logger.getLogger(RemoteSPARQLDataSource.class);
+	int N_THREADS = 4;
 	
-	public static final String TYPE_URI = FusionMetaVocabulary.REMOTE_SPARQL_DATA_SOURCE;
+	static Logger log = Logger.getLogger(RemoteSPARQLDataSource.class);
+	
 
 	public RemoteSPARQLDataSource(Resource rdfIndividual, FusionEnvironment environment) {
 		super(rdfIndividual, environment);
+	}
+	
+	public RemoteSPARQLDataSource(String repositoryURL) {
+		this.repositoryURL = repositoryURL;
 	}
 
 	@Override
@@ -95,6 +123,9 @@ public class RemoteSPARQLDataSource extends FusionConfigurationObject implements
 		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.INTERMEDIATE_STORE)) {
 			this.intermediateStore = (IPersistentStore)FusionEnvironment.getInstance().findConfigurationObjectByID((Resource)statement.getObject());
 			this.intermediateStore.setEmbeddingDataSource(this);
+		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.PAGE_SIZE)) {
+			this.intermediateStore = (IPersistentStore)FusionEnvironment.getInstance().findConfigurationObjectByID((Resource)statement.getObject());
+			this.intermediateStore.setEmbeddingDataSource(this);
 		}
 		
 	}
@@ -109,7 +140,7 @@ public class RemoteSPARQLDataSource extends FusionConfigurationObject implements
 	@Override
 	public void prepare() throws FusionException {
 		try {
-			connectionProfile = SesameRemoteConnectionProfile.openConnection(repositoryURL, proxyHost, proxyPort);
+			connectionProfile = SesameSPARQLConnectionProfile.openConnection(repositoryURL, proxyHost, proxyPort);
 			
 			
 		} catch(OpenRDFException e) {
@@ -121,16 +152,192 @@ public class RemoteSPARQLDataSource extends FusionConfigurationObject implements
 		}
 	}
 
+	
+	private int copyRelevantSubsetToBlockerFromRemoteSource(ILuceneBlocker blocker,
+			ApplicationContext context, Map<String, AttributeProfileInDataset> targetAttributes)
+			throws FusionException {
+		
+		try {
+			MySPARQLParser tmpQueryParser = new MySPARQLParser(context.serializeQuerySPARQLTarget());
+			tmpQueryParser.addTriplePattern(Node.createVariable("uri"), Node.createVariable("property"), Node.createVariable("obj"));
+			tmpQueryParser.addOutputVariable("property");
+			tmpQueryParser.addOutputVariable("obj");
+
+			// Retrieve instance counts 
+			String sQuery = formUriCountRetrievalQuery(context);
+			
+			TupleQuery query = connectionProfile.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sQuery);
+			
+			TupleQueryResult tqr = query.evaluate();
+			
+			int instanceCount = 0;
+			try {
+				if(tqr.hasNext()) {
+					instanceCount = ((Literal)(tqr.next().getBinding("count").getValue())).intValue();
+				}
+			} finally {
+				tqr.close();
+			}
+			
+			if(instanceCount==0)
+				return 0;
+			
+			// Retrieve relevant properties
+			sQuery = formPropertyRetrievalQuery(context);
+			
+			query = connectionProfile.getConnection().prepareTupleQuery(QueryLanguage.SPARQL, sQuery);
+			
+			tqr = query.evaluate();
+			
+			BindingSet bs;
+			int count;
+			URI propertyURI;
+			
+			Map<URI, Integer> countsMap = new HashMap<URI, Integer>();
+			
+			try {
+				while(tqr.hasNext()) {
+					bs = tqr.next();
+					
+					count = ((Literal)bs.getValue("count")).intValue();
+					propertyURI = (URI)bs.getValue("property");
+					
+					countsMap.put(propertyURI, count);
+				}
+			} finally {
+				tqr.close();
+			}
+			
+			Set<URI> propertiesToCopy = new HashSet<URI>();
+			
+			double coverage;
+			
+			for(Entry<URI, Integer> countEntry : countsMap.entrySet()) {
+				
+				coverage = ((double)countEntry.getValue())/instanceCount;
+			
+				if(coverage >= GeneticAlgorithmObjectIdentificationMethod.PROPERTY_COVERAGE_REQUIRED) {
+					propertiesToCopy.add(countEntry.getKey());
+					log.info("\t"+countEntry.getKey()+": "+countEntry.getValue());
+				}
+				
+			}
+			
+			ExecutorService threadPool = Executors.newFixedThreadPool(Math.min(propertiesToCopy.size(), N_THREADS));
+			
+			RemoteSPARQLDataExtractorRunnable task;
+			
+			Future<List<BindingSet>> futureResult;
+			
+			Set<URI> finishedProperties = new HashSet<URI>();
+			Map<URI, Integer> offsets = new HashMap<URI, Integer>();
+			
+			for(URI property : propertiesToCopy) {
+				offsets.put(property, 0);
+			}
+			
+			List<BindingSet> result;
+			Map<URI, BindingSet> firstResults = new HashMap<URI, BindingSet>();
+			BindingSet firstResult = null;
+			
+			Map<URI, Future<List<BindingSet>>> futureResults = new HashMap<URI, Future<List<BindingSet>>>();
+			
+			Set<URI> distinctUris = new HashSet<URI>();
+			
+			int numstmts = 0;
+			while(!propertiesToCopy.isEmpty()) {
+				finishedProperties.clear();
+				futureResults.clear();
+				for(URI property : propertiesToCopy) {
+					task = new RemoteSPARQLDataExtractorRunnable(connectionProfile.getConnection(), context, property, pageSize, offsets.get(property));
+					
+					log.info("Submitted: "+property.stringValue()+", "+offsets.get(property));
+					futureResult = threadPool.submit(task);
+					
+					futureResults.put(property, futureResult);
+					
+					Thread.sleep(1000);
+				}	
+				
+				for(Entry<URI, Future<List<BindingSet>>> entry : futureResults.entrySet()) {
+					futureResult = entry.getValue();
+					result = futureResult.get();
+					log.info("Received: "+entry.getKey().stringValue()+", "+offsets.get(entry.getKey()));
+					offsets.put(entry.getKey(), offsets.get(entry.getKey()) + result.size());
+					
+					if(result.size()<pageSize) {
+						finishedProperties.add(entry.getKey());
+						log.info("Finished: "+entry.getKey().stringValue()+", total: "+offsets.get(entry.getKey()));
+					}
+					
+					if(result.size()>0) {
+						if(firstResults.containsKey(entry.getKey()) && firstResults.get(entry.getKey()).equals(result.get(0))) {
+							System.err.println("Equal results for different searches: "+entry.getKey());
+							finishedProperties.add(entry.getKey());
+							continue;
+						}
+					}
+					
+					firstResults.put(entry.getKey(), result.get(0));
+					
+					for(BindingSet tmp : result) {
+						if(tmp.getValue("uri") instanceof URI)
+							distinctUris.add((URI)tmp.getValue("uri"));
+					}
+					
+					numstmts += result.size();
+					
+					blocker.indexBindingSets(result, context, context.getRestrictedTypesTarget().get(0));
+				}
+				
+				propertiesToCopy.removeAll(finishedProperties);
+			}
+			
+			System.out.println("Statements retrieved: "+numstmts);
+			System.out.println("Instances retrieved: "+distinctUris.size());
+			System.out.println("Instances should have been retrieved: "+instanceCount);
+			
+			
+			return distinctUris.size();
+		} catch(Exception e) {
+			throw new FusionException("Error when copying relevant instances to the indexer", e);
+		}
+		
+		
+	}
+	
+	
+	private String formUriCountRetrievalQuery(ApplicationContext context) {
+		String restriction = context.getRestrictionTarget();
+		
+		String query = "SELECT (count(distinct ?uri) as ?count) WHERE { \n"
+				+ restriction+" . }";
+		
+		return query;
+		
+	}
+	
+	private String formPropertyRetrievalQuery(ApplicationContext context) {
+		
+		String restriction = context.getRestrictionTarget();
+		
+		String query = "SELECT DISTINCT ?property (COUNT(?val) AS ?count) WHERE { \n"
+				+ restriction+" . ?uri ?property ?val . " 
+				+ " FILTER(isLiteral(?val)) } GROUP BY ?property";
+		
+		return query;
+	}
+	
 	@Override
 	public int copyRelevantSubsetToBlocker(ILuceneBlocker blocker,
 			ApplicationContext context, Map<String, AttributeProfileInDataset> targetAttributes)
 			throws FusionException {
 		
-		if(intermediateStore!=null) {
+		if(intermediateStore!=null && intermediateStore!=blocker) {
 			return intermediateStore.copyRelevantSubsetToBlocker(blocker, context, targetAttributes);
 			
 		} else {
-			return 0;
+			return copyRelevantSubsetToBlockerFromRemoteSource(blocker, context, targetAttributes);
 		}
 		
 		/*Set<String> tmpSet = new HashSet<String>();
@@ -286,5 +493,14 @@ public class RemoteSPARQLDataSource extends FusionConfigurationObject implements
 			throw new FusionException(e);
 		}
 	}
+
+	public int getPageSize() {
+		return pageSize;
+	}
+
+	public void setPageSize(int pageSize) {
+		this.pageSize = pageSize;
+	}
+	
 	
 }

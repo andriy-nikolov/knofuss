@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -52,6 +53,7 @@ import org.apache.lucene.util.Version;
 import org.openrdf.model.vocabulary.RDF;
 
 import uk.ac.open.kmi.common.utils.LuceneUtils;
+import uk.ac.open.kmi.fusion.index.LuceneIndexer;
 import uk.ac.open.kmi.fusion.objectidentification.SearchResult;
 
 public class LuceneAllFieldsSearchStrategy extends AbstractLuceneSearchStrategy {
@@ -69,7 +71,7 @@ public class LuceneAllFieldsSearchStrategy extends AbstractLuceneSearchStrategy 
 	public void refreshSearcher() {
 		super.refreshSearcher();
 		Set<String> fieldNameCollection = new HashSet<String>(this.indexSearcher.getIndexReader().getFieldNames(FieldOption.ALL));
-		fieldNameCollection.remove("uri");
+		fieldNameCollection.remove(LuceneIndexer.ID_FIELD_NAME);
 		fieldNameCollection.remove(RDF.TYPE.toString());
 		this.fieldNames = new String[fieldNameCollection.size()];
 		this.fieldNames = fieldNameCollection.toArray(this.fieldNames);
@@ -117,8 +119,8 @@ public class LuceneAllFieldsSearchStrategy extends AbstractLuceneSearchStrategy 
     		for(int i=0;i<hits.scoreDocs.length;i++) {
     			if((hits.scoreDocs[i].score>=threshold)) {
     				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
-    				res = new uk.ac.open.kmi.fusion.objectidentification.SearchResult(doc.get("uri"), doc, (double)hits.scoreDocs[i].score);
-    				docs.put(doc.get("uri"), res);
+    				res = new uk.ac.open.kmi.fusion.objectidentification.SearchResult(doc.get(LuceneIndexer.ID_FIELD_NAME), doc, (double)hits.scoreDocs[i].score);
+    				docs.put(doc.get(LuceneIndexer.ID_FIELD_NAME), res);
     			} else {
     				break;
     			}
@@ -148,10 +150,10 @@ public class LuceneAllFieldsSearchStrategy extends AbstractLuceneSearchStrategy 
 	    	
 	    	Set<String> labels = new HashSet<String>();
 	    	
-	    	for(String key : searchFieldValues.keySet()) {
-	    		allFieldValues.addAll(searchFieldValues.get(key));
-	    		if(key.toLowerCase().endsWith("label")) {
-	    			labels.addAll(searchFieldValues.get(key));
+	    	for(Entry<String, List<String>> entry : searchFieldValues.entrySet()) {
+	    		allFieldValues.addAll(entry.getValue());
+	    		if(entry.getKey().toLowerCase().endsWith("label")) {
+	    			labels.addAll(entry.getValue());
 	    		}
 	    	}
 	    	
@@ -187,7 +189,7 @@ public class LuceneAllFieldsSearchStrategy extends AbstractLuceneSearchStrategy 
 			    					System.out.println(label+" : "+doc.get("http://www.geonames.org/ontology#name"));
 			    					break;
 			    				}
-			    			docs.put(doc.get("uri"), doc);
+			    			docs.put(doc.get(LuceneIndexer.ID_FIELD_NAME), doc);
 			    			
 			    		}
 		    		}
@@ -228,7 +230,7 @@ public class LuceneAllFieldsSearchStrategy extends AbstractLuceneSearchStrategy 
 		    				
 		    				
 		    				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
-		    				docs.put(doc.get("uri"), doc);
+		    				docs.put(doc.get(LuceneIndexer.ID_FIELD_NAME), doc);
 		    			} else {
 		    				break;
 		    				/*if(!labels.isEmpty()) {
@@ -237,7 +239,7 @@ public class LuceneAllFieldsSearchStrategy extends AbstractLuceneSearchStrategy 
 				    				if(labelFields!=null) {
 					    				for(Fieldable f : labelFields) {
 					    					if(f.stringValue().trim().toLowerCase().equals(label.toLowerCase())) {
-					    						docs.put(doc.get("uri"), doc);
+					    						docs.put(doc.get(LuceneIndexer.ID_FIELD_NAME), doc);
 					    					}
 					    				}
 				    				}

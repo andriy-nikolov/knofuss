@@ -33,17 +33,28 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermDocs;
+import org.apache.lucene.store.Directory;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.query.BindingSet;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 
 import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
 import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
+import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
 import uk.ac.open.kmi.fusion.api.impl.FusionConfigurationObject;
 import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
 import uk.ac.open.kmi.fusion.index.search.ILuceneSearchStrategy;
+import uk.ac.open.kmi.fusion.index.search.LuceneAlignedFieldsEnhancedSearchStrategy;
+import uk.ac.open.kmi.fusion.index.search.LuceneAlignedFieldsSearchStrategy;
+import uk.ac.open.kmi.fusion.index.search.LuceneAllFieldsSearchStrategy;
+import uk.ac.open.kmi.fusion.index.search.LuceneAllFieldsSearchStrategyFuzzy;
 import uk.ac.open.kmi.fusion.index.store.ILuceneStore;
 import uk.ac.open.kmi.fusion.util.FusionException;
 
@@ -60,6 +71,8 @@ public abstract class LuceneIndexer extends FusionConfigurationObject implements
 	protected double threshold = 0.5;
 	protected double fuzzyThreshold = 0.6;
 	protected int cutOff = 5;
+	
+	public static String ID_FIELD_NAME = "uri";
 	
 	int propertyPathDepth = 1;
 	
@@ -85,6 +98,12 @@ public abstract class LuceneIndexer extends FusionConfigurationObject implements
 			throws FusionException {
 		super.readFromRDFIndividual(connection);
 		
+		initStoreStrategy();
+		this.storeStrategy.setPropertyPathDepth(propertyPathDepth);
+		
+		initSearchStrategy();
+		this.searchStrategy.setThreshold(threshold);
+		this.searchStrategy.setCutOff(cutOff);
 	}
 
 	@Override
@@ -120,10 +139,41 @@ public abstract class LuceneIndexer extends FusionConfigurationObject implements
 			if(statement.getObject() instanceof Literal) {
 				this.fuzzyThreshold = ((Literal)statement.getObject()).doubleValue();
 			}
+		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.ID_FIELD_NAME)) {
+			if(statement.getObject() instanceof Literal) {
+				ID_FIELD_NAME = ((Literal)statement.getObject()).stringValue();
+			}
 		}
 	}
 
-
+	
+	protected abstract ILuceneStore initStoreStrategy() throws FusionException;
+	
+	protected ILuceneSearchStrategy initSearchStrategy() throws FusionException {
+		Directory directory = this.storeStrategy.getDirectory();
+		switch(this.searchPolicy) {
+		case ALIGNED_FIELDS:
+			this.searchStrategy = new LuceneAlignedFieldsSearchStrategy(directory);
+			break;
+		case ALL_FIELDS:
+			this.searchStrategy = new LuceneAllFieldsSearchStrategy(directory);
+			break;
+		case FUZZY:
+			this.searchStrategy = new LuceneAllFieldsSearchStrategyFuzzy(directory);
+			((LuceneAllFieldsSearchStrategyFuzzy)this.searchStrategy).setFuzzyThreshold(fuzzyThreshold);
+			break;
+		case ENHANCED:
+			this.searchStrategy = new LuceneAlignedFieldsEnhancedSearchStrategy(directory);
+			break;
+		case BIGRAM:
+			break;
+		default:
+			throw new FusionException("Cannot determine the search policy: " + this.searchPolicy);
+		}
+		
+		return this.searchStrategy; 
+	}
+			
 
 	@Override
 	public void setCutOff(int cutOff) {
@@ -199,7 +249,59 @@ public abstract class LuceneIndexer extends FusionConfigurationObject implements
 			throws CorruptIndexException, IOException {
 		this.storeStrategy.addDocument(doc, type);
 	}
+	
+	@Override
+	public synchronized void indexBindingSets(List<BindingSet> bindingSets, ApplicationContext context, String type) throws FusionException {
+		storeStrategy.indexBindingSets(bindingSets, context, type);
+		searchStrategy.refreshSearcher();				
+	}
 
+	@Override
+	public synchronized void indexStatements(List<Statement> statements, ApplicationContext context, String type) throws FusionException {
+		storeStrategy.indexStatements(statements, context, type);
+		searchStrategy.refreshSearcher();				
+	}
+	
+	public static Document getDocumentByURI(IndexReader reader, URI uri) throws FusionException {
+		if(reader == null)
+			throw new IllegalArgumentException("IndexReader is null");
+		
+		if(uri == null)
+			throw new IllegalArgumentException("URI to find is null");
+		
+		return getDocumentByURI(reader, uri.stringValue());
+	}
+	
+	public static Document getDocumentByURI(IndexReader reader, String uri) throws FusionException {
+		if(reader == null)
+			throw new IllegalArgumentException("IndexReader is null");
+		
+		if(uri == null)
+			throw new IllegalArgumentException("URI to find is null");
+		
+		Term term = new Term(ID_FIELD_NAME, uri);
+		
+		Document doc = null;
+		try {
+			TermDocs docs = reader.termDocs(term);
+			try {
+				if(docs.next()) {
+					int docNr = docs.doc();
+					doc = reader.document(docNr);
+					if(docs.next())
+						throw new FusionException("More than one document for uri: "+uri);
+				}
+			} finally {
+				docs.close();
+			}
+			
+		} catch(IOException e) {
+			throw new FusionException(e);
+		}
+		
+		return doc;
+	}
+	
 	@Override
 	public void commit() throws FusionException {
 		this.storeStrategy.commit();		

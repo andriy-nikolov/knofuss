@@ -51,6 +51,7 @@ import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 
 import uk.ac.open.kmi.common.utils.LuceneUtils;
+import uk.ac.open.kmi.fusion.index.LuceneIndexer;
 import uk.ac.open.kmi.fusion.objectidentification.SearchResult;
 import uk.ac.open.kmi.fusion.util.OAEIUtils;
 
@@ -86,20 +87,20 @@ public class LuceneAlignedFieldsEnhancedSearchStrategy extends
 	    	
  	    	BooleanQuery query = new BooleanQuery();
  	    	String val;
-	    	for(String key : fields.keySet()) {
-	    		if(key.equals(OAEIUtils.IIMB_TBOX_NS+"gender")) continue;
-	    		if(fields.get(key).isEmpty()) continue;
-	    		String queryString = LuceneUtils.getTransducedQuery(getConcatenatedString(fields.get(key)));
+	    	for(Entry<String, List<String>> entry : fields.entrySet()) {
+	    		if(entry.getKey().equals(OAEIUtils.IIMB_TBOX_NS+"gender")) continue;
+	    		if(entry.getValue().isEmpty()) continue;
+	    		String queryString = LuceneUtils.getTransducedQuery(getConcatenatedString(entry.getValue()));
 	    		if(queryString.equals("")) continue;
 	    		Query tmpquery = null;
 
-	    		QueryParser queryParser = new QueryParser(Version.LUCENE_30, key, analyzer);
+	    		QueryParser queryParser = new QueryParser(Version.LUCENE_30, entry.getKey(), analyzer);
 	    		
 	    		tmpquery = queryParser.parse(queryString);
 	    		
 	    		query.add(tmpquery, Occur.SHOULD);
 	    		
-	    		if(key.equals(OAEIUtils.IIMB_TBOX_NS+"name")) {
+	    		if(entry.getKey().equals(OAEIUtils.IIMB_TBOX_NS+"name")) {
 	    			queryParser = new QueryParser(Version.LUCENE_30, OAEIUtils.IIMB_TBOX_NS+"article", analyzer);
 		    		
 		    		tmpquery = queryParser.parse(queryString);
@@ -107,9 +108,9 @@ public class LuceneAlignedFieldsEnhancedSearchStrategy extends
 		    		query.add(tmpquery, Occur.SHOULD);
 	    			
 	    			if(abbreviatedNames) {
-		    			val = LuceneUtils.getAbbreviation(fields.get(key).get(0));
+		    			val = LuceneUtils.getAbbreviation(entry.getValue().get(0));
 		    			// tmpquery = queryParser.parse(val);
-		    			tmpquery = new TermQuery(new Term(key, val));
+		    			tmpquery = new TermQuery(new Term(entry.getKey(), val));
 		    			query.add(tmpquery, Occur.SHOULD);
 	    			}
 	    		}
@@ -136,7 +137,7 @@ public class LuceneAlignedFieldsEnhancedSearchStrategy extends
     		for(int i=0;i<hits.scoreDocs.length;i++) {
     			if((hits.scoreDocs[i].score>=threshold)) {
     				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
-    				docs.put(doc.get("uri"), doc);
+    				docs.put(doc.get(LuceneIndexer.ID_FIELD_NAME), doc);
 
     			} else {
     				break;
@@ -182,8 +183,8 @@ public class LuceneAlignedFieldsEnhancedSearchStrategy extends
     		for(int i=0;i<hits.scoreDocs.length;i++) {
     			if((hits.scoreDocs[i].score>=threshold)) {
     				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
-    				res = new uk.ac.open.kmi.fusion.objectidentification.SearchResult(doc.get("uri"), doc, (double)hits.scoreDocs[i].score);
-    				docs.put(doc.get("uri"), res);
+    				res = new uk.ac.open.kmi.fusion.objectidentification.SearchResult(doc.get(LuceneIndexer.ID_FIELD_NAME), doc, (double)hits.scoreDocs[i].score);
+    				docs.put(doc.get(LuceneIndexer.ID_FIELD_NAME), res);
     			} else {
     				break;
     			}

@@ -38,7 +38,8 @@ public class LuceneMemoryStoreStrategy extends AbstractLuceneStore {
 
 	@Override
 	public void init() throws FusionException {
-		directory = new RAMDirectory();
+		if(this.directory==null)
+			this.directory = new RAMDirectory();
 	}
 
 	@Override

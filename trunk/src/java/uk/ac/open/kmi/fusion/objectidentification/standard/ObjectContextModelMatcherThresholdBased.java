@@ -209,17 +209,16 @@ public class ObjectContextModelMatcherThresholdBased {
 			
 					Map<IAttribute, List<? extends Object>> values = resSource.getValues();
 					valuesByPropertyPath.clear();
-					List<Object> tmpList;
+					
 					List<String> tmpStringList;
-					for(IAttribute attribute : values.keySet()) {
+					for(Entry<IAttribute, List<? extends Object>> entry : values.entrySet()) {
 
-						if(((AtomicAttribute)attribute).getPropertyPath().startsWith(Utils.WGS84_NS)) {
+						if(((AtomicAttribute)entry.getKey()).getPropertyPath().startsWith(Utils.WGS84_NS)) {
 							continue;
 						}
 						
-						tmpList = (List<Object>)values.get(attribute);
 						tmpStringList = new ArrayList<String>();
-						for(Object tmp : tmpList) {
+						for(Object tmp : entry.getValue()) {
 							if(tmp instanceof String) {
 								
 								if(KnoFussDateUtils.isDate((String)tmp)) {
@@ -238,7 +237,7 @@ public class ObjectContextModelMatcherThresholdBased {
 						}
 						
 						if(!tmpStringList.isEmpty()) {
-							valuesByPropertyPath.put(((AtomicAttribute)attribute).getPropertyPath(), tmpStringList);
+							valuesByPropertyPath.put(((AtomicAttribute)entry.getKey()).getPropertyPath(), tmpStringList);
 						}
 
 					}

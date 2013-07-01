@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -101,18 +102,18 @@ public class FunctionalPropertyFilter implements IDatasetMatchingMethod {
 		for(AtomicMapping mapping : existingMappings) {
 			map1 = this.linkedUrisByProperty.get(mapping.getSourceIndividual().toString());
 			map2 = this.linkedUrisByProperty.get(mapping.getTargetIndividual().toString());
-			for(String key : map1.keySet()) {
-				if(map1.get(key).size()==1) {
-					set1 = map1.get(key);
+			for(Entry<String, Set<String>> entry : map1.entrySet()) {
+				if(entry.getValue().size()==1) {
+					set1 = entry.getValue();
 					for(String uri1 : set1) {
-						if(map2.containsKey(key)) {
-							if(map2.get(key).size()==1) {
-								set2 = map2.get(key);
+						if(map2.containsKey(entry.getKey())) {
+							if(map2.get(entry.getKey()).size()==1) {
+								set2 = map2.get(entry.getKey());
 								for(String uri2 : set2) {
 									if(!this.mappingSignatures.contains(uri1+" : "+uri2)) {
 										mappingsToAdd.put(uri1, uri2);
 										this.mappingSignatures.add(uri1+" : "+uri2);
-										Utils.increaseCounter(key, addedMappingsByProperties);
+										Utils.increaseCounter(entry.getKey(), addedMappingsByProperties);
 									}
 								}
 								
@@ -124,18 +125,18 @@ public class FunctionalPropertyFilter implements IDatasetMatchingMethod {
 			
 			map1 = this.linkedUrisByType.get(mapping.getSourceIndividual().toString());
 			map2 = this.linkedUrisByType.get(mapping.getTargetIndividual().toString());
-			for(String key : map1.keySet()) {
-				if(map1.get(key).size()==1) {
-					set1 = map1.get(key);
+			for(Entry<String, Set<String>> entry : map1.entrySet()) {
+				if(entry.getValue().size()==1) {
+					set1 = entry.getValue();
 					for(String uri1 : set1) {
-						if(map2.containsKey(key)) {
-							if(map2.get(key).size()==1) {
-								set2 = map2.get(key);
+						if(map2.containsKey(entry.getKey())) {
+							if(map2.get(entry.getKey()).size()==1) {
+								set2 = map2.get(entry.getKey());
 								for(String uri2 : set2) {
 									if(!this.mappingSignatures.contains(uri1+" : "+uri2)) {
 										mappingsToAdd.put(uri1, uri2);
 										this.mappingSignatures.add(uri1+" : "+uri2);
-										Utils.increaseCounter(key, addedMappingsByTypes);
+										Utils.increaseCounter(entry.getKey(), addedMappingsByTypes);
 									}
 								}
 								
@@ -146,13 +147,11 @@ public class FunctionalPropertyFilter implements IDatasetMatchingMethod {
 			}
 		}
 		
-		String uri2;
-		for(String uri1 : mappingsToAdd.keySet()) {
-			uri2 = mappingsToAdd.get(uri1);
+		for(Entry<String, String> entry : mappingsToAdd.entrySet()) {
 			AtomicMapping mapping = new AtomicMapping(this.descriptor);
 			
-			mapping.setSourceIndividual(FusionEnvironment.getInstance().getFusionKbValueFactory().createURI(uri1));
-			mapping.setTargetIndividual(FusionEnvironment.getInstance().getMainKbValueFactory().createURI(uri2));
+			mapping.setSourceIndividual(FusionEnvironment.getInstance().getFusionKbValueFactory().createURI(entry.getKey()));
+			mapping.setTargetIndividual(FusionEnvironment.getInstance().getMainKbValueFactory().createURI(entry.getValue()));
 			
 			mapping.setSimilarity(1.0);
 			mapping.setConfidence(1.0);
@@ -161,12 +160,12 @@ public class FunctionalPropertyFilter implements IDatasetMatchingMethod {
 			
 		}
 		
-		for(String key : addedMappingsByProperties.keySet()) {
-			log.info("Added "+addedMappingsByProperties.get(key)+" by property "+key);
+		for(Entry<String, Integer> entry : addedMappingsByProperties.entrySet()) {
+			log.info("Added "+entry.getValue()+" by property "+entry.getKey());
 		}
 		
-		for(String key : addedMappingsByTypes.keySet()) {
-			log.info("Added "+addedMappingsByTypes.get(key)+" by type "+key);
+		for(Entry<String, Integer> entry : addedMappingsByTypes.entrySet()) {
+			log.info("Added "+entry.getValue()+" by type "+entry.getKey());
 		}
 		
 		log.info("Added "+mappingsToAdd.size()+" in total");
@@ -296,7 +295,7 @@ public class FunctionalPropertyFilter implements IDatasetMatchingMethod {
 	
 	private void addToMap(String uri, String typeOrProperty, String linkedUri, Map<String, Map<String, Set<String>>> map) {
 		
-		Map<String, Set<String>> internalMap = new HashMap<String, Set<String>>();
+		Map<String, Set<String>> internalMap;
 		if(map.containsKey(uri)) {
 			internalMap = map.get(uri);
 		} else {

@@ -36,6 +36,7 @@ import uk.ac.open.kmi.fusion.api.impl.AtomicAttribute;
 import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
 import uk.ac.open.kmi.fusion.api.impl.ObjectContextModel;
 import uk.ac.open.kmi.fusion.api.impl.ObjectContextWrapper;
+import uk.ac.open.kmi.fusion.index.LuceneIndexer;
 
 
 public class LuceneBackedObjectContextWrapper extends ObjectContextWrapper {
@@ -52,7 +53,7 @@ public class LuceneBackedObjectContextWrapper extends ObjectContextWrapper {
 		
 		this.individual = individual; 
 		Map<String, IAttribute> variablePropertyMap = model.getTargetAttributesByVarName();
-		this.individual = FusionEnvironment.getInstance().getMainKbValueFactory().createURI(doc.get("uri"));
+		this.individual = FusionEnvironment.getInstance().getMainKbValueFactory().createURI(doc.get(LuceneIndexer.ID_FIELD_NAME));
 		IAttribute attribute;
 		for(Entry<String, IAttribute> entry : variablePropertyMap.entrySet()) {
 			attribute = ((AtomicAttribute) entry.getValue());

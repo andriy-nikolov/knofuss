@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -185,9 +186,9 @@ public class ObjectContextModelMatcherForGeneticExperimental2 {
 				
 				CachedPair testPair;
 				
-				for(Integer sourceId : compsBySourceInstance.keySet()) {
+				for(Entry<Integer, Set<Integer>> entry : compsBySourceInstance.entrySet()) {
 					
-					pairIds = compsBySourceInstance.get(sourceId);
+					pairIds = entry.getValue();
 					sortedPairIds = new ArrayList<Integer>(pairIds);
 					Collections.sort(sortedPairIds, comparator);
 					selectedPairId = sortedPairIds.get(0);
@@ -260,8 +261,8 @@ public class ObjectContextModelMatcherForGeneticExperimental2 {
 		
 		int growth = 0;
 		
-		for(Integer pairId : mapSimilarities.keySet()) {
-			currentSimilarity = mapSimilarities.get(pairId);
+		for(Entry<Integer, Double> entry : mapSimilarities.entrySet()) {
+			currentSimilarity = entry.getValue();
 			if(currentSimilarity>=threshold) {
 				growth++;
 			}

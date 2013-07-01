@@ -52,15 +52,11 @@ import uk.ac.open.kmi.fusion.index.store.ILuceneStore;
 import uk.ac.open.kmi.fusion.index.store.LuceneDiskStoreStrategy;
 import uk.ac.open.kmi.fusion.util.FusionException;
 
-public class LuceneBigramDiskIndexer extends LuceneIndexer implements IPersistentStore {
+public class LuceneBigramDiskIndexer extends LuceneDiskIndexer implements IPersistentStore {
 
 	public static final String TYPE_URI = FusionMetaVocabulary.LUCENE_BIGRAM_DISK_BLOCKER;
 	
 	private static Logger log = Logger.getLogger(LuceneBigramDiskIndexer.class);
-	
-	String indexDirectory = null;
-	boolean refresh = false;
-	IDataSource embeddingDataSource;
 	
 	protected LuceneBigramDiskIndexer() {
 		this.storePolicy = LuceneStorePolicy.DISK;
@@ -76,95 +72,5 @@ public class LuceneBigramDiskIndexer extends LuceneIndexer implements IPersisten
 		super(rdfIndividual, environment);
 		this.storePolicy = LuceneStorePolicy.DISK;
 	}
-
-	@Override
-	public void readFromRDFIndividual(RepositoryConnection connection)
-			throws FusionException {
-		super.readFromRDFIndividual(connection);
-		
-		if(this.indexDirectory!=null) {
-			this.storeStrategy = new LuceneDiskStoreStrategy(new File(indexDirectory));
-			try {
-				this.storeStrategy.init();
-				Directory directory = this.storeStrategy.getDirectory();
-				switch(this.searchPolicy) {
-				case ALIGNED_FIELDS:
-					this.searchStrategy = new LuceneAlignedFieldsSearchStrategy(directory);
-					break;
-				case ALL_FIELDS:
-					this.searchStrategy = new LuceneAllFieldsSearchStrategy(directory);
-					break;
-				case FUZZY:
-					this.searchStrategy = new LuceneAllFieldsSearchStrategyFuzzy(directory);
-					break;
-				case ENHANCED:
-					this.searchStrategy = new LuceneAlignedFieldsEnhancedSearchStrategy(directory);
-					break;
-				case BIGRAM:
-					break;
-				default:
-					log.error("Cannot determine the search policy: " + this.searchPolicy);
-				}
-			} catch(FusionException e) {
-				
-			}
-			this.searchStrategy.setThreshold(threshold);
-			this.storeStrategy.setPropertyPathDepth(propertyPathDepth);
-			this.searchStrategy.setCutOff(cutOff);
-		}
-	}
-
-
-	@Override
-	protected void readFromPropertyMember(Statement statement)
-			throws RepositoryException {
-		super.readFromPropertyMember(statement);
-		if(statement.getPredicate().toString().equals(FusionMetaVocabulary.PATH)) {
-			this.indexDirectory = ((Literal)statement.getObject()).stringValue().trim();
-		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.REFRESH)) {
-			this.refresh = ((Literal)statement.getObject()).booleanValue();
-		}
-	}
-
-
-	@Override
-	public void prepare() throws FusionException {
-		try {
-			if(this.refresh&&(this.embeddingDataSource!=null)) {
-				this.storeStrategy.prepare(this.embeddingDataSource);
-				this.refresh = false;
-			}
-			refreshSearcher();
-		} catch(Exception e) {
-			throw new FusionException("Could not prepare the intermediate data source", e);
-		}
-	}
-
-	@Override
-	public int copyRelevantSubsetToBlocker(ILuceneBlocker blocker,
-			ApplicationContext context,
-			Map<String, AttributeProfileInDataset> targetAttributes)
-			throws FusionException {
-		return searchStrategy.copyRelevantSubsetToBlocker(blocker, context, targetAttributes);
-	}
-
-	@Override
-	public IDataSource getEmbeddingDataSource() {		
-		return embeddingDataSource;
-	}
-
-	@Override
-	public void setEmbeddingDataSource(IDataSource embeddingDataSource) {
-		this.embeddingDataSource = embeddingDataSource;
-	}
-
-	@Override
-	public void close() throws FusionException {
-		
-		this.storeStrategy.close();
-		
-	}
-	
-	
 
 }
