@@ -55,6 +55,7 @@ import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
 import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
 import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
 import uk.ac.open.kmi.fusion.api.impl.AttributeProfileInDataset;
+import uk.ac.open.kmi.fusion.index.LuceneIndexer;
 import uk.ac.open.kmi.fusion.util.FusionException;
 
 public abstract class AbstractLuceneSearchStrategy implements
@@ -191,7 +192,7 @@ public abstract class AbstractLuceneSearchStrategy implements
 	public Document findByURI(String uri) {
 	    try {
 		    //Analyzer analyzer = new StandardAnalyzer();
-		    Term term = new Term("uri", uri);
+		    Term term = new Term(LuceneIndexer.ID_FIELD_NAME, uri);
 	    	Query query = new TermQuery(term);
 	    	
 	    	TopDocs topDocs = indexSearcher.search(query, 1);
@@ -199,7 +200,7 @@ public abstract class AbstractLuceneSearchStrategy implements
 	    	//if(Math.round(topDocs.scoreDocs[0].score)==1) {
 	    	if(topDocs.totalHits>0) {
 		    	Document doc = indexSearcher.doc(topDocs.scoreDocs[0].doc);
-		    	if(doc.get("uri").equals(uri)) {
+		    	if(doc.get(LuceneIndexer.ID_FIELD_NAME).equals(uri)) {
 		    		return indexSearcher.doc(topDocs.scoreDocs[0].doc);
 		    	}
 	    	}
@@ -247,7 +248,7 @@ public abstract class AbstractLuceneSearchStrategy implements
 			Term term = new Term(RDF.TYPE.toString(), type);
 			TermQuery query = new TermQuery(term);
 			
-			TopDocs topDocs = indexSearcher.search(query, indexSearcher.maxDoc());
+			TopDocs topDocs = indexSearcher.search(query, Math.max(1, indexSearcher.maxDoc()));
 				
 				
 			Document doc;
@@ -262,7 +263,7 @@ public abstract class AbstractLuceneSearchStrategy implements
 						
 					List<Fieldable> fields = doc.getFields();
 					for(Fieldable f : fields) {
-						if(!(f.name().equals("uri")||f.name().equals(RDF.TYPE.toString())||f.name().equals(FusionMetaVocabulary.BLOCK_FOR))) {
+						if(!(f.name().equals(LuceneIndexer.ID_FIELD_NAME)||f.name().equals(RDF.TYPE.toString())||f.name().equals(FusionMetaVocabulary.BLOCK_FOR))) {
 							if(targetAttributes.containsKey(f.name())) {
 								currentProfile = targetAttributes.get(f.name());
 							} else {
@@ -298,8 +299,8 @@ public abstract class AbstractLuceneSearchStrategy implements
 				}*/
 			}
 			
-			for(String key : targetAttributes.keySet()) {
-				currentProfile = targetAttributes.get(key);
+			for(Entry<String, AttributeProfileInDataset> entry : targetAttributes.entrySet()) {
+				currentProfile = entry.getValue();
 				currentProfile.summarize();
 			}
 				

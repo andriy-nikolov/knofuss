@@ -45,6 +45,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Version;
 
 import uk.ac.open.kmi.common.utils.LuceneUtils;
+import uk.ac.open.kmi.fusion.index.LuceneIndexer;
 import uk.ac.open.kmi.fusion.objectidentification.SearchResult;
 
 public class LuceneBlockedSearchStrategy extends AbstractLuceneSearchStrategy {
@@ -106,8 +107,8 @@ public class LuceneBlockedSearchStrategy extends AbstractLuceneSearchStrategy {
     		for(int i=0;i<hits.scoreDocs.length;i++) {
     			if((hits.scoreDocs[i].score>=threshold)) {
     				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
-    				res = new uk.ac.open.kmi.fusion.objectidentification.SearchResult(doc.get("uri"), doc, (double)hits.scoreDocs[i].score);
-    				docs.put(doc.get("uri"), res);
+    				res = new uk.ac.open.kmi.fusion.objectidentification.SearchResult(doc.get(LuceneIndexer.ID_FIELD_NAME), doc, (double)hits.scoreDocs[i].score);
+    				docs.put(doc.get(LuceneIndexer.ID_FIELD_NAME), res);
     			} else {
     				break;
     			}
@@ -131,7 +132,7 @@ public class LuceneBlockedSearchStrategy extends AbstractLuceneSearchStrategy {
 		
 		Map<String, Document> docs = new HashMap<String, Document>();
 	        
-	    String uri = searchFieldValues.get("uri").get(0);
+	    String uri = searchFieldValues.get(LuceneIndexer.ID_FIELD_NAME).get(0);
 		
 		Term term = new Term("http://kmi.open.ac.uk/fusion/fusion#blockFor", uri);
 		TermQuery query = new TermQuery(term);
@@ -142,7 +143,7 @@ public class LuceneBlockedSearchStrategy extends AbstractLuceneSearchStrategy {
 			Document doc;
 			for(int i=0;i<hits.scoreDocs.length;i++) {
 				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
-				docs.put(doc.get("uri"), doc);
+				docs.put(doc.get(LuceneIndexer.ID_FIELD_NAME), doc);
 			}
 		}
 			

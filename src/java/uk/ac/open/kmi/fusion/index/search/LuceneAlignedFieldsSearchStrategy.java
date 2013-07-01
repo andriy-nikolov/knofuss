@@ -30,6 +30,7 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -46,6 +47,7 @@ import org.apache.lucene.util.Version;
 import org.openrdf.model.vocabulary.RDF;
 
 import uk.ac.open.kmi.common.utils.LuceneUtils;
+import uk.ac.open.kmi.fusion.index.LuceneIndexer;
 import uk.ac.open.kmi.fusion.objectidentification.SearchResult;
 
 public class LuceneAlignedFieldsSearchStrategy extends
@@ -75,14 +77,14 @@ public class LuceneAlignedFieldsSearchStrategy extends
 	   
 	    
 	    try {
-	    	for(String key : fields.keySet()) {
+	    	for(Entry<String, List<String>> entry : fields.entrySet()) {
 
-	    		if(fields.get(key).isEmpty()) continue;
-	    		String queryString = LuceneUtils.getTransducedQuery(getConcatenatedString(fields.get(key)));
+	    		if(entry.getValue().isEmpty()) continue;
+	    		String queryString = LuceneUtils.getTransducedQuery(getConcatenatedString(entry.getValue()));
 	    		if(queryString.equals("")) continue;
 	    		Query query = null;
 
-	    		QueryParser queryParser = new QueryParser(Version.LUCENE_30, key, analyzer);
+	    		QueryParser queryParser = new QueryParser(Version.LUCENE_30, entry.getKey(), analyzer);
 	    		
 	    		query = queryParser.parse(queryString);
 	    		
@@ -108,7 +110,7 @@ public class LuceneAlignedFieldsSearchStrategy extends
 	    		for(int i=0;i<hits.scoreDocs.length;i++) {
 	    			if((hits.scoreDocs[i].score>=threshold)) {
 	    				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
-	    				docs.put(doc.get("uri"), doc);
+	    				docs.put(doc.get(LuceneIndexer.ID_FIELD_NAME), doc);
 
 	    			} else {
 	    				break;
@@ -158,8 +160,8 @@ public class LuceneAlignedFieldsSearchStrategy extends
     		for(int i=0;i<hits.scoreDocs.length;i++) {
     			if((hits.scoreDocs[i].score>=threshold)) {
     				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
-    				res = new uk.ac.open.kmi.fusion.objectidentification.SearchResult(doc.get("uri"), doc, (double)hits.scoreDocs[i].score);
-    				docs.put(doc.get("uri"), res);
+    				res = new uk.ac.open.kmi.fusion.objectidentification.SearchResult(doc.get(LuceneIndexer.ID_FIELD_NAME), doc, (double)hits.scoreDocs[i].score);
+    				docs.put(doc.get(LuceneIndexer.ID_FIELD_NAME), res);
     			} else {
     				break;
     			}

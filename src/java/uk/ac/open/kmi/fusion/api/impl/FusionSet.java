@@ -46,17 +46,16 @@ public abstract class FusionSet extends FusionMethodResult {
 		
 	}
 	
-	public boolean isIdenticalTo(FusionSet dataInstance) {
-		String curIndividual1, curIndividual2;
-		FusionSet mergeSet;
-		try {
-			mergeSet = (FusionSet)dataInstance;
-		} catch(ClassCastException e) {
-			return false;
-		}
-		
-		return false;
-	}
+//	public boolean isIdenticalTo(FusionSet dataInstance) {
+//		FusionSet mergeSet;
+//		try {
+//			mergeSet = (FusionSet)dataInstance;
+//		} catch(ClassCastException e) {
+//			return false;
+//		}
+//		
+//		return false;
+//	}
 
 
 	public abstract  Set<URI> getCandidateIndividuals();

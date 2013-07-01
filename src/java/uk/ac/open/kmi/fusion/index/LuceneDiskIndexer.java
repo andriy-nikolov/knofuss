@@ -78,41 +78,15 @@ public class LuceneDiskIndexer extends LuceneIndexer implements IPersistentStore
 	}
 
 	@Override
-	public void readFromRDFIndividual(RepositoryConnection connection)
-			throws FusionException {
-		super.readFromRDFIndividual(connection);
-		
+	protected ILuceneStore initStoreStrategy() throws FusionException {
 		if(this.indexDirectory!=null) {
 			this.storeStrategy = new LuceneDiskStoreStrategy(new File(indexDirectory));
-			try {
-				this.storeStrategy.init();
-				Directory directory = this.storeStrategy.getDirectory();
-				switch(this.searchPolicy) {
-				case ALIGNED_FIELDS:
-					this.searchStrategy = new LuceneAlignedFieldsSearchStrategy(directory);
-					break;
-				case ALL_FIELDS:
-					this.searchStrategy = new LuceneAllFieldsSearchStrategy(directory);
-					break;
-				case FUZZY:
-					this.searchStrategy = new LuceneAllFieldsSearchStrategyFuzzy(directory);
-					((LuceneAllFieldsSearchStrategyFuzzy)this.searchStrategy).setFuzzyThreshold(fuzzyThreshold);
-					break;
-				case ENHANCED:
-					this.searchStrategy = new LuceneAlignedFieldsEnhancedSearchStrategy(directory);
-					break;
-				default:
-					log.error("Cannot determine the search policy: " + this.searchPolicy);
-				}
-			} catch(FusionException e) {
-				
-			}
-			this.searchStrategy.setThreshold(threshold);
-			this.storeStrategy.setPropertyPathDepth(propertyPathDepth);
-			this.searchStrategy.setCutOff(cutOff);
+			this.storeStrategy.init();
+			return this.storeStrategy;
+		} else {
+			throw new FusionException("Index directory is not specified");
 		}
 	}
-
 
 	@Override
 	protected void readFromPropertyMember(Statement statement)

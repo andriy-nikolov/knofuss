@@ -32,7 +32,10 @@ import java.util.Set;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.CorruptIndexException;
+import org.openrdf.model.Statement;
+import org.openrdf.query.BindingSet;
 
+import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
 import uk.ac.open.kmi.fusion.index.search.ILuceneSearchStrategy;
 import uk.ac.open.kmi.fusion.index.store.ILuceneStore;
 import uk.ac.open.kmi.fusion.util.FusionException;
@@ -81,6 +84,8 @@ public interface ILuceneBlocker {
 	
 	public void addDocument(Document doc, String type)
 			throws CorruptIndexException, IOException;
+	
+	public void indexStatements(List<Statement> statements, ApplicationContext context, String type) throws FusionException;
 
 	public ILuceneSearchStrategy getSearchStrategy();
 	
@@ -89,4 +94,8 @@ public interface ILuceneBlocker {
 	// public IndexWriter getIndexWriter();
 	
 	public void commit() throws IOException, FusionException;
+	
+	public void indexBindingSets(List<BindingSet> bindingSets, ApplicationContext context, String type)
+			throws FusionException;
+	
 }

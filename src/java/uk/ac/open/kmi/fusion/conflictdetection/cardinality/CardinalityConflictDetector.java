@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.openrdf.OpenRDFException;
@@ -94,9 +95,8 @@ public class CardinalityConflictDetector implements IConflictDetectionMethod {
 		
 	
 		ConflictStatementCluster conflictSet;
-		URI propertyInd;
-		for(URI prop : restrictedPropertyMap.keySet()) {
-			conflictingSet = restrictedPropertyMap.get(prop);
+		for(Entry<URI, Set<Statement>> entry : restrictedPropertyMap.entrySet()) {
+			conflictingSet = entry.getValue();
 			if(conflictingSet.size()>=2) {
 				conflictSet = new ConflictStatementCluster();
 				for(Statement conflictingStatement : conflictingSet) {
@@ -106,7 +106,7 @@ public class CardinalityConflictDetector implements IConflictDetectionMethod {
 				
 				try {
 					for(Statement stmt : SesameUtils.getStatements(
-							prop, 
+							entry.getKey(), 
 							RDF.TYPE, 
 							OWL.FUNCTIONALPROPERTY,
 							FusionEnvironment.getInstance().getFusionRepositoryConnection())) {

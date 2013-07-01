@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.openrdf.model.Resource;
 
@@ -235,9 +236,9 @@ public abstract class AbstractObjectContextModel extends
 			Map<String, String> variablePathMapTarget = parser.getVariablePathMap();
 			
 			AtomicAttribute attribute;
-			for(String var : variablePathMapTarget.keySet()) {
-				attribute = (AtomicAttribute)this.getTargetAttributeByVarName(var);
-				attribute.setPropertyPath(variablePathMapTarget.get(var));
+			for(Entry<String, String> entry : variablePathMapTarget.entrySet()) {
+				attribute = (AtomicAttribute)this.getTargetAttributeByVarName(entry.getKey());
+				attribute.setPropertyPath(entry.getValue());
 			}
 		}
 	}
@@ -256,9 +257,9 @@ public abstract class AbstractObjectContextModel extends
 			Map<String, String> variablePathMapSource = parser.getVariablePathMap();
 			
 			AtomicAttribute attribute;
-			for(String var : variablePathMapSource.keySet()) {
-				attribute = (AtomicAttribute)this.getSourceAttributeByVarName(var);
-				attribute.setPropertyPath(variablePathMapSource.get(var));
+			for(Entry<String, String> entry : variablePathMapSource.entrySet()) {
+				attribute = (AtomicAttribute)this.getSourceAttributeByVarName(entry.getKey());
+				attribute.setPropertyPath(entry.getValue());
 			}
 		}
 		

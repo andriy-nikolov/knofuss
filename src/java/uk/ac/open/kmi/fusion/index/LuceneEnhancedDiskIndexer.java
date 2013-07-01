@@ -26,22 +26,14 @@
 package uk.ac.open.kmi.fusion.index;
 
 import java.io.File;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.store.Directory;
-import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
 
 import uk.ac.open.kmi.fusion.FusionMetaVocabulary;
 import uk.ac.open.kmi.fusion.api.IDataSource;
-import uk.ac.open.kmi.fusion.api.ILuceneBlocker;
 import uk.ac.open.kmi.fusion.api.IPersistentStore;
-import uk.ac.open.kmi.fusion.api.impl.ApplicationContext;
-import uk.ac.open.kmi.fusion.api.impl.AttributeProfileInDataset;
 import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
 import uk.ac.open.kmi.fusion.index.search.ILuceneSearchStrategy;
 import uk.ac.open.kmi.fusion.index.search.LuceneAlignedFieldsEnhancedSearchStrategy;
@@ -49,7 +41,7 @@ import uk.ac.open.kmi.fusion.index.store.ILuceneStore;
 import uk.ac.open.kmi.fusion.index.store.LuceneEnhancedStoreStrategy;
 import uk.ac.open.kmi.fusion.util.FusionException;
 
-public class LuceneEnhancedDiskIndexer extends LuceneIndexer implements IPersistentStore {
+public class LuceneEnhancedDiskIndexer extends LuceneDiskIndexer implements IPersistentStore {
 
 	public static final String TYPE_URI = FusionMetaVocabulary.LUCENE_ENHANCED_DISK_BLOCKER;
 	
@@ -78,38 +70,22 @@ public class LuceneEnhancedDiskIndexer extends LuceneIndexer implements IPersist
 	}
 
 	@Override
-	public void readFromRDFIndividual(RepositoryConnection connection)
-			throws FusionException {
-		super.readFromRDFIndividual(connection);
-		
+	protected ILuceneStore initStoreStrategy() throws FusionException {
 		if(this.indexDirectory!=null) {
 			this.storeStrategy = new LuceneEnhancedStoreStrategy(new File(indexDirectory));
-			try {
-				this.storeStrategy.init();
-				Directory directory = this.storeStrategy.getDirectory();
-				this.searchStrategy = new LuceneAlignedFieldsEnhancedSearchStrategy(directory);
-				
-			} catch(FusionException e) {
-				
-			}
-			this.searchStrategy.setThreshold(threshold);
-			this.storeStrategy.setPropertyPathDepth(propertyPathDepth);
-			this.searchStrategy.setCutOff(cutOff);
+			this.storeStrategy.init();
+			return this.storeStrategy;
+		} else {
+			throw new FusionException("Index directory is not provided");
 		}
 	}
-
-
+	
 	@Override
-	protected void readFromPropertyMember(Statement statement)
-			throws RepositoryException {
-		super.readFromPropertyMember(statement);
-		if(statement.getPredicate().toString().equals(FusionMetaVocabulary.PATH)) {
-			this.indexDirectory = ((Literal)statement.getObject()).stringValue().trim();
-		} else if(statement.getPredicate().toString().equals(FusionMetaVocabulary.REFRESH)) {
-			this.refresh = ((Literal)statement.getObject()).booleanValue();
-		}
+	protected ILuceneSearchStrategy initSearchStrategy() throws FusionException {
+		Directory directory = this.storeStrategy.getDirectory();
+		this.searchStrategy = new LuceneAlignedFieldsEnhancedSearchStrategy(directory);
+		return this.searchStrategy;
 	}
-
 
 	@Override
 	public void prepare() throws FusionException {
@@ -129,31 +105,5 @@ public class LuceneEnhancedDiskIndexer extends LuceneIndexer implements IPersist
 		}
 	}
 
-	@Override
-	public int copyRelevantSubsetToBlocker(ILuceneBlocker blocker,
-			ApplicationContext context,
-			Map<String, AttributeProfileInDataset> targetAttributes)
-			throws FusionException {
-		return searchStrategy.copyRelevantSubsetToBlocker(blocker, context, targetAttributes);
-	}
-
-	@Override
-	public IDataSource getEmbeddingDataSource() {		
-		return embeddingDataSource;
-	}
-
-	@Override
-	public void setEmbeddingDataSource(IDataSource embeddingDataSource) {
-		this.embeddingDataSource = embeddingDataSource;
-	}
-
-	@Override
-	public void close() throws FusionException {
-		
-		this.storeStrategy.close();
-		
-	}
-	
-	
 
 }

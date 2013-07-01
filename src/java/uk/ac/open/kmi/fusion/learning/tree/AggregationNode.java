@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import uk.ac.open.kmi.common.utils.Utils;
@@ -196,9 +197,9 @@ public class AggregationNode extends TreeNode {
 			return false;
 		}
 		
-		for(IAttribute sourceAttribute : sourceToTargetComparisonsMap.keySet()) {
-			targetSet1 = sourceToTargetComparisonsMap.get(sourceAttribute);
-			targetSet2 = sourceToTargetComparisonsMapNode.get(sourceAttribute);
+		for(Entry<IAttribute, Set<IAttribute>> entry : sourceToTargetComparisonsMap.entrySet()) {
+			targetSet1 = entry.getValue();
+			targetSet2 = sourceToTargetComparisonsMapNode.get(entry.getKey());
 			
 			if(!(targetSet1.containsAll(targetSet2)
 					&&(targetSet1.size()==targetSet2.size()))) {

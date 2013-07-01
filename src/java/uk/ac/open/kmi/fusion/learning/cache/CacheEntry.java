@@ -38,6 +38,7 @@ import org.openrdf.model.vocabulary.RDF;
 
 import uk.ac.open.kmi.fusion.api.IObjectContextModel;
 import uk.ac.open.kmi.fusion.api.IObjectContextWrapper;
+import uk.ac.open.kmi.fusion.index.LuceneIndexer;
 import uk.ac.open.kmi.fusion.learning.CacheEntryBackedObjectContextWrapper;
 import uk.ac.open.kmi.fusion.util.KnoFussUtils;
 
@@ -77,7 +78,7 @@ public class CacheEntry {
 
 	public void readPropertiesFromLuceneDocument(Document doc) {
 		for(Fieldable f : doc.getFields()) {
-			if(f.name().equals("uri"))continue;
+			if(f.name().equals(LuceneIndexer.ID_FIELD_NAME))continue;
 			if(f.name().equals(RDF.TYPE.toString())) {
 				cache.addCacheEntryIdToTargetTypeTable(this, f.stringValue());
 			} else {

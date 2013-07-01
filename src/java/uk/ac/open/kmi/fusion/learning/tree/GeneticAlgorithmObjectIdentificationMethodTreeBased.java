@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -66,6 +67,7 @@ import uk.ac.open.kmi.fusion.api.impl.FusionEnvironment;
 import uk.ac.open.kmi.fusion.api.impl.FusionMethodWrapper;
 import uk.ac.open.kmi.fusion.util.FusionException;
 import uk.ac.open.kmi.fusion.index.LuceneBlockedDiskIndexer;
+import uk.ac.open.kmi.fusion.index.LuceneIndexer;
 import uk.ac.open.kmi.fusion.learning.cache.CacheEntry;
 import uk.ac.open.kmi.fusion.learning.cache.CachedPair;
 import uk.ac.open.kmi.fusion.learning.cache.MemoryInstanceCache;
@@ -255,24 +257,24 @@ public class GeneticAlgorithmObjectIdentificationMethodTreeBased implements
 		
 		double val;
 		AtomicAttribute attribute, predefinedAttribute;
-		for(String key : targetAttributes.keySet()) {
-			val = ((double)targetAttributes.get(key).getMentionedIn())/size;
-			attribute = targetAttributes.get(key).createAttribute();
+		for(Entry<String, AttributeProfileInDataset> entry : targetAttributes.entrySet()) {
+			val = ((double)entry.getValue().getMentionedIn())/size;
+			attribute = entry.getValue().createAttribute();
 			
 			if(!alreadyUsedPropertyPaths.containsKey(attribute.getPropertyPath())) {
 			
-				targetAttributeCounts.put(attribute, targetAttributes.get(key).getMentionedIn());
+				targetAttributeCounts.put(attribute, entry.getValue().getMentionedIn());
 				
 				// if(val>=0.95) {
 				if(val>=0.5) {
-					if((!key.equals(Utils.FOAF_NS+"name"))&&(!key.equals("http://oaei.ontologymatching.org/2010/IIMBTBOX/article"))) {
+					if((!entry.getKey().equals(Utils.FOAF_NS+"name"))&&(!entry.getKey().equals("http://oaei.ontologymatching.org/2010/IIMBTBOX/article"))) {
 						// Many thanks to the DBpedia bug which assigns the person's birth year as her name !
 						targetPropertiesPool.add(attribute);
 					}
 				}
 			} else {
 				predefinedAttribute = alreadyUsedPropertyPaths.get(attribute.getPropertyPath());
-				targetAttributeCounts.put(predefinedAttribute, targetAttributes.get(key).getMentionedIn());
+				targetAttributeCounts.put(predefinedAttribute, entry.getValue().getMentionedIn());
 				if(!predefinedAttribute.isAttributeTypeKnown()) {
 					predefinedAttribute.setType(attribute.getType());
 				}
@@ -328,6 +330,7 @@ public class GeneticAlgorithmObjectIdentificationMethodTreeBased implements
 		
 		for(int j=0;j<targetPropertiesPool.size();j++) {
 			attr = targetPropertiesPool.get(j);
+			log.debug("Target attribute: " + ((AtomicAttribute)attr).getPropertyPath());
 			if(attr instanceof AtomicAttribute) {
 				if((attr.getType()==AttributeType.NOMINAL)||(attr.getType()==AttributeType.NOMINAL_MULTI_TOKEN)) {
 					chosenTargetProperties.add(((AtomicAttribute)attr).getPropertyPath());
@@ -378,7 +381,7 @@ public class GeneticAlgorithmObjectIdentificationMethodTreeBased implements
 			} else {
 				tmpList = new ArrayList<String>(1);
 				tmpList.add(sourceEntry.getUri().toString());
-				searchValues.put("uri", tmpList);
+				searchValues.put(LuceneIndexer.ID_FIELD_NAME, tmpList);
 			}
 			
 			if(sourceEntry.getUri().toString().equals("http://data.linkedevents.org/event/f16352aa-7f1b-473c-8a3d-764757d400cc")) {
@@ -388,16 +391,16 @@ public class GeneticAlgorithmObjectIdentificationMethodTreeBased implements
 			docs = blocker.findClosestDocuments(searchValues, targetPropertyArray, blocker.getThreshold(), type);
 			cacheSize+=docs.size();
 			i++;
-			for(String key : docs.keySet()) {
-				signature = sourceEntry.getUri().toString()+" : "+key;
+			for(Entry<String, Document> entry : docs.entrySet()) {
+				signature = sourceEntry.getUri().toString()+" : "+entry.getKey();
 				
-				targetEntry = cache.getTargetCacheEntry(FusionEnvironment.getInstance().getMainKbValueFactory().createURI(key));
+				targetEntry = cache.getTargetCacheEntry(FusionEnvironment.getInstance().getMainKbValueFactory().createURI(entry.getKey()));
 				
-				targetEntry.readPropertiesFromLuceneDocument(docs.get(key));
+				targetEntry.readPropertiesFromLuceneDocument(entry.getValue());
 				pair = cache.addPairToCache(sourceEntry, targetEntry, false);
 				
 				if(goldStandardAvailable) { 
-					if(goldStandard.containsKey(sourceEntry.getUri().toString()+" : "+key)) {
+					if(goldStandard.containsKey(sourceEntry.getUri().toString()+" : "+entry.getKey())) {
 						tp++;
 						pair.setGoldStandard(true);
 						goldStandardEncoded.put(pair.getId(), signature);
@@ -741,16 +744,18 @@ public class GeneticAlgorithmObjectIdentificationMethodTreeBased implements
 		}
 		
 		double freq;
-		for(String key : sourceAttributeProfiles.keySet()) {
-			currentAttributeProfile = sourceAttributeProfiles.get(key);
+		for(Entry<String, AttributeProfileInDataset> entry : sourceAttributeProfiles.entrySet()) {
+			currentAttributeProfile = entry.getValue();
 			currentAttributeProfile.summarize();
 			
 			freq = ((double)currentAttributeProfile.getMentionedIn())/cache.getSourceCachedEntries().size();
 			
 			currentAttribute = currentAttributeProfile.createAttribute();
 			if(!alreadyUsedPropertyPaths.containsKey(currentAttribute.getPropertyPath())) {
-				if((currentAttribute.getType()!=AttributeType.INTEGER)&&(freq>0.6)&&(!currentAttribute.getPropertyPath().endsWith("search_api_query"))) {
+//				if((currentAttribute.getType()!=AttributeType.INTEGER)&&(freq>0.01)&&(!currentAttribute.getPropertyPath().endsWith("search_api_query"))) {
+				if((freq>0.01)&&(!currentAttribute.getPropertyPath().endsWith("search_api_query")&&(!currentAttribute.getPropertyPath().endsWith("contributorid")))) {
 					sourcePropertiesSet.add(currentAttribute);
+					log.debug("Adding source property: "+currentAttribute.getPropertyPath());
 				}
 			} else if(!alreadyUsedPropertyPaths.get(currentAttribute.getPropertyPath()).isAttributeTypeKnown()) {
 				alreadyUsedPropertyPaths.get(currentAttribute.getPropertyPath()).setType(currentAttribute.getType());
@@ -775,9 +780,9 @@ public class GeneticAlgorithmObjectIdentificationMethodTreeBased implements
 		List<AtomicMapping> mappings = new ArrayList<AtomicMapping>(resultsEncoded.size());
 		AtomicMapping mapping;
 		CachedPair pair;
-		for(Integer id : resultsEncoded.keySet()) {
-			pair = cache.getCachedPairById(id);
-			mapping = pair.convertToAtomicMapping(solution.getAlternativeModelSpecs(), resultsEncoded.get(id), solution.getFitness().getPrecision());
+		for(Entry<Integer, Double> entry : resultsEncoded.entrySet()) {
+			pair = cache.getCachedPairById(entry.getKey());
+			mapping = pair.convertToAtomicMapping(solution.getAlternativeModelSpecs(), entry.getValue(), solution.getFitness().getPrecision());
 			mapping.setAccepted(true);
 			mappings.add(mapping);
 		}
@@ -796,11 +801,11 @@ public class GeneticAlgorithmObjectIdentificationMethodTreeBased implements
 		Set<String> dominantClasses = new HashSet<String>();
 		double totalRecall = resultingFitness.getRecall();
 		double recallPercentage;
-		for(String type : fitnessByType.keySet()) {
-			if(!type.equals(topClass)) {
-				recallPercentage = fitnessByType.get(type).getRecall()/totalRecall;
+		for(Entry<String, IFitnessFunction> mapEntry : fitnessByType.entrySet()) {
+			if(!mapEntry.getKey().equals(topClass)) {
+				recallPercentage = mapEntry.getValue().getRecall()/totalRecall;
 				if(recallPercentage > 0.85) {
-					dominantClasses.add(type);
+					dominantClasses.add(mapEntry.getKey());
 				}
 			}
 		}
@@ -858,13 +863,13 @@ public class GeneticAlgorithmObjectIdentificationMethodTreeBased implements
 		double average = 0;
 		int numberOfRelevantPairs = 0;
 
-		for(Integer pairId : solutionResults.keySet()) {
-			pair = cache.getCachedPairById(pairId);
+		for(Entry<Integer, Double> entry : solutionResults.entrySet()) {
+			pair = cache.getCachedPairById(entry.getKey());
 			if(targetEntryIDs.contains(pair.getTargetInstance().getId())) {
 				coveredSourceIndividuals.add(pair.getCandidateInstance().getId());
 				numberOfRelevantPairs++;
 				average += 1;
-				averageSimilarity += solutionResults.get(pairId);
+				averageSimilarity += entry.getValue();
 			}
 		}
 		

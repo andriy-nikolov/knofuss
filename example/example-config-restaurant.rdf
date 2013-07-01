@@ -126,7 +126,7 @@
 
   <!-- Descriptor of the matching algorithm. 
     	In this case, the standard attribute-based similarity matcher, 
-    	which takes a weighted average of the . -->
+    	which takes a weighted average of the similarities between attributes specified in the application context. -->
   <FusionMethod rdf:ID="SimMetricsAverageDistanceMatcher">
     <hasCapability rdf:resource="#ObjectIdentification"/>
     <hasImplementingClass rdf:datatype="http://www.w3.org/2001/XMLSchema#string"

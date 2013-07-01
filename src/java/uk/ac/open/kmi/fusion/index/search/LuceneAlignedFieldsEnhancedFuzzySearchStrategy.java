@@ -52,6 +52,7 @@ import org.openrdf.model.vocabulary.OWL;
 import org.openrdf.model.vocabulary.RDF;
 
 import uk.ac.open.kmi.common.utils.LuceneUtils;
+import uk.ac.open.kmi.fusion.index.LuceneIndexer;
 import uk.ac.open.kmi.fusion.objectidentification.SearchResult;
 import uk.ac.open.kmi.fusion.util.OAEIUtils;
 
@@ -152,7 +153,7 @@ public class LuceneAlignedFieldsEnhancedFuzzySearchStrategy extends
     		for(int i=0;i<hits.scoreDocs.length;i++) {
     			if((hits.scoreDocs[i].score>=threshold)) {
     				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
-    				docs.put(doc.get("uri"), doc);
+    				docs.put(doc.get(LuceneIndexer.ID_FIELD_NAME), doc);
 
     			} else {
     				break;
@@ -199,8 +200,8 @@ public class LuceneAlignedFieldsEnhancedFuzzySearchStrategy extends
     		for(int i=0;i<hits.scoreDocs.length;i++) {
     			if((hits.scoreDocs[i].score>=threshold)) {
     				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
-    				res = new uk.ac.open.kmi.fusion.objectidentification.SearchResult(doc.get("uri"), doc, (double)hits.scoreDocs[i].score);
-    				docs.put(doc.get("uri"), res);
+    				res = new uk.ac.open.kmi.fusion.objectidentification.SearchResult(doc.get(LuceneIndexer.ID_FIELD_NAME), doc, (double)hits.scoreDocs[i].score);
+    				docs.put(doc.get(LuceneIndexer.ID_FIELD_NAME), res);
     			} else {
     				break;
     			}

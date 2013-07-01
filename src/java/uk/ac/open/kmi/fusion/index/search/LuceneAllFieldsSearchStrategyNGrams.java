@@ -53,6 +53,7 @@ import org.apache.lucene.util.Version;
 import org.openrdf.model.vocabulary.RDF;
 
 import uk.ac.open.kmi.common.utils.LuceneUtils;
+import uk.ac.open.kmi.fusion.index.LuceneIndexer;
 import uk.ac.open.kmi.fusion.objectidentification.SearchResult;
 
 public class LuceneAllFieldsSearchStrategyNGrams extends AbstractLuceneSearchStrategy {
@@ -70,7 +71,7 @@ public class LuceneAllFieldsSearchStrategyNGrams extends AbstractLuceneSearchStr
 	public void refreshSearcher() {
 		super.refreshSearcher();
 		Set<String> fieldNameCollection = new HashSet<String>(this.indexSearcher.getIndexReader().getFieldNames(FieldOption.ALL));
-		fieldNameCollection.remove("uri");
+		fieldNameCollection.remove(LuceneIndexer.ID_FIELD_NAME);
 		fieldNameCollection.remove(RDF.TYPE.toString());
 		this.fieldNames = new String[fieldNameCollection.size()];
 		this.fieldNames = fieldNameCollection.toArray(this.fieldNames);
@@ -117,8 +118,8 @@ public class LuceneAllFieldsSearchStrategyNGrams extends AbstractLuceneSearchStr
     		for(int i=0;i<hits.scoreDocs.length;i++) {
     			if((hits.scoreDocs[i].score>=threshold)) {
     				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
-    				res = new uk.ac.open.kmi.fusion.objectidentification.SearchResult(doc.get("uri"), doc, (double)hits.scoreDocs[i].score);
-    				docs.put(doc.get("uri"), res);
+    				res = new uk.ac.open.kmi.fusion.objectidentification.SearchResult(doc.get(LuceneIndexer.ID_FIELD_NAME), doc, (double)hits.scoreDocs[i].score);
+    				docs.put(doc.get(LuceneIndexer.ID_FIELD_NAME), res);
     			} else {
     				break;
     			}
@@ -179,7 +180,7 @@ public class LuceneAllFieldsSearchStrategyNGrams extends AbstractLuceneSearchStr
 	    		for(int i=0;i<hits.scoreDocs.length;i++) {
 	    			if((hits.scoreDocs[i].score>=threshold)) {
 	    				doc = indexSearcher.doc(hits.scoreDocs[i].doc);
-	    				docs.put(doc.get("uri"), doc);
+	    				docs.put(doc.get(LuceneIndexer.ID_FIELD_NAME), doc);
 	    			} else {
 	    				break;
 	    			}

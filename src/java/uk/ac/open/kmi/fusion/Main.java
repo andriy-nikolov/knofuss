@@ -72,13 +72,10 @@ public class Main {
 			obj.setUp();
 			obj.testRun();
 		} catch (OpenRDFException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		} catch (IOException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
 		
